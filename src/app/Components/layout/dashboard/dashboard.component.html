@@ -1,0 +1,52 @@
+<div class="dashboard-page">
+  <!-- Dashboard Header -->
+  <header class="dashboard-header">
+    <h1>{{ isStaff ? 'Staff Dashboard' : 'Citizen Dashboard' }}</h1>
+    <div class="user-info">
+      <span>{{ isStaff ? 'Ward Staff' : 'Citizen' }}</span>
+      <img src="https://i.pravatar.cc/40" alt="User" />
+    </div>
+  </header>
+
+  <!-- Stats Section -->
+  <section class="stats">
+    <!-- Staff Stats -->
+    <div *ngIf="isStaff" class="card">
+      <h3>Total Requests</h3>
+      <p>128</p>
+    </div>
+    <div *ngIf="isStaff" class="card">
+      <h3>Pending Approvals</h3>
+      <p>34</p>
+    </div>
+    <div *ngIf="isStaff" class="card">
+      <h3>Reports</h3>
+      <p>12</p>
+    </div>
+
+    <!-- Citizen Stats -->
+    <div *ngIf="!isStaff" class="card">
+      <h3>My Requests</h3>
+      <p>5 Active</p>
+    </div>
+    <div *ngIf="!isStaff" class="card">
+      <h3>Complaints</h3>
+      <p>2 Pending</p>
+    </div>
+    <div *ngIf="!isStaff" class="card">
+      <h3>Appointments</h3>
+      <p>1 Upcoming</p>
+    </div>
+  </section>
+
+  <!-- Recent Activities / Notices Section -->
+  <section *ngIf="isStaff" class="recent-activities">
+    <h2>Recent Activities</h2>
+    <p>Latest updates on service requests and approvals will appear here.</p>
+  </section>
+
+  <section *ngIf="!isStaff" class="notices">
+    <h2>Recent Notices</h2>
+    <p>View important updates from your ward.</p>
+  </section>
+</div>

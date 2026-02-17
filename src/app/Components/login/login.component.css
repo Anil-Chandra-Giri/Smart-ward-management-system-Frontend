@@ -1,0 +1,109 @@
+.login-wrapper {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #0f4c75, #1b262c);
+  font-family: Arial, sans-serif;
+}
+
+.login-card {
+  width: 360px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  padding: 30px;
+  border-radius: 16px;
+  color: white;
+}
+
+.title {
+  text-align: center;
+  margin-bottom: 5px;
+}
+
+.subtitle {
+  text-align: center;
+  font-size: 13px;
+  margin-bottom: 20px;
+}
+
+/* Hide radio buttons */
+input[type="radio"] {
+  display: none;
+}
+
+/* Toggle buttons */
+.role-toggle {
+  display: flex;
+  margin-bottom: 20px;
+}
+
+.role-toggle label {
+  flex: 1;
+  padding: 10px;
+  text-align: center;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+#citizen:checked ~ .role-toggle label[for="citizen"],
+#admin:checked ~ .role-toggle label[for="admin"] {
+  background: #00b4d8;
+}
+
+/* Forms */
+.form {
+  display: none;
+}
+
+#citizen:checked ~ .citizen-form {
+  display: block;
+}
+
+#admin:checked ~ .admin-form {
+  display: block;
+}
+
+.form input {
+  width: 93%;
+  padding: 12px;
+  margin-bottom: 12px;
+  border-radius: 6px;
+  border: none;
+}
+
+.btn {
+  width: 100%;
+  padding: 12px;
+  margin-right: 10px;
+  border: none;
+  background: #00b4d8;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.admin-btn {
+  background: #ff9f1c;
+}
+
+p {
+  font-size: 16px;         /* Sets the font size of the paragraph */
+  color: #ffffff;          /* Sets the text color of the paragraph */
+  text-align: center;      /* Centers the text */
+  margin-top: 20px;        /* Adds space above the paragraph */
+}
+
+a {
+  color: #00b4d8;          /* Sets the link color to match your button */
+  text-decoration: none;   /* Removes the underline from the link */
+  font-weight: bold;       /* Makes the link text bold */
+  cursor: pointer;        /* Changes the cursor to a pointer on hover */
+  padding: 0 5px;          /* Adds a small padding for clickable area */
+  border-radius: 3px;      /* Optional: Adds a rounded effect to the link */
+}
+
+a:hover {
+  color: #008c99;          /* Changes the link color when hovered */
+  text-decoration: underline;  /* Adds underline on hover */
+}

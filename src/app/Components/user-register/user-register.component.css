@@ -1,0 +1,129 @@
+.registration-wrapper {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #0f4c75, #1b262c);
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.registration-card {
+  width: 1000px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 30px 40px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+
+h2 {
+  text-align: center;
+  color: #0f4c75;
+}
+
+.subtitle {
+  text-align: center;
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 20px;
+}
+
+/* STEPS */
+.steps {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 25px;
+}
+
+.step {
+  flex: 1;
+  text-align: center;
+  padding: 10px;
+  background: #e0e0e0;
+  border-radius: 20px;
+  margin: 0 5px;
+  font-size: 13px;
+}
+
+.step.active {
+  background: #3282b8;
+  color: white;
+}
+
+/* SECTIONS */
+.section {
+  margin-bottom: 30px;
+}
+
+.section h3 {
+  color: #3282b8;
+  margin-bottom: 15px;
+  border-left: 4px solid #3282b8;
+  padding-left: 10px;
+}
+
+/* GRID */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+}
+
+.form-grid input,
+.form-grid select {
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+/* UPLOAD */
+.upload-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+}
+
+.upload-box {
+  border: 2px dashed #3282b8;
+  padding: 30px;
+  text-align: center;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.upload-box input {
+  display: none;
+}
+
+/* INFO */
+.info-text {
+  background: #f1f9ff;
+  padding: 15px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+/* BUTTON */
+.submit-btn {
+  margin-top: 20px;
+  width: 100%;
+  padding: 14px;
+  background: #0f4c75;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .registration-card {
+    width: 95%;
+  }
+
+  .form-grid,
+  .upload-grid {
+    grid-template-columns: 1fr;
+  }
+}

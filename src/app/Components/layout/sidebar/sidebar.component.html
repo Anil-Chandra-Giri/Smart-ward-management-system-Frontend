@@ -1,0 +1,34 @@
+<aside class="sidebar">
+  <!-- Logo -->
+  <div class="logo">
+    <h2>Smart Ward</h2>
+    <p>Management System</p>
+  </div>
+
+  <!-- Navigation Menu -->
+  <nav class="nav-menu">
+    <!-- Staff-specific menu -->
+    <a *ngIf="isStaff" class="active" href="/ward/dashboard">📊 Dashboard</a>
+    <a *ngIf="isStaff" href="/ward/service-request">📝 Service Requests</a>
+    <a *ngIf="isStaff" href="/ward/applications">📂 Applications</a>
+    <a *ngIf="isStaff" href="/ward/complaints">📢 Complaints</a>
+    <a *ngIf="isStaff" href="/ward/notices">📄 Notices</a>
+    <a *ngIf="isStaff" href="/ward/appointments">📅 Appointments</a>
+    <a *ngIf="isStaff" href="/ward/my-details">🪪 My Details</a>
+    <a *ngIf="isStaff" href="/ward/settings">⚙️ Settings</a>
+
+    <!-- Citizen-specific menu -->
+    <a *ngIf="!isStaff" class="active" href="/citizen/dashboard">📊 Dashboard</a>
+    <a *ngIf="!isStaff" href="/citizen/notices">📄 Notices</a>
+    <a *ngIf="!isStaff" href="/citizen/request-service">📝 Request Service</a>
+    <a *ngIf="!isStaff" href="/citizen/submit-complaint">📢 Submit Complaint</a>
+    <a *ngIf="!isStaff" href="/citizen/book-appointment">📅Book Appointment</a>
+    <a *ngIf="!isStaff" href="/citizen/my-details">🪪 My Details</a>
+    <a *ngIf="!isStaff" href="/citizen/settings">⚙️ Settings</a>
+  </nav>
+
+  <!-- Logout Button -->
+  <div class="logout">
+    <button (click)="logout()">Logout</button>
+  </div>
+</aside>
