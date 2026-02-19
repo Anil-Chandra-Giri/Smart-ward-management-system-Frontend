@@ -21,19 +21,6 @@ export class LoginComponent {
     this.ApiCall.login(this.loginData).subscribe({
       next: (response) => {
         console.log('Login successful', response);
-
-        // if (role === 'Employer') {
-        //     this.router.navigateByUrl('Company/dashboard');
-        //   } else if (role === 'Candidate') {
-        //     if (currentUrl === '/' || currentUrl.includes('home')) {
-        //       this.dialogRef?.close({ success: true, fromHome: true });
-        //     } else {
-        //       this.router.navigateByUrl('Candidate/dashboard');
-        //     }
-        //   }
-
-        //   alert('Login Successful');
-        // }
       },
       error: (error) => {
         console.error('Login failed', error);

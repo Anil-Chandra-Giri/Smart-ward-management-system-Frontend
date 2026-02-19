@@ -13,55 +13,60 @@
     </div>
 
     <!-- STEP 1: USER -->
-    <section class="section">
+    <section class="section" [formGroup]="registrationForm">
       <h3>Personal & Address Information</h3>
 
       <div class="form-grid">
-        <input placeholder="Full Name (Nepali)">
-        <input placeholder="Full Name (English)">
-        <select>
+        <input formControlName="fullNameEnglish" placeholder="Full Name (Nepali)">
+        <input formControlName="fullNameNepali" placeholder="Full Name (English)">
+        <select formControlName="gender">
           <option value="">Gender</option>
           <option>Male</option>
           <option>Female</option>
           <option>Other</option>
         </select>
-        <input type="date" placeholder="Date of Birth">
-        <input placeholder="Phone Number">
-        <input type="email" placeholder="Email">
-        <input placeholder="Citizenship Number">
-        <input placeholder="Citizenship Issued District">
-        <input type="date" placeholder="Citizenship Issued Date">
-        <input placeholder="National ID Number">
-        <input placeholder="Permanent Address">
-        <input placeholder="Temporary Address">
-        <input placeholder="Ward Number">
-        <input placeholder="Municipality">
-        <input placeholder="District">
-        <input placeholder="Province">
+        <input type="date" formControlName="dateOfBirth" placeholder="Date of Birth">
+        <input placeholder="Phone Number" formControlName="phoneNumber">
+        <input type="email" placeholder="Email" formControlName="email">
+        <input placeholder="Citizenship Number" formControlName="citizenshipNumber">
+        <input placeholder="Citizenship Issued District" formControlName="citizenshipIssuedDistrict">
+        <input type="date" placeholder="Citizenship Issued Date" formControlName="citizenshipIssuedDate">
+        <input placeholder="National ID Number" formControlName="nationalIdNumber">
+        <input placeholder="Permanent Address" formControlName="permanentAddress">
+        <input placeholder="Temporary Address" formControlName="temporaryAddress">
+        <input placeholder="Ward Number" formControlName="wardNumber">
+        <input placeholder="Municipality" formControlName="municipality">
+        <input placeholder="District" formControlName="district">
+        <input placeholder="Province" formControlName="province">
+        <input placeholder="Username" formControlName="username">
+        <input placeholder="Password" formControlName="passwordHash" type="password">
       </div>
     </section>
 
     <!-- STEP 2: DOCUMENTS -->
-    <section class="section">
-      <h3>Upload Documents</h3>
+   <section class="section">
+  <h3>Upload Documents</h3>
 
-      <div class="upload-grid">
-        <label class="upload-box">
-          Citizenship Front
-          <input type="file">
-        </label>
+  <div class="upload-grid">
+    <label class="upload-box">
+      <span *ngIf="!previews['front']">Citizenship Front</span>
+      <img *ngIf="previews['front']" [src]="previews['front']" class="preview-img">
+      <input type="file" (change)="onFileSelect($event, 'front')" accept="image/*">
+    </label>
 
-        <label class="upload-box">
-          Citizenship Back
-          <input type="file">
-        </label>
+    <label class="upload-box">
+      <span *ngIf="!previews['back']">Citizenship Back</span>
+      <img *ngIf="previews['back']" [src]="previews['back']" class="preview-img">
+      <input type="file" (change)="onFileSelect($event, 'back')" accept="image/*">
+    </label>
 
-        <label class="upload-box">
-          Live Photo
-          <input type="file">
-        </label>
-      </div>
-    </section>
+    <label class="upload-box">
+      <span *ngIf="!previews['live']">Live Photo</span>
+      <img *ngIf="previews['live']" [src]="previews['live']" class="preview-img">
+      <input type="file" (change)="onFileSelect($event, 'live')" accept="image/*">
+    </label>
+  </div>
+</section>
 
     <!-- STEP 3: VERIFICATION -->
     <section class="section">
@@ -72,7 +77,7 @@
         You will be notified via email/SMS.
       </p>
 
-      <button class="submit-btn">Submit Verification Request</button>
+      <button class="submit-btn" (click)="submitRegistration()" type="submit">Submit Verification Request</button>
     </section>
 
   </div>
