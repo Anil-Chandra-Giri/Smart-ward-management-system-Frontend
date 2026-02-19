@@ -14,8 +14,9 @@ export class ApiService {
   constructor(private http: HttpClient) { }
 
     createUser(signup: SignUp): Observable<any> {
+      console.log('Hi')
     return this.http.post(
-      'https://localhost:7008/api/UsersCommand/CreateUser',signup);
+      'https://localhost:7069/api/SignUp/Register',signup);
   }
   
     createStaff(newStaff: any): Observable<any> {
@@ -23,7 +24,7 @@ export class ApiService {
   }
 
     login(login: Login): Observable<any> {
-    return this.http.post('https://localhost:7008/api/LoginQuery/login', login);
+    return this.http.post('https://localhost:7069/api/Login/login', login);
   }
   
      requestService(request: ServiceRequest): Observable<any> {
