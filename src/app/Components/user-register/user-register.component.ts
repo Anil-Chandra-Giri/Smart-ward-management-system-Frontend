@@ -1,4 +1,3 @@
-import { HttpClient } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ApiService } from '../../Services/api.service';
@@ -17,6 +16,7 @@ export class UserRegisterComponent {
   citizenshipFront: File | null = null;
   citizenshipBack: File | null = null;
   livePhoto: File | null = null;
+
 
   previews: { [key: string]: string | ArrayBuffer | null } = {
     front: null,

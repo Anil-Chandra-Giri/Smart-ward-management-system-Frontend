@@ -15,17 +15,46 @@ export class LoginComponent {
   constructor(private authService: AuthService, private ApiCall: ApiService, private router: Router){}
 
  loginData : Login = new Login();
+ isStaff: boolean = false;
 
   onLogin() {
 
-    this.ApiCall.login(this.loginData).subscribe({
-      next: (response) => {
-        console.log('Login successful', response);
-      },
-      error: (error) => {
-        console.error('Login failed', error);
-      }
-    });
-  }
+  //   this.ApiCall.login(this.loginData).subscribe({
+  //     next: (response) => {
+  //       console.log('Login successful', response);
+  //     },
+  //     error: (error) => {
+  //       console.error('Login failed', error);
+  //     }
+  //   });
+  // }
 
+  this.ApiCall.login(this.loginData).subscribe({
+    next: (response) => {
+      console.log('Login successful', response);
+      const token = response.token
+      console.log(token)
+    
+      if(this.isStaff==true)
+      {
+        this.router.navigateByUrl('ward/dashboard')
+      }
+      else
+      {
+        this.router.navigateByUrl('citizen/dashboard')
+
+      }
+    },
+    error: (error) => {
+      console.error('Login failed', error);
+      if (error.status === 400) {
+        alert('Invalid credentials. Please check your username and password.');
+      } else {
+        alert('An unexpected error occurred. Please try again later.');
+      }
+    }
+  });
 }
+}
+
+
