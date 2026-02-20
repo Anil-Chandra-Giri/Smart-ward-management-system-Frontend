@@ -1,3 +1,6 @@
+<<<<<<< HEAD
+
+=======
 export class SignUp {
   fullNameNepali: string = '';
   fullNameEnglish: string = '';
@@ -19,3 +22,4 @@ export class SignUp {
   province: string = '';
   role: string = '';
 }
+>>>>>>> 8661eb7c55a015858f2546d18782185851592f32

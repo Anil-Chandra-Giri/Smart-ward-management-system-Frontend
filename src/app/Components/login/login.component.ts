@@ -17,11 +17,17 @@ export class LoginComponent {
  loginData : Login = new Login();
  isStaff: boolean = false;
 
- onLogin() {
-  if (!this.loginData.username || !this.loginData.password) {
-    console.error('Please enter both username and password.');
-    return;
-  }
+  onLogin() {
+
+  //   this.ApiCall.login(this.loginData).subscribe({
+  //     next: (response) => {
+  //       console.log('Login successful', response);
+  //     },
+  //     error: (error) => {
+  //       console.error('Login failed', error);
+  //     }
+  //   });
+  // }
 
   this.ApiCall.login(this.loginData).subscribe({
     next: (response) => {
@@ -49,5 +55,6 @@ export class LoginComponent {
     }
   });
 }
-
 }
+
+

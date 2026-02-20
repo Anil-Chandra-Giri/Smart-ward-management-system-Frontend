@@ -13,246 +13,60 @@
     </div>
 
     <!-- STEP 1: USER -->
-  <section class="section">
-  <h3>Personal & Address Information</h3>
+    <section class="section" [formGroup]="registrationForm">
+      <h3>Personal & Address Information</h3>
 
-  <form (ngSubmit)="onSubmit()" #signupForm="ngForm">
-    <div class="form-grid">
-      <!-- Full Name Nepali -->
-      <label for="fullNameNepali">Full Name (Nepali)</label>
-      <input
-        id="fullNameNepali"
-        name="fullNameNepali"
-        [(ngModel)]="signupData.fullNameNepali"
-        required
-        placeholder="Enter Full Name in Nepali"
-        #fullNameNepali="ngModel"
-      />
-
-      <!-- Full Name English -->
-      <label for="fullNameEnglish">Full Name (English)</label>
-      <input
-        id="fullNameEnglish"
-        name="fullNameEnglish"
-        [(ngModel)]="signupData.fullNameEnglish"
-        required
-        placeholder="Enter Full Name in English"
-        #fullNameEnglish="ngModel"
-      />
-
-      <!-- Gender -->
-      <label for="gender">Gender</label>
-      <select id="gender" name="gender" [(ngModel)]="signupData.gender" required #gender="ngModel">
-        <option value="">Select Gender</option>
-        <option value="male">Male</option>
-        <option value="female">Female</option>
-        <option value="other">Other</option>
-      </select>
-
-      <!-- Date of Birth -->
-      <label for="dateOfBirth">Date of Birth</label>
-      <input
-        id="dateOfBirth"
-        name="dateOfBirth"
-        type="date"
-        [(ngModel)]="signupData.dateOfBirth"
-        required
-        placeholder="Select Date of Birth"
-        #dateOfBirth="ngModel"
-      />
-
-      <!-- Phone Number -->
-      <label for="phoneNumber">Phone Number</label>
-      <input
-        id="phoneNumber"
-        name="phoneNumber"
-        [(ngModel)]="signupData.phoneNumber"
-        type="tel"
-        required
-        placeholder="Enter Phone Number"
-        #phoneNumber="ngModel"
-      />
-
-      <!-- Email -->
-      <label for="email">Email</label>
-      <input
-        id="email"
-        name="email"
-        type="email"
-        [(ngModel)]="signupData.email"
-        required
-        placeholder="Enter Your Email"
-        #email="ngModel"
-      />
-
-      <!-- Citizenship Number -->
-      <label for="citizenshipNumber">Citizenship Number</label>
-      <input
-        id="citizenshipNumber"
-        name="citizenshipNumber"
-        [(ngModel)]="signupData.citizenshipNumber"
-        required
-        placeholder="Enter Citizenship Number"
-        #citizenshipNumber="ngModel"
-      />
-
-      <!-- Citizenship Issued District -->
-      <label for="citizenshipIssuedDistrict">Citizenship Issued District</label>
-      <input
-        id="citizenshipIssuedDistrict"
-        name="citizenshipIssuedDistrict"
-        [(ngModel)]="signupData.citizenshipIssuedDistrict"
-        required
-        placeholder="Enter Citizenship Issued District"
-        #citizenshipIssuedDistrict="ngModel"
-      />
-
-      <!-- Citizenship Issued Date -->
-      <label for="citizenshipIssuedDate">Citizenship Issued Date</label>
-      <input
-        id="citizenshipIssuedDate"
-        name="citizenshipIssuedDate"
-        type="date"
-        [(ngModel)]="signupData.citizenshipIssuedDate"
-        required
-        placeholder="Select Citizenship Issued Date"
-        #citizenshipIssuedDate="ngModel"
-      />
-
-      <!-- National ID Number -->
-      <label for="nationalIdNumber">National ID Number</label>
-      <input
-        id="nationalIdNumber"
-        name="nationalIdNumber"
-        [(ngModel)]="signupData.nationalIdNumber"
-        required
-        placeholder="Enter National ID Number"
-        #nationalIdNumber="ngModel"
-      />
-
-      <!-- Permanent Address -->
-      <label for="permanentAddress">Permanent Address</label>
-      <input
-        id="permanentAddress"
-        name="permanentAddress"
-        [(ngModel)]="signupData.permanentAddress"
-        required
-        placeholder="Enter Permanent Address"
-        #permanentAddress="ngModel"
-      />
-
-      <!-- Temporary Address -->
-      <label for="temporaryAddress">Temporary Address</label>
-      <input
-        id="temporaryAddress"
-        name="temporaryAddress"
-        [(ngModel)]="signupData.temporaryAddress"
-        required
-        placeholder="Enter Temporary Address"
-        #temporaryAddress="ngModel"
-      />
-
-      <!-- Ward Number -->
-      <label for="wardNumber">Ward Number</label>
-      <input
-        id="wardNumber"
-        name="wardNumber"
-        [(ngModel)]="signupData.wardNumber"
-        required
-        placeholder="Enter Ward Number"
-        #wardNumber="ngModel"
-      />
-
-      <!-- Municipality -->
-      <label for="municipality">Municipality</label>
-      <input
-        id="municipality"
-        name="municipality"
-        [(ngModel)]="signupData.municipality"
-        required
-        placeholder="Enter Municipality"
-        #municipality="ngModel"
-      />
-
-      <!-- District -->
-      <label for="district">District</label>
-      <input
-        id="district"
-        name="district"
-        [(ngModel)]="signupData.district"
-        required
-        placeholder="Enter District"
-        #district="ngModel"
-      />
-
-      <!-- Province -->
-      <label for="province">Province</label>
-      <input
-        id="province"
-        name="province"
-        [(ngModel)]="signupData.province"
-        required
-        placeholder="Enter Province"
-        #province="ngModel"
-      />
-
-      <!-- Username -->
-      <label for="username">Username</label>
-      <input
-        id="username"
-        name="username"
-        [(ngModel)]="signupData.username"
-        required
-        placeholder="Enter Username"
-        #username="ngModel"
-      />
-
-      <!-- Password -->
-      <label for="password">Password</label>
-      <input
-        id="password"
-        name="password"
-        type="password"
-        [(ngModel)]="signupData.password"
-        required
-        placeholder="Enter Password"
-        #password="ngModel"
-      />
-
-      <!-- Confirm Password -->
-      <label for="confirmPassword">Confirm Password</label>
-      <input
-        id="confirmPassword"
-        name="confirmPassword"
-        type="password"
-        [(ngModel)]="confirmPassword"
-        required
-        placeholder="Confirm Password"
-        #confirmPassword="ngModel"
-      />
-    </div>
+      <div class="form-grid">
+        <input formControlName="fullNameEnglish" placeholder="Full Name (Nepali)">
+        <input formControlName="fullNameNepali" placeholder="Full Name (English)">
+        <select formControlName="gender">
+          <option value="">Gender</option>
+          <option>Male</option>
+          <option>Female</option>
+          <option>Other</option>
+        </select>
+        <input type="date" formControlName="dateOfBirth" placeholder="Date of Birth">
+        <input placeholder="Phone Number" formControlName="phoneNumber">
+        <input type="email" placeholder="Email" formControlName="email">
+        <input placeholder="Citizenship Number" formControlName="citizenshipNumber">
+        <input placeholder="Citizenship Issued District" formControlName="citizenshipIssuedDistrict">
+        <input type="date" placeholder="Citizenship Issued Date" formControlName="citizenshipIssuedDate">
+        <input placeholder="National ID Number" formControlName="nationalIdNumber">
+        <input placeholder="Permanent Address" formControlName="permanentAddress">
+        <input placeholder="Temporary Address" formControlName="temporaryAddress">
+        <input placeholder="Ward Number" formControlName="wardNumber">
+        <input placeholder="Municipality" formControlName="municipality">
+        <input placeholder="District" formControlName="district">
+        <input placeholder="Province" formControlName="province">
+        <input placeholder="Username" formControlName="username">
+        <input placeholder="Password" formControlName="passwordHash" type="password">
+      </div>
+    </section>
 
     <!-- STEP 2: DOCUMENTS -->
-    <!-- <section class="section">
-      <h3>Upload Documents</h3>
+   <section class="section">
+  <h3>Upload Documents</h3>
 
-      <div class="upload-grid">
-        <label class="upload-box">
-          Citizenship Front
-          <input type="file" [(ngModel)]="signupData.citizenshipFront" name="citizenshipFront" #citizenshipFront="ngModel" required />
-        </label>
+  <div class="upload-grid">
+    <label class="upload-box">
+      <span *ngIf="!previews['front']">Citizenship Front</span>
+      <img *ngIf="previews['front']" [src]="previews['front']" class="preview-img">
+      <input type="file" (change)="onFileSelect($event, 'front')" accept="image/*">
+    </label>
 
-        <label class="upload-box">
-          Citizenship Back
-          <input type="file" [(ngModel)]="signupData.citizenshipBack" name="citizenshipBack" #citizenshipBack="ngModel" required />
-        </label>
+    <label class="upload-box">
+      <span *ngIf="!previews['back']">Citizenship Back</span>
+      <img *ngIf="previews['back']" [src]="previews['back']" class="preview-img">
+      <input type="file" (change)="onFileSelect($event, 'back')" accept="image/*">
+    </label>
 
-        <label class="upload-box">
-          Live Photo
-          <input type="file" [(ngModel)]="signupData.livePhoto" name="livePhoto" #livePhoto="ngModel" required />
-        </label>
-      </div>
-    </section> -->
+    <label class="upload-box">
+      <span *ngIf="!previews['live']">Live Photo</span>
+      <img *ngIf="previews['live']" [src]="previews['live']" class="preview-img">
+      <input type="file" (change)="onFileSelect($event, 'live')" accept="image/*">
+    </label>
+  </div>
+</section>
 
     <!-- STEP 3: VERIFICATION -->
     <section class="section">
@@ -263,11 +77,8 @@
         You will be notified via email/SMS.
       </p>
 
-      <button class="submit-btn" type="submit" [disabled]="signupForm.invalid">Submit Verification Request</button>
+      <button class="submit-btn" (click)="submitRegistration()" type="submit">Submit Verification Request</button>
     </section>
-
-  </form>
-</section>
 
 
 
