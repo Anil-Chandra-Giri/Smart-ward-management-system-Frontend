@@ -21,12 +21,12 @@ export class ApiService {
     return this.http.post('https://localhost:7069/api/SignUp/Register',newStaff);
   }
 
-    login(login: Login): Observable<any> {
+    login(login: any): Observable<any> {
     return this.http.post('https://localhost:7069/api/Login', login);
   }
   
-     requestService(request: ServiceRequest): Observable<any> {
-    return this.http.post('https://localhost:7069/api/service-requests',request);
+     requestService(request: any): Observable<any> {
+    return this.http.post('https://localhost:7069/api/servicerequest',request);
   }
   
        requestReview(id: any): Observable<any> {

@@ -14,9 +14,9 @@
     </div>
 
     <!-- CITIZEN FORM -->
-    <form class="form citizen-form" (ngSubmit)="onLogin()">
-      <input type="text" placeholder="Citizenship No / Email" />
-      <input type="password" placeholder="Password" />
+    <form class="form citizen-form" [formGroup]="loginForm"  (ngSubmit)="onLogin()">
+      <input type="text" formControlName="Username" placeholder="Citizenship No / Email" />
+      <input type="password" formControlName="Password" placeholder="Password" />
       <button class="btn">Login as Citizen</button>
       <p>Don't have an account? <a href="/registerUser">Sign Up</a></p>
     </form>

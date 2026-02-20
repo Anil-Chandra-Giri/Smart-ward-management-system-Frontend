@@ -1,25 +1,51 @@
 import {Inject, Injectable, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { JwtPayload } from './jwtPayload/jwtpayload.module';
+import { Router } from '@angular/router';
 
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
+  jwtPayload: JwtPayload = new JwtPayload();
+  constructor(private route:Router ) {}
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) { }
-   getUserRole(): string | null {
-    if (isPlatformBrowser(this.platformId)) {
-      return localStorage.getItem('role');
+  decodeToken(): JwtPayload {
+    const token = localStorage.getItem('token');
+    if (token != null) {
+      this.jwtPayload = this.decodeJwt(token);
     }
-    return null;
+    return this.jwtPayload;
+  }
+  decodeJwt(token: string): any {
+    const payload = token.split('.')[1];
+    const decodedPayload = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+    return JSON.parse(decodedPayload);
   }
 
-   logout(): void {
-    // Clear any authentication data, for example:
-    localStorage.removeItem('userToken');
-    localStorage.removeItem('userRole');
-    // Optionally, you could also handle any server-side logout logic if needed
-    console.log('User logged out');
+  getTokenExpirationDate(): Date {
+    const decodedToken = this.decodeToken();
+    if (decodedToken && decodedToken.exp) {
+      const date = new Date();
+      date.setUTCSeconds(decodedToken.exp);
+      return date;
+    } else {
+      return new Date();
+    }
+  }
+
+  isTokenExpired(): boolean {
+    const tokenExpirationDate = this.getTokenExpirationDate();
+    if (tokenExpirationDate) {
+      return !(tokenExpirationDate.valueOf() > new Date().valueOf());
+    } else {
+      return false;
+    }
+  }
+
+  logout() {
+    localStorage.clear();
+    this.route.navigateByUrl('');
   }
 }
+

@@ -2,25 +2,46 @@ import { Component } from '@angular/core';
 import { Login } from '../../Models/login';
 import { AuthService } from '../../Services/auth.service';
 import { ApiService } from '../../Services/api.service';
-import { FormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { JwtPayload } from '../../Services/jwtPayload/jwtpayload.module';
+
+interface CustomJwtPayload extends JwtPayload {
+  role: string;
+}
 
 @Component({
   selector: 'app-login',
-  imports: [FormsModule],
+  imports: [FormsModule,ReactiveFormsModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
 export class LoginComponent {
-  constructor(private authService: AuthService, private ApiCall: ApiService, private router: Router){}
+  loginForm!:FormGroup;
+  constructor(private fb: FormBuilder,private authService: AuthService, private ApiCall: ApiService, private router: Router){
+    this.loginForm=this.fb.group({
+      Username:['',Validators.required],
+      Password:['',Validators.required]
+    });
+  }
 
- loginData : Login = new Login();
+ 
 
   onLogin() {
-
-    this.ApiCall.login(this.loginData).subscribe({
-      next: (response) => {
-        console.log('Login successful', response);
+     
+    this.ApiCall.login(this.loginForm.value).subscribe({
+      next: (res) => {
+        localStorage.setItem('token', res.token);
+          console.log(localStorage);
+          const role = this.authService.decodeToken().Role;
+          console.log(role);
+          if(role=="citizens")
+          {
+            this.router.navigateByUrl("citizen");
+          }
+          else{
+            this.router.navigateByUrl("ward");
+          }
       },
       error: (error) => {
         console.error('Login failed', error);
