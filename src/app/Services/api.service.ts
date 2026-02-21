@@ -33,8 +33,8 @@ export class ApiService {
     return this.http.put('https://localhost:7069/api/service-requests/{id}/review',id);
   }
 
-       getService(id: any): Observable<any> {
-    return this.http.get('https://localhost:7069/api/ServiceRequestQuery/my');
+       getAllService(UserId: any): Observable<any> {
+    return this.http.get('https://localhost:7069/api/ServiceRequest/GetAllServices',{params: { userId: UserId }});
   }
        uploadDocument(document: any): Observable<any> {
     return this.http.post('https://localhost:7069/api/DocumentCommand/upload',document);
