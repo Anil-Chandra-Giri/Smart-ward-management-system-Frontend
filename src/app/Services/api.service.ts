@@ -21,14 +21,22 @@ export class ApiService {
     return this.http.post('https://localhost:7069/api/SignUp/Register',newStaff);
   }
 
-    login(login: any): Observable<any> {
+    login(login: Login): Observable<any> {
     return this.http.post('https://localhost:7069/api/Login', login);
   }
   
-     requestService(request: any): Observable<any> {
-    return this.http.post('https://localhost:7069/api/servicerequest',request);
+     requestService(request: ServiceRequest): Observable<any> {
+    return this.http.post('https://localhost:7069/api/service-requests',request);
   }
   
+ submitComplaint(complaintDetails: string, latitude: number | null, longitude: number | null): Observable<any> {
+  const complaintData = {
+    complaintDetails,
+    latitude,
+    longitude
+  };
+  return this.http.post('https://localhost:7069/api/submit-complaint', complaintData);
+}
        requestReview(id: any): Observable<any> {
     return this.http.put('https://localhost:7069/api/service-requests/{id}/review',id);
   }
