@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ServiceRequest } from '../Models/service-request';
 import { Login } from '../Models/login';
+import { Complaint } from '../Models/complaint';
 
 
 @Injectable({
@@ -29,20 +30,15 @@ export class ApiService {
     return this.http.post('https://localhost:7069/api/service-requests',request);
   }
   
- submitComplaint(complaintDetails: string, latitude: number | null, longitude: number | null): Observable<any> {
-  const complaintData = {
-    complaintDetails,
-    latitude,
-    longitude
-  };
-  return this.http.post('https://localhost:7069/api/submit-complaint', complaintData);
+ submitComplaint(complaintData: Complaint): Observable<any> {
+  return this.http.post('https://localhost:7069/api/Complaint/RegisterComplaint', complaintData);
 }
        requestReview(id: any): Observable<any> {
     return this.http.put('https://localhost:7069/api/service-requests/{id}/review',id);
   }
 
-       getService(id: any): Observable<any> {
-    return this.http.get('https://localhost:7069/api/ServiceRequestQuery/my');
+       getAllService(UserId: any): Observable<any> {
+    return this.http.get('https://localhost:7069/api/ServiceRequest/GetAllServices',{params: { userId: UserId }});
   }
        uploadDocument(document: any): Observable<any> {
     return this.http.post('https://localhost:7069/api/DocumentCommand/upload',document);

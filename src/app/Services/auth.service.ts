@@ -1,6 +1,7 @@
 import {Inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { JwtPayload } from './jwtPayload/jwtpayload.module';
 import { Router } from '@angular/router';
+import { isPlatformBrowser } from '@angular/common';
 
 
 @Injectable({
@@ -8,13 +9,20 @@ import { Router } from '@angular/router';
 })
 export class AuthService {
   jwtPayload: JwtPayload = new JwtPayload();
-  constructor(private route:Router ) {}
+  constructor(private route:Router,@Inject(PLATFORM_ID) private platformId: Object ) {
+    
+  }
 
   decodeToken(): JwtPayload {
-    const token = localStorage.getItem('token');
-    if (token != null) {
-      this.jwtPayload = this.decodeJwt(token);
+    if (isPlatformBrowser(this.platformId)) {
+
+      const token = localStorage.getItem('token');
+
+      if (token) {
+        this.jwtPayload = this.decodeJwt(token);
+      }
     }
+
     return this.jwtPayload;
   }
   decodeJwt(token: string): any {
@@ -44,8 +52,9 @@ export class AuthService {
   }
 
   logout() {
-    localStorage.clear();
+     if (isPlatformBrowser(this.platformId)) {
+      localStorage.clear();
+    }
     this.route.navigateByUrl('');
   }
-}
-
+  }

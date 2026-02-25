@@ -1,69 +1,122 @@
-<!-- <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#complaintModal">
-  Submit Complaint
+<button type="button" class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#complaintModal">
+  <i class="bi bi-plus-circle"></i> Register New Complaint
 </button>
 
-<div class="modal fade" id="complaintModal" tabindex="-1" aria-labelledby="complaintModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header bg-dark text-white">
-        <h5 class="modal-title" id="complaintModalLabel">Submit a Complaint</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+<div class="modal fade" id="complaintModal" #complaintModal tabindex="-1" aria-labelledby="complaintModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content border-0 shadow">
+      
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title"><i class="bi bi-file-earmark-text"></i> Smart Ward - Complaint Registration</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
 
       <form [formGroup]="complaintForm" (ngSubmit)="submitComplaint()">
-        <div class="modal-body">
-          <div class="row g-3 border-bottom pb-4 mb-4">
-            <h6 class="text-primary">Complaint Information</h6>
-            
+        <div class="modal-body p-4">
+          
+          <div class="row g-3 mb-4">
+            <h6 class="text-uppercase text-muted fw-bold small border-bottom pb-2">Citizen Information</h6>
             <div class="col-md-6">
-              <label class="form-label">Complaint Details</label>
-              <textarea class="form-control" formControlName="complaintDetails" rows="4" placeholder="Describe your complaint" required></textarea>
+              <label class="form-label fw-semibold">Citizen Name</label>
+              <input type="text" class="form-control" formControlName="citizenName" placeholder="Full name of complainant">
             </div>
-            
             <div class="col-md-6">
-              <label class="form-label">Priority</label>
-              <select class="form-select" formControlName="priority" required>
-                <option value="Normal">Normal</option>
-                <option value="Urgent">Urgent</option>
+              <label class="form-label fw-semibold">Contact Number</label>
+              <input type="text" class="form-control" formControlName="contactNumber" placeholder="10-digit mobile number">
+            </div>
+          </div>
+
+          <div class="row g-3 mb-4">
+            <h6 class="text-uppercase text-muted fw-bold small border-bottom pb-2">Issue Specification</h6>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Complaint Category</label>
+              <select class="form-select" formControlName="category">
+                <option value="Waste Management">Waste Management</option>
+                <option value="Street Lighting">Street Lighting</option>
+                <option value="Water Supply">Water Supply</option>
+                <option value="Road Maintenance">Road Maintenance</option>
+                <option value="Drainage">Drainage/Sewage</option>
+                <option value="Other">Other</option>
               </select>
             </div>
-          </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Priority Level</label>
+              <select class="form-select" formControlName="priority">
+                <option value="Normal">Normal</option>
+                <option value="Urgent">Urgent (Immediate Action)</option>
+                <option value="Critical">Critical (Emergency)</option>
+              </select>
+            </div>
 
-          <div class="row g-3 border-bottom pb-4 mb-4">
-            <h6 class="text-primary">Location Information</h6>
-            
-            <div class="col-md-6">
-              <label class="form-label">Ward Number</label>
-              <input type="text" class="form-control" formControlName="wardNumber" placeholder="Enter Ward Number" required>
-            </div>
-            
-            <div class="col-md-6">
-              <label class="form-label">Municipality</label>
-              <input type="text" class="form-control" formControlName="municipality" placeholder="Enter Municipality Name" required>
-            </div>
-            
-            <div class="col-md-6">
-              <label class="form-label">Latitude</label>
-              <input type="text" class="form-control" formControlName="latitude" placeholder="Latitude" readonly>
-            </div>
-            
-            <div class="col-md-6">
-              <label class="form-label">Longitude</label>
-              <input type="text" class="form-control" formControlName="longitude" placeholder="Longitude" readonly>
+<div class="upload-container">
+  <label for="complaint-image" class="file-label">Choose an Image</label>
+  <input type="file" id="complaint-image" name="complaint-image" class="file-input" accept="image/*" (change)="onFileSelect($event)">
+</div>
+<div *ngIf="imagePreview" class="image-preview">
+  <img [src]="imagePreview" alt="Selected Image" style="max-width: 200px; margin-top: 10px;">
+</div>
+            <div class="col-12">
+              <label class="form-label fw-semibold">Detailed Description</label>
+              <textarea class="form-control" formControlName="complaintDetails" rows="3" placeholder="Describe the issue in detail..."></textarea>
             </div>
           </div>
 
-          <div class="mt-4">
-            <label class="form-label">Additional Details (Optional)</label>
-            <textarea class="form-control" formControlName="additionalDetails" rows="3" placeholder="Any extra information"></textarea>
+          <div class="row g-3">
+            <h6 class="text-uppercase text-muted fw-bold small border-bottom pb-2">Location Mapping</h6>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Ward Number</label>
+              <input type="number" class="form-control" formControlName="wardNumber" placeholder="e.g. 12">
+            </div>
+            <div class="col-md-8">
+              <label class="form-label fw-semibold">Municipality/Local Body</label>
+              <input type="text" class="form-control" formControlName="municipality" placeholder="Enter municipality name">
+            </div>
+
+            <div class="col-12">
+              <div class="map-wrapper rounded border">
+                <div id="map" style="height: 350px; width: 100%;"></div>
+                <button type="button" (click)="locateUser()" class="btn-locate-map shadow-sm">
+                  📍 Detect My Location
+                </button>
+              </div>
+              <p class="text-muted extra-small mt-1 mt-1">Note: Drag the marker to precisely pin the complaint spot.</p>
+            </div>
+
+            <div class="col-md-6">
+              <div class="input-group input-group-sm">
+                <span class="input-group-text bg-light">Lat</span>
+                <input type="text" class="form-control" formControlName="latitude" readonly>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="input-group input-group-sm">
+                <span class="input-group-text bg-light">Lng</span>
+                <input type="text" class="form-control" formControlName="longitude" readonly>
+              </div>
+            </div>
           </div>
+
         </div>
 
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="submit" class="btn btn-success" [disabled]="complaintForm.invalid">Submit Complaint</button>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary px-4" [disabled]="complaintForm.invalid">
+            Register Complaint
+          </button>
         </div>
       </form>
     </div>
   </div>
-</div> -->
+</div>
+
+<!-- AG GRID -->
+<div *ngIf="isBrowser" class="mt-4">
+  <ag-grid-angular
+    class="ag-theme-alpine"
+    style="width: 100%; height: 500px;"
+    [rowData]="rowData"
+    [columnDefs]="columnDefs"
+    [pagination]="true"
+    [paginationPageSize]="pageSize">
+  </ag-grid-angular>
+</div>
