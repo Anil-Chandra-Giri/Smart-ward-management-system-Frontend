@@ -30,7 +30,7 @@ export class ApiService {
     return this.http.post('https://localhost:7069/api/service-requests',request);
   }
   
- submitComplaint(complaintData: Complaint): Observable<any> {
+submitComplaint(complaintData: FormData): Observable<any> {
   return this.http.post('https://localhost:7069/api/Complaint/RegisterComplaint', complaintData);
 }
        requestReview(id: any): Observable<any> {

@@ -214,33 +214,48 @@ onFileSelect(event: any) {
   }
 
   submitComplaint() {
+  if (this.complaintForm.valid) {
+    const formData = new FormData();
 
-    if (this.complaintForm.valid) {
-      const formData = new FormData();
-      formData.append('citizenName', this.complaintForm.value.citizenName);
-      formData.append('contactNumber', this.complaintForm.value.contactNumber);
-      formData.append('category', this.complaintForm.value.category);
-      formData.append('priority', this.complaintForm.value.priority);
-      formData.append('complaintDetails', this.complaintForm.value.complaintDetails);
-      formData.append('wardNumber', this.complaintForm.value.wardNumber);
-      formData.append('municipality', this.complaintForm.value.municipality);
-      formData.append('latitude', this.complaintForm.value.latitude);
-      formData.append('longitude', this.complaintForm.value.longitude);
+    // Logging form data values for validation
+    console.log('Form Values:', this.complaintForm.value);
 
-      // Append the file (if selected)
-      if (this.selectedImage) {
-        formData.append('complaintImage', this.selectedImage, this.selectedImage.name);
-      }
+    formData.append('citizenName', this.complaintForm.value.citizenName);
+    formData.append('contactNumber', this.complaintForm.value.contactNumber);
+    formData.append('category', this.complaintForm.value.category);
+    formData.append('priority', this.complaintForm.value.priority);
+    formData.append('complaintDetails', this.complaintForm.value.complaintDetails);
+    formData.append('wardNumber', this.complaintForm.value.wardNumber);
+    formData.append('municipality', this.complaintForm.value.municipality);
+    formData.append('latitude', this.complaintForm.value.latitude);
+    formData.append('longitude', this.complaintForm.value.longitude);
 
-       this.apiService.createUser(formData)
+    // Append the file (if selected)
+    if (this.selectedImage) {
+      formData.append('complaintImage', this.selectedImage, this.selectedImage.name);
+      console.log('Image Selected:', this.selectedImage);
+    }
+
+    // Debug the FormData content before submitting
+    for (let pair of formData.entries()) {
+      console.log(pair[0] + ': ' + pair[1]);
+    }
+
+    // Send the form data
+    this.apiService.submitComplaint(formData)
       .subscribe({
         next: (res) => {
           alert('Complaint Submitted');
           this.router.navigateByUrl('login');
-
         },
-        error: (err) => console.error('Submittion Failed', err)
+        error: (err) => {
+          console.error('Submission Failed', err);
+          alert(`Submission failed: ${err.message || 'Unknown error'}`);
+        }
       });
-    }
+  } else {
+    console.error('Form is invalid!');
+    alert('Please fill in all required fields.');
   }
+}
 }
