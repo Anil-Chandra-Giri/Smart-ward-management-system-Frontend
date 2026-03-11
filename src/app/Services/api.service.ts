@@ -26,26 +26,49 @@ export class ApiService {
     return this.http.post('https://localhost:7069/api/Login', login);
   }
   
-     requestService(request: ServiceRequest): Observable<any> {
-    return this.http.post('https://localhost:7069/api/service-requests',request);
+     requestService(request: any): Observable<any> {
+    return this.http.post('https://localhost:7069/api/servicerequest',request);
   }
   
-submitComplaint(complaintData: FormData): Observable<any> {
-  return this.http.post('https://localhost:7069/api/Complaint/RegisterComplaint', complaintData);
-}
+    submitComplaint(complaintData: any): Observable<any> {
+      return this.http.post('https://localhost:7069/api/Complaint/RegisterComplaint', complaintData);
+    }
+
+    getComplaints(UserId:any):Observable<any>{
+      return this.http.get('https://localhost:7069/api/Complaint/Complaints', {params: { userId: UserId }});
+    }
+
+    getAllComplaints():Observable<any>{
+      return this.http.get('https://localhost:7069/api/Complaint/GetAllComplaints');
+    }
+
        requestReview(id: any): Observable<any> {
     return this.http.put('https://localhost:7069/api/service-requests/{id}/review',id);
   }
 
        getAllService(UserId: any): Observable<any> {
-    return this.http.get('https://localhost:7069/api/ServiceRequest/GetAllServices',{params: { userId: UserId }});
+    return this.http.get('https://localhost:7069/api/ServiceRequest/GetAllRequestedServicesOfUser',{params: { userId: UserId }});
   }
+
+  getAllServices(): Observable<any> {
+    return this.http.get('https://localhost:7069/api/ServiceRequest/GetAllRequestedServices');
+  }
+
+  
        uploadDocument(document: any): Observable<any> {
     return this.http.post('https://localhost:7069/api/DocumentCommand/upload',document);
   }
 
        verifyDocument(id: any): Observable<any> {
     return this.http.put('https://localhost:7069/api/DocumentCommand/{id}/verify',id);
+  }
+
+  bookAppointment(appointment:any):Observable<any> {
+    return this.http.post('https://localhost:7069/api/Appointment/book',appointment)
+  }
+
+   getAllAppointments(): Observable<any> {
+    return this.http.get('https://localhost:7069/api/Appointment/GetAllAppointments');
   }
   
 }

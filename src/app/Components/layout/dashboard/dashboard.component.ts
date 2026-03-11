@@ -14,8 +14,12 @@ export class DashboardComponent {
   constructor(private authService: AuthService) {}
 
   ngOnInit(): void {
-    // this.isStaff = this.authService.getUserRole() === 'staff';
-     console.log('isStaff:', this.isStaff)
+    let role = this.authService.decodeToken().Role;
+    console.log(role);
+    if(role=='Staff')
+    {
+      this.isStaff=true
+    }
   }
 
 }

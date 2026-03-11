@@ -3,29 +3,12 @@
     <h2 class="title">Smart Ward Management System</h2>
     <p class="subtitle">Digital Governance for Local Bodies</p>
 
-    <!-- RADIO BUTTONS -->
-    <input type="radio" name="role" id="citizen" checked />
-    <input type="radio" name="role" id="admin" />
-
-    <!-- TOGGLE BUTTONS -->
-    <div class="role-toggle">
-      <label for="citizen">Citizen Login</label>
-      <label for="admin">Staff Login</label>
-    </div>
-
     <!-- CITIZEN FORM -->
-    <form class="form citizen-form" [formGroup]="loginForm"  (ngSubmit)="onLogin()">
-      <input type="text" formControlName="Username" placeholder="Citizenship No / Email" />
+    <form class="form" [formGroup]="loginForm"  (ngSubmit)="onLogin()">
+      <input type="text" formControlName="Username" placeholder="Enter Username" />
       <input type="password" formControlName="Password" placeholder="Password" />
-      <button class="btn">Login as Citizen</button>
+      <button class="btn">Login</button>
       <p>Don't have an account? <a href="/registerUser">Sign Up</a></p>
-    </form>
-
-    <!-- ADMIN FORM -->
-    <form class="form admin-form">
-      <input type="text" placeholder="Ward ID / Username" />
-      <input type="password" placeholder="Password" />
-      <button class="btn admin-btn">Login as Staff</button>
     </form>
   </div>
 </div>

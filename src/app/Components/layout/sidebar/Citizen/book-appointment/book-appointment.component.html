@@ -1,1 +1,66 @@
-<p>book-appointment works!</p>
+<div class="page-container">
+<div class="top-bar">
+  <button class="book-btn" (click)="openModal()">
+    📅 Book Appointment
+  </button>
+  </div>
+
+  <!-- Modal Overlay -->
+  <div class="modal-overlay" *ngIf="showModal">
+    <div class="modal-box">
+
+      <div class="modal-header">
+        <h2>Book Appointment</h2>
+        <span class="close-btn" (click)="closeModal()">×</span>
+      </div>
+
+      <form [formGroup]="appointmentForm" (ngSubmit)="submitForm()">
+
+        <div class="form-group">
+          <label>Citizen Name</label>
+          <input type="text" formControlName="citizenName" />
+          <small *ngIf="appointmentForm.get('citizenName')?.touched && appointmentForm.get('citizenName')?.invalid">
+            Name is required
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label>Contact Number</label>
+          <input type="text" formControlName="contactNumber" />
+          <small *ngIf="appointmentForm.get('contactNumber')?.touched && appointmentForm.get('contactNumber')?.invalid">
+            Enter valid 10-digit number
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label>Service Type</label>
+          <select formControlName="serviceType">
+            <option value="">Select Service</option>
+            <option value="Citizenship">Citizenship</option>
+            <option value="Recommendation">Recommendation</option>
+            <option value="Certificate">Certificate</option>
+          </select>
+          <small *ngIf="appointmentForm.get('serviceType')?.touched && appointmentForm.get('serviceType')?.invalid">
+            Select a service
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label>Ward Number</label>
+          <input type="number" formControlName="wardNumber" />
+        </div>
+
+        <div class="form-group">
+          <label>Appointment Time</label>
+          <input type="datetime-local" formControlName="appointmentTime" />
+        </div>
+
+        <button class="submit-btn" type="submit">
+          Confirm Booking
+        </button>
+
+      </form>
+    </div>
+  </div>
+
+</div>

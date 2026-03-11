@@ -32,37 +32,10 @@ input[type="radio"] {
   display: none;
 }
 
-/* Toggle buttons */
-.role-toggle {
-  display: flex;
-  margin-bottom: 20px;
-}
 
-.role-toggle label {
-  flex: 1;
-  padding: 10px;
-  text-align: center;
-  cursor: pointer;
-  background: rgba(255, 255, 255, 0.2);
-}
 
-#citizen:checked ~ .role-toggle label[for="citizen"],
-#admin:checked ~ .role-toggle label[for="admin"] {
-  background: #00b4d8;
-}
 
-/* Forms */
-.form {
-  display: none;
-}
 
-#citizen:checked ~ .citizen-form {
-  display: block;
-}
-
-#admin:checked ~ .admin-form {
-  display: block;
-}
 
 .form input {
   width: 93%;

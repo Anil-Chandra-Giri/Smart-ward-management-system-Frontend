@@ -1,0 +1,270 @@
+/* Container */
+.ward-home-container {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f5f5f5;
+  min-height: 100vh;
+}
+
+/* Navigation Bar */
+.navbar {
+  background: linear-gradient(135deg, #1e3c72 0%, #0f4c75 100%);
+  color: white;
+  padding: 15px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.nav-brand h2 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.nav-links {
+  display: flex;
+  gap: 20px;
+}
+
+.nav-links a {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+  transition: opacity 0.3s;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
+.nav-auth {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.auth-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-login, .btn-register {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn-login {
+  background: white;
+  color: #1e3c72;
+}
+
+.btn-register {
+  background: #28a745;
+  color: white;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-logout {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+/* Hero Section */
+.hero-section {
+  background: linear-gradient(135deg, #1e3c72 0%, #0f4c75 100%);
+  color: white;
+  padding: 80px 30px;
+  text-align: center;
+}
+
+.hero-content h1 {
+  font-size: 2.5rem;
+  margin-bottom: 15px;
+}
+
+.hero-content p {
+  font-size: 1.2rem;
+  margin-bottom: 30px;
+  opacity: 0.9;
+}
+
+.hero-actions {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.btn-primary, .btn-secondary {
+  padding: 12px 30px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: transform 0.2s;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn-primary {
+  background: #28a745;
+  color: white;
+}
+
+.btn-secondary {
+  background: white;
+  color: #1e3c72;
+}
+
+.btn-primary:hover, .btn-secondary:hover {
+  transform: translateY(-2px);
+}
+
+/* Stats Section */
+.stats-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 20px;
+  padding: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.stat-card {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.stat-card h3 {
+  color: #1e3c72;
+  font-size: 2rem;
+  margin: 0;
+}
+
+.stat-card p {
+  color: #666;
+  margin: 0;
+}
+
+/* Notices Section */
+.notices-section {
+  padding: 40px 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.section-header h2 {
+  color: #333;
+  margin: 0;
+}
+
+.btn-view-all {
+  background: #1e3c72;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.notices-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.notice-card {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 15px;
+  transition: box-shadow 0.2s;
+}
+
+.notice-card:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.notice-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.notice-header h4 {
+  margin: 0;
+  color: #2c3e50;
+}
+
+.date-badge {
+  font-size: 0.85em;
+  color: #666;
+  background: #eee;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.notice-body {
+  color: #555;
+  line-height: 1.5;
+  margin: 0 0 10px 0;
+}
+
+.notice-footer {
+  border-top: 1px solid #eee;
+  padding-top: 10px;
+  font-size: 0.8em;
+  color: #888;
+}
+
+/* Services Section */
+.services-section {
+  padding: 40px 30px;
+  background: white;
+}
+
+.services-section .section-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.services-section .section-header h2 {
+  color: #333;
+  margin: 0;
+}
+
+.services-section .section-header p {
+  color: #666;
+}

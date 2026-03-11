@@ -14,8 +14,12 @@ export class SidebarComponent {
 
   constructor(private authService: AuthService, private router: Router) {}
     ngOnInit(): void {
-    // this.isStaff = this.authService.getUserRole() === 'staff';
-     console.log('isStaff:', this.isStaff)
+    let role = this.authService.decodeToken().Role;
+    console.log(role);
+    if(role=='Staff')
+    {
+      this.isStaff=true
+    }
   }
 
   logout(): void {

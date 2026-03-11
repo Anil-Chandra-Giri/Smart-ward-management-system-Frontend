@@ -14,6 +14,7 @@ import { ColDef } from 'ag-grid-community';
 import { AuthService } from '../../../../../Services/auth.service';
 import { Router } from '@angular/router';
 import { ApiService } from '../../../../../Services/api.service';
+import { ImageCellRendererComponent } from '../../../../shared/image-cell/image-cell.component';
 
 @Component({
   selector: 'app-submit-complaint',
@@ -43,7 +44,7 @@ import { ApiService } from '../../../../../Services/api.service';
 export class SubmitComplaintComponent implements OnInit, AfterViewInit {
 
   @ViewChild('complaintModal') modalElement!: ElementRef;
-
+  UserId:any;
   complaintForm!: FormGroup;
   pageSize = 7;
   rowData: any[] = [];
@@ -84,10 +85,16 @@ export class SubmitComplaintComponent implements OnInit, AfterViewInit {
       'text-success': "x === 'Resolved'"
     }
   },
+  {
+    headerName:'Image',
+    field:'imageUrl',
+    cellRenderer: ImageCellRendererComponent,
+    width: 130
+  },
 
   { field: 'priority', headerName: 'Priority', width: 110 },
   { 
-    field: 'submissionDate', 
+    field: 'createdAt', 
     headerName: 'Submitted On', 
     flex: 1,
     valueFormatter: (params) => new Date(params.value).toLocaleDateString() 
@@ -108,12 +115,11 @@ export class SubmitComplaintComponent implements OnInit, AfterViewInit {
   ) {}
 
 ngOnInit(): void {
-
+  this.getComplaints();
+  this.UserId = this.authService.decodeToken().UserId;
   this.isBrowser = isPlatformBrowser(this.platformId);
 
   this.complaintForm = this.fb.group({
-    citizenName: ['', Validators.required],
-    contactNumber: ['', [Validators.required, Validators.pattern('^[0-9]{10,15}$')]],
     category: ['Waste Management', Validators.required],
     complaintDetails: ['', [Validators.required, Validators.minLength(10)]],
     priority: ['Normal', Validators.required],
@@ -121,7 +127,7 @@ ngOnInit(): void {
     municipality: ['', Validators.required],
     latitude: ['', Validators.required],
     longitude: ['', Validators.required],
-    complaintImage: [null] 
+    complaintImage: [null],
   });
 }
 
@@ -215,38 +221,28 @@ onFileSelect(event: any) {
 
   submitComplaint() {
   if (this.complaintForm.valid) {
+    if (!this.selectedImage) {
+      alert("Please select an image");
+      return; 
+    }
     const formData = new FormData();
+    const formValues = this.complaintForm.value;
+    Object.keys(formValues).forEach(key => {
+      const value = formValues[key] === '' ? null : formValues[key];
+      if (value !== null) {
+        formData.append(key, value);
+      }
+    });
 
-    // Logging form data values for validation
-    console.log('Form Values:', this.complaintForm.value);
+    formData.append('complaintImage', this.selectedImage, this.selectedImage.name);
+    formData.append('UserId', this.UserId);
 
-    formData.append('citizenName', this.complaintForm.value.citizenName);
-    formData.append('contactNumber', this.complaintForm.value.contactNumber);
-    formData.append('category', this.complaintForm.value.category);
-    formData.append('priority', this.complaintForm.value.priority);
-    formData.append('complaintDetails', this.complaintForm.value.complaintDetails);
-    formData.append('wardNumber', this.complaintForm.value.wardNumber);
-    formData.append('municipality', this.complaintForm.value.municipality);
-    formData.append('latitude', this.complaintForm.value.latitude);
-    formData.append('longitude', this.complaintForm.value.longitude);
-
-    // Append the file (if selected)
-    if (this.selectedImage) {
-      formData.append('complaintImage', this.selectedImage, this.selectedImage.name);
-      console.log('Image Selected:', this.selectedImage);
-    }
-
-    // Debug the FormData content before submitting
-    for (let pair of formData.entries()) {
-      console.log(pair[0] + ': ' + pair[1]);
-    }
-
-    // Send the form data
     this.apiService.submitComplaint(formData)
       .subscribe({
         next: (res) => {
+          this.getComplaints();
+          this.complaintForm.reset();
           alert('Complaint Submitted');
-          this.router.navigateByUrl('login');
         },
         error: (err) => {
           console.error('Submission Failed', err);
@@ -254,8 +250,38 @@ onFileSelect(event: any) {
         }
       });
   } else {
-    console.error('Form is invalid!');
     alert('Please fill in all required fields.');
   }
 }
+
+  getComplaints(){
+    this.apiService.getComplaints(this.UserId).subscribe(res=>{
+      this.rowData=res;
+      console.log(res);
+    })
+  }
+
+  imageRenderer(params: any) {
+  if (!params.value) return '';
+
+  const imageUrl = `https://localhost:7069${params.value}`;
+
+  return `
+    <img 
+      src="${imageUrl}" 
+      style="
+        width:200px;
+        height:200px;
+        object-fit:cover;
+        border-radius:8px;
+        cursor:pointer;
+      "
+    />
+  `;
+}
+
+frameworkComponents = {
+  imageCell: ImageCellRendererComponent
+};
+
 }

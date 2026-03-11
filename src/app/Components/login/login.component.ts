@@ -32,10 +32,8 @@ export class LoginComponent {
     this.ApiCall.login(this.loginForm.value).subscribe({
       next: (res) => {
         localStorage.setItem('token', res.token);
-          console.log(localStorage);
           const role = this.authService.decodeToken().Role;
-          console.log(role);
-          if(role=="citizens")
+          if(role=="citizen")
           {
             this.router.navigateByUrl("citizen");
           }

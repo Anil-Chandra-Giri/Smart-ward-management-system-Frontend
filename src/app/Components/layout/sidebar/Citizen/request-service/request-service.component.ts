@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { ApiService } from '../../../../../Services/api.service';
 import { ColDef, ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
 import { AgGridAngular } from 'ag-grid-angular';
+import NepaliDate from 'nepali-date-converter';
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 const StatusLabels: Record<number, string> = {
@@ -22,9 +23,9 @@ const ServiceType:any={
   6: 'Migration Certificate',
   7: 'Address Verification'
 }
-const priorityLevel:any={
-  1: 'Normal',
-  2:'Urgent'
+const PriorityLevels:any={
+  0: 'Normal',
+  1:'Urgent'
 }
 @Component({
   selector: 'app-request-service',
@@ -37,6 +38,7 @@ export class RequestServiceComponent implements OnInit {
   pageSize=7;
   public rowData: any[] = [];
   isBrowser = false;
+  isModalOpen:boolean = false ;
 
 
 columnDefs:ColDef[]=[
@@ -62,11 +64,30 @@ cellRenderer: (params:any) => {
   }
     },
     {field:'priorityLevel', headerName:'Priority Level', flex:1, filter:true,
-      valueFormatter: (params) => {
-    return priorityLevel[params.value] ?? 'Unknown';
+      cellRenderer:(params:any)=>{
+        const text = PriorityLevels[params.value]??'Unknown'
+        let color = '#666';
+        if (params.value === 0) color = 'Green';
+        if (params.value === 1) color = 'Red';
+        return `<span style="color: ${color}; font-weight: bold;">${text}</span>`;
+      }
+  },
+    {field:'createdAt', headerName:'Submitted On', flex:1, filter:true,
+        valueFormatter: (params) => {
+    if (!params.value) return '';
+    
+    try {
+      const adDate = new Date(params.value);
+      const bsDate = new NepaliDate(adDate);
+      
+      // Returns format: 2082/11/20 (Year/Month/Day)
+      return bsDate.format('YYYY/MM/DD'); 
+    } catch (e) {
+      return params.value; // Fallback to original if conversion fails
+    }
   }
+
     },
-    {field:'createdAt', headerName:'Created At', flex:1, filter:true},
     {
       headerName: 'Actions',
       cellRenderer: (params: any) =>
@@ -166,7 +187,9 @@ serviceOptions = [
     return Number(this.requestForm.get('ServiceType')?.value);
   }
 
-  
+  toggleModal(show:boolean){
+    this.isModalOpen=show;
+  }
 
   onSubmit() {
     if (this.requestForm.valid) {
@@ -194,8 +217,10 @@ serviceOptions = [
       this.apiService.requestService(payload).subscribe({
         next: (res) => {
           console.log("Success:", res);
-          alert("Service Request Submitted Successfully! Ref: " + res.reference);
+          this.listRequestedServices();
+          this.isModalOpen = false
           this.resetFormToDefaults();
+          alert("Service Request Submitted Successfully! Ref: " + res.reference);
         },
         error: (err) => {
           console.error("Submission Error:", err);

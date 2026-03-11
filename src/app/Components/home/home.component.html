@@ -1,1 +1,152 @@
-<p>home works!</p>
+<div class="ward-home-container">
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+
+    <div class="nav-brand">
+      <h2>🏛️ Ward Office Portal</h2>
+    </div>
+
+    <div class="nav-links">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">
+        Home
+      </a>
+
+      <a routerLink="/services" routerLinkActive="active">
+        Services
+      </a>
+
+      <a routerLink="/notices" routerLinkActive="active">
+        Notices
+      </a>
+
+      <a routerLink="/contact" routerLinkActive="active">
+        Contact
+      </a>
+    </div>
+
+    <div class="nav-auth">
+
+      <!-- NOT LOGGED IN -->
+      <div *ngIf="!isLoggedIn" class="auth-buttons">
+
+        <button class="btn-login" routerLink="/login">
+          Login
+        </button>
+
+        <button class="btn-register" routerLink="/registerUser">
+          Register
+        </button>
+
+      </div>
+
+      <!-- LOGGED IN -->
+      <div *ngIf="isLoggedIn" class="user-info">
+        👤 Welcome, {{ currentUser }}
+
+        <button class="btn-logout" (click)="logout()">
+          Logout
+        </button>
+      </div>
+
+    </div>
+
+  </nav>
+
+
+  <!-- HERO -->
+  <section class="hero-section">
+
+    <div class="hero-content">
+
+      <h1>Welcome to Ward Office Portal</h1>
+
+      <p>
+        Your gateway to government services and information
+      </p>
+
+      <div class="hero-actions">
+
+        <button class="btn-primary" routerLink="/login">
+          Get Started
+        </button>
+
+        <button class="btn-secondary" routerLink="/services">
+          View Services
+        </button>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- STATS -->
+  <section class="stats-section">
+
+    <div class="stat-card">
+      <h3>{{ notices.length }}</h3>
+      <p>Active Notices</p>
+    </div>
+
+    <div class="stat-card">
+      <h3>{{ services.length }}</h3>
+      <p>Available Services</p>
+    </div>
+
+    <div class="stat-card">
+      <h3>24/7</h3>
+      <p>Support Available</p>
+    </div>
+
+    <div class="stat-card">
+      <h3>100%</h3>
+      <p>Online Services</p>
+    </div>
+
+  </section>
+
+
+  <!-- NOTICES -->
+  <section class="notices-section">
+
+    <div class="section-header">
+
+      <h2>📢 Published Notices</h2>
+
+      <button class="btn-view-all" routerLink="/notices">
+        View All Notices
+      </button>
+
+    </div>
+
+    <div class="notices-grid">
+
+      <div class="notice-card" *ngFor="let notice of notices">
+
+        <div class="notice-header">
+
+          <h4>{{ notice.title }}</h4>
+
+          <span class="date-badge">
+            {{ notice.publishedDate | date:'mediumDate' }}
+          </span>
+
+        </div>
+
+        <p class="notice-body">
+          {{ notice.content }}
+        </p>
+
+        <div class="notice-footer">
+          <small>By: {{ notice.author }}</small>
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+</div>

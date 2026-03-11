@@ -13,18 +13,6 @@
 
       <form [formGroup]="complaintForm" (ngSubmit)="submitComplaint()">
         <div class="modal-body p-4">
-          
-          <div class="row g-3 mb-4">
-            <h6 class="text-uppercase text-muted fw-bold small border-bottom pb-2">Citizen Information</h6>
-            <div class="col-md-6">
-              <label class="form-label fw-semibold">Citizen Name</label>
-              <input type="text" class="form-control" formControlName="citizenName" placeholder="Full name of complainant">
-            </div>
-            <div class="col-md-6">
-              <label class="form-label fw-semibold">Contact Number</label>
-              <input type="text" class="form-control" formControlName="contactNumber" placeholder="10-digit mobile number">
-            </div>
-          </div>
 
           <div class="row g-3 mb-4">
             <h6 class="text-uppercase text-muted fw-bold small border-bottom pb-2">Issue Specification</h6>
@@ -117,6 +105,7 @@
     [rowData]="rowData"
     [columnDefs]="columnDefs"
     [pagination]="true"
+    [rowHeight]="110"
     [paginationPageSize]="pageSize">
   </ag-grid-angular>
 </div>

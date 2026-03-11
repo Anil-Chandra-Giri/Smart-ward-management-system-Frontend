@@ -1,13 +1,14 @@
-<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#serviceRequestModal">
+<button type="button" class="btn btn-primary" (click)="toggleModal(true)">
   Request Service
 </button>
 
-<div class="modal fade" id="serviceRequestModal" tabindex="-1">
+<div class="modal fade" id="serviceRequestModal" [ngClass]="{'show': isModalOpen}" 
+     [style.display]="isModalOpen ? 'block' : 'none'" tabindex="-1">
   <div class="modal-dialog modal-xl">
     <div class="modal-content">
       <div class="modal-header bg-dark text-white">
         <h5 class="modal-title">Smart Ward Service Portal</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        <button type="button" class="btn-close btn-close-white" (click)="toggleModal(false)" data-bs-dismiss="modal"></button>
       </div>
 
       <form [formGroup]="requestForm" (ngSubmit)="onSubmit()">
@@ -110,7 +111,7 @@
         </div>
 
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-secondary" (click)="toggleModal(false)" data-bs-dismiss="modal">Close</button>
           <button type="submit" class="btn btn-success" [disabled]="requestForm.invalid">Submit Application</button>
         </div>
       </form>
