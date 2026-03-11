@@ -16,6 +16,7 @@ import { StaffSettingsComponent } from './Components/layout/sidebar/Staff/staff-
 import { StaffNoticesComponent } from './Components/layout/sidebar/Staff/staff-notices/staff-notices.component';
 import { RequestServiceComponent } from './Components/layout/sidebar/Citizen/request-service/request-service.component';
 import { HomeComponent } from './Components/home/home.component';
+import { CreatePollComponent } from './Components/layout/sidebar/Staff/create-poll/create-poll.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -30,6 +31,7 @@ export const routes: Routes = [
       { path: 'applications', component: ApplicationsComponent },
       { path: 'complaints', component: ComplaintsComponent },
       { path: 'notices', component: StaffNoticesComponent},
+      {path:'createPoll',component:CreatePollComponent},
       { path: 'appointments', component: AppointmentsComponent },
       { path: 'settings', component: StaffSettingsComponent },
     ],
