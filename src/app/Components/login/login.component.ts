@@ -36,6 +36,7 @@ export class LoginComponent {
           if(role=="citizen")
           {
             this.router.navigateByUrl("citizen");
+            
           }
           else{
             this.router.navigateByUrl("ward");
