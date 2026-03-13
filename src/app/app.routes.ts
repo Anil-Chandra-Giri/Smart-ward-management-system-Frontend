@@ -17,6 +17,9 @@ import { StaffNoticesComponent } from './Components/layout/sidebar/Staff/staff-n
 import { RequestServiceComponent } from './Components/layout/sidebar/Citizen/request-service/request-service.component';
 import { HomeComponent } from './Components/home/home.component';
 import { CreatePollComponent } from './Components/layout/sidebar/Staff/create-poll/create-poll.component';
+import { VotePollComponent } from './Components/layout/sidebar/Citizen/vote-poll/vote-poll.component';
+import { PollResultsComponent } from './Components/layout/sidebar/Citizen/poll-results/poll-results.component';
+import { PollListComponent } from './Components/layout/sidebar/Citizen/poll-list/poll-list.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -34,6 +37,8 @@ export const routes: Routes = [
       {path:'createPoll',component:CreatePollComponent},
       { path: 'appointments', component: AppointmentsComponent },
       { path: 'settings', component: StaffSettingsComponent },
+      {path:'polls',component:PollListComponent},
+
     ],
   },
     {
@@ -48,6 +53,9 @@ export const routes: Routes = [
       { path: 'notices', component:CitizenNoticesComponent },
       { path: 'book-appointment', component: BookAppointmentComponent },
       { path: 'settings', component: CitizenSettingsComponent },
+      {path:'polls',component:PollListComponent},
+      {path:'vote/:id',component:VotePollComponent},
+      {path:'polls/results/:id',component:PollResultsComponent}
     ],
   },
   { path: 'registerUser', component: UserRegisterComponent, pathMatch: 'full' },

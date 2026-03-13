@@ -89,7 +89,7 @@ export class ApiService {
     return this.http.post(`https://localhost:7069/api/Poll/vote`,vote)
   }
 
-  getResults(pollId:number){
+  getResults(pollId:string){
     return this.http.get(`https://localhost:7069/api/Poll/${pollId}/results`)
   }
   

@@ -1,0 +1,62 @@
+<div class="poll-container">
+    
+    <div class="poll-card" *ngFor="let poll of polls">
+      <p>Start Date: {{poll.startDate | date:'YY-MM-dd'}}</p>
+      <p>End Date: {{poll.endDate}}</p>
+
+    <h3>{{poll.title}}</h3>
+    <p>{{poll.description}}</p>
+
+    <button class="vote-btn" (click)="openVoteModal(poll)">
+      Vote
+    </button>
+
+    <button [routerLink]="['results',poll.id]" class="vote-btn">
+      View Poll Result
+    </button>
+
+
+  </div>
+
+</div>
+
+<!-- Voting Modal -->
+<div class="modal-backdrop" *ngIf="showModal">
+
+  <div class="vote-modal">
+
+    <h2>{{selectedPoll?.title}}</h2>
+
+    <p>{{selectedPoll?.description}}</p>
+
+    <div class="option" *ngFor="let option of selectedPoll?.options">
+
+      <label>
+
+        <input
+          type="radio"
+          name="vote"
+          [value]="option.id"
+          [(ngModel)]="selectedOption">
+
+        {{option.optionText}}
+
+      </label>
+
+    </div>
+
+    <div class="modal-buttons">
+
+      <button class="submit-btn" (click)="submitVote()">
+        Submit Vote
+      </button>
+
+      <button class="cancel-btn" (click)="closeModal()">
+        Cancel
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
