@@ -4,6 +4,11 @@ import { Observable } from 'rxjs';
 import { ServiceRequest } from '../Models/service-request';
 import { Login } from '../Models/login';
 import { Complaint } from '../Models/complaint';
+import { Vote } from '../Models/vote.model';
+import { Poll } from '../Models/Poll.Model';
+import { PollCategory } from '../Models/poll-category';
+import { NoticeCategory } from '../Models/Category';
+import { Notice } from '../Models/Notice';
 
 
 @Injectable({
@@ -70,5 +75,50 @@ export class ApiService {
    getAllAppointments(): Observable<any> {
     return this.http.get('https://localhost:7069/api/Appointment/GetAllAppointments');
   }
+
+   getNotices():Observable<Notice[]>{
+    return this.http.get<Notice[]>('https://localhost:7069/api/Notice/');
+  }
+
+  createNotice(data:FormData){
+    return this.http.post('https://localhost:7069/api/Notice/',data);
+  }
+
+  deleteNotice(id:number){
+    return this.http.delete(`https://localhost:7069/api/Notice/${id}`);
+  }
+
+  getCategories():Observable<NoticeCategory[]>{
+    return this.http.get<NoticeCategory[]>('https://localhost:7069/api/NoticeCategory/')
+  }
+
+  addCategory(category:any){
+    return this.http.post('https://localhost:7069/api/NoticeCategory/',category)
+  }
+
+   getPollCategories():Observable<PollCategory[]>{
+    return this.http.get<PollCategory[]>(`https://localhost:7069/api/Poll/categories`)
+  }
+
+  createPollCategory(name:string){
+    return this.http.post('https://localhost:7069/api/Poll/categories',{name})
+  }
+
+  getActivePolls():Observable<Poll[]>{
+    return this.http.get<Poll[]>(`https://localhost:7069/api/Poll/active`)
+  }
+
+  createPoll(data:any){
+    return this.http.post(`https://localhost:7069/api/Poll/create`,data)
+  }
+
+  vote(vote:Vote){
+    return this.http.post(`https://localhost:7069/api/Poll/vote`,vote)
+  }
+
+  getResults(pollId:number){
+    return this.http.get(`https://localhost:7069/api/Poll/${pollId}/results`)
+  }
+
   
 }
