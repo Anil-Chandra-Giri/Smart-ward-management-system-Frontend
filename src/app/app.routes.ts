@@ -15,6 +15,10 @@ import { StaffSettingsComponent } from './Components/layout/sidebar/Staff/staff-
 import { StaffNoticesComponent } from './Components/layout/sidebar/Staff/staff-notices/staff-notices.component';
 import { RequestServiceComponent } from './Components/layout/sidebar/Citizen/request-service/request-service.component';
 import { HomeComponent } from './Components/home/home.component';
+import { CreatePollComponent } from './Components/layout/sidebar/Staff/create-poll/create-poll.component';
+import { VotePollComponent } from './Components/layout/sidebar/Citizen/vote-poll/vote-poll.component';
+import { PollResultsComponent } from './Components/layout/sidebar/Citizen/poll-results/poll-results.component';
+import { PollListComponent } from './Components/layout/sidebar/Citizen/poll-list/poll-list.component';
 import { AuthGuardService } from './Services/auth-guard.service';
 import { StaffDetailsComponent } from './Components/layout/sidebar/Staff/staff-details/staff-details.component';
 
@@ -27,6 +31,16 @@ export const routes: Routes = [
     canActivate: [AuthGuardService],
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: 'dashboard', component: DashboardComponent },
+      { path: 'service-request', component: ServiceRequestComponent },
+      { path: 'applications', component: ApplicationsComponent },
+      { path: 'complaints', component: ComplaintsComponent },
+      { path: 'notices', component: StaffNoticesComponent},
+      {path:'createPoll',component:CreatePollComponent},
+      { path: 'appointments', component: AppointmentsComponent },
+      { path: 'settings', component: StaffSettingsComponent },
+      {path:'polls',component:PollListComponent},
+
       { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuardService] },
       { path: 'service-request', component: ServiceRequestComponent, canActivate: [AuthGuardService] },
       { path: 'complaints', component: ComplaintsComponent, canActivate: [AuthGuardService] },
@@ -41,6 +55,16 @@ export const routes: Routes = [
     component: LayoutComponent,
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: 'dashboard', component: DashboardComponent },
+      { path: 'request-service', component: RequestServiceComponent },
+      { path: 'my-details', component: MyDetailsComponent },
+      { path: 'submit-complaint', component: SubmitComplaintComponent },
+      { path: 'notices', component:CitizenNoticesComponent },
+      { path: 'book-appointment', component: BookAppointmentComponent },
+      { path: 'settings', component: CitizenSettingsComponent },
+      {path:'polls',component:PollListComponent},
+      {path:'vote/:id',component:VotePollComponent},
+      {path:'polls/results/:id',component:PollResultsComponent}
       { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuardService] },
       { path: 'request-service', component: RequestServiceComponent, canActivate: [AuthGuardService] },
       { path: 'my-details', component: MyDetailsComponent, canActivate: [AuthGuardService] },

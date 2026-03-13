@@ -1,0 +1,26 @@
+<div class="vote-container" *ngIf="poll">
+
+<h2>{{poll.title}}</h2>
+
+<p>{{poll.description}}</p>
+
+<div *ngFor="let option of options">
+
+<label>
+
+<input type="radio"
+name="poll"
+[value]="option.id"
+[(ngModel)]="selectedOption">
+
+{{option.optionText}}
+
+</label>
+
+</div>
+
+<button (click)="vote()" class="vote-btn">
+Submit Vote
+</button>
+
+</div>

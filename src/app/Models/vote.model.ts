@@ -1,5 +1,5 @@
 export interface Vote{
-  pollId:number
-  optionId:number
+  pollId:string
+  optionId:string
   citizenId:string
 }
