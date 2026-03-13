@@ -33,7 +33,6 @@ export const routes: Routes = [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: DashboardComponent },
       { path: 'service-request', component: ServiceRequestComponent },
-      { path: 'applications', component: ApplicationsComponent },
       { path: 'complaints', component: ComplaintsComponent },
       { path: 'notices', component: StaffNoticesComponent},
       {path:'createPoll',component:CreatePollComponent},
@@ -64,7 +63,7 @@ export const routes: Routes = [
       { path: 'settings', component: CitizenSettingsComponent },
       {path:'polls',component:PollListComponent},
       {path:'vote/:id',component:VotePollComponent},
-      {path:'polls/results/:id',component:PollResultsComponent}
+      {path:'polls/results/:id',component:PollResultsComponent},
       { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuardService] },
       { path: 'request-service', component: RequestServiceComponent, canActivate: [AuthGuardService] },
       { path: 'my-details', component: MyDetailsComponent, canActivate: [AuthGuardService] },
