@@ -1,0 +1,197 @@
+<!-- src/app/components/resource-form/resource-form.component.html -->
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header">
+          <h3>{{ isEditMode ? 'Edit Resource' : 'Add New Resource' }}</h3>
+        </div>
+        <div class="card-body">
+          <div *ngIf="loading" class="text-center py-4">
+            <div class="spinner-border" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </div>
+
+          <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+          <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
+
+          <form *ngIf="!loading" [formGroup]="resourceForm" (ngSubmit)="onSubmit()">
+            <!-- Basic Information -->
+            <h5 class="mb-3">Basic Information</h5>
+            <div class="mb-3">
+              <label for="name" class="form-label">Resource Name *</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                id="name" 
+                formControlName="name"
+                [class.is-invalid]="hasError('name', 'required') || hasError('name', 'minlength')">
+              <div class="invalid-feedback" *ngIf="hasError('name', 'required')">
+                Resource name is required
+              </div>
+              <div class="invalid-feedback" *ngIf="hasError('name', 'minlength')">
+                Resource name must be at least 3 characters
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="type" class="form-label">Resource Type *</label>
+                <select 
+                  class="form-select" 
+                  id="type" 
+                  formControlName="type"
+                  [class.is-invalid]="hasError('type', 'required')">
+                  <option value="">Select Type</option>
+                  <option *ngFor="let type of resourceTypes" [value]="type">{{ type }}</option>
+                </select>
+                <div class="invalid-feedback" *ngIf="hasError('type', 'required')">
+                  Resource type is required
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label for="category" class="form-label">Category</label>
+                <select 
+                  class="form-select" 
+                  id="category" 
+                  formControlName="category">
+                  <option value="">Select Category</option>
+                  <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="description" class="form-label">Description</label>
+              <textarea 
+                class="form-control" 
+                id="description" 
+                rows="3"
+                formControlName="description"
+                [class.is-invalid]="hasError('description', 'maxlength')"></textarea>
+              <div class="invalid-feedback" *ngIf="hasError('description', 'maxlength')">
+                Description cannot exceed 500 characters
+              </div>
+            </div>
+
+            <!-- Quantity and Threshold -->
+            <h5 class="mb-3 mt-4">Quantity Management</h5>
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <label for="quantity" class="form-label">Quantity *</label>
+                <input 
+                  type="number" 
+                  class="form-control" 
+                  id="quantity" 
+                  formControlName="quantity"
+                  min="0"
+                  [class.is-invalid]="hasError('quantity', 'required') || hasError('quantity', 'min')">
+                <div class="invalid-feedback" *ngIf="hasError('quantity', 'required')">
+                  Quantity is required
+                </div>
+                <div class="invalid-feedback" *ngIf="hasError('quantity', 'min')">
+                  Quantity cannot be negative
+                </div>
+              </div>
+              <div class="col-md-4">
+                <label for="minimumThreshold" class="form-label">Minimum Threshold *</label>
+                <input 
+                  type="number" 
+                  class="form-control" 
+                  id="minimumThreshold" 
+                  formControlName="minimumThreshold"
+                  min="0"
+                  [class.is-invalid]="hasError('minimumThreshold', 'required') || hasError('minimumThreshold', 'min')">
+                <div class="invalid-feedback" *ngIf="hasError('minimumThreshold', 'required')">
+                  Minimum threshold is required
+                </div>
+                <div class="invalid-feedback" *ngIf="hasError('minimumThreshold', 'min')">
+                  Threshold cannot be negative
+                </div>
+              </div>
+              <div class="col-md-4">
+                <label for="unit" class="form-label">Unit *</label>
+                <select 
+                  class="form-select" 
+                  id="unit" 
+                  formControlName="unit"
+                  [class.is-invalid]="hasError('unit', 'required')">
+                  <option value="">Select Unit</option>
+                  <option *ngFor="let unit of units" [value]="unit">{{ unit }}</option>
+                </select>
+                <div class="invalid-feedback" *ngIf="hasError('unit', 'required')">
+                  Unit is required
+                </div>
+              </div>
+            </div>
+
+            <!-- Storage and Expiry -->
+            <h5 class="mb-3 mt-4">Storage Information</h5>
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="storageLocation" class="form-label">Storage Location</label>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  id="storageLocation" 
+                  formControlName="storageLocation"
+                  placeholder="e.g., Warehouse A, Shelf 3">
+              </div>
+              <div class="col-md-6">
+                <label for="expiryDate" class="form-label">
+                  Expiry Date <span *ngIf="shouldShowExpiryDate()">(Recommended for {{ resourceForm.get('type')?.value }})</span>
+                </label>
+                <input 
+                  type="date" 
+                  class="form-control" 
+                  id="expiryDate" 
+                  formControlName="expiryDate"
+                  [min]="today">
+              </div>
+            </div>
+
+            <!-- Supplier Information -->
+            <h5 class="mb-3 mt-4">Supplier Information</h5>
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="supplier" class="form-label">Supplier</label>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  id="supplier" 
+                  formControlName="supplier"
+                  placeholder="Supplier name">
+              </div>
+              <div class="col-md-6">
+                <label for="unitPrice" class="form-label">Unit Price ($)</label>
+                <input 
+                  type="number" 
+                  class="form-control" 
+                  id="unitPrice" 
+                  formControlName="unitPrice"
+                  min="0"
+                  step="0.01"
+                  [class.is-invalid]="hasError('unitPrice', 'min')">
+                <div class="invalid-feedback" *ngIf="hasError('unitPrice', 'min')">
+                  Unit price cannot be negative
+                </div>
+              </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="d-flex justify-content-end mt-4">
+              <button type="button" class="btn btn-secondary me-2" (click)="onCancel()" [disabled]="submitting">
+                Cancel
+              </button>
+              <button type="submit" class="btn btn-primary" [disabled]="submitting">
+                <span *ngIf="submitting" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                {{ submitting ? 'Saving...' : (isEditMode ? 'Update Resource' : 'Add Resource') }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

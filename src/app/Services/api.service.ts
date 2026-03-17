@@ -1,15 +1,17 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, Resource } from '@angular/core';
 import { map, Observable } from 'rxjs';
-import { ServiceRequest } from '../Models/service-request';
 import { Login } from '../Models/login';
-import { Complaint } from '../Models/complaint';
 import { Vote } from '../Models/vote.model';
 import { Poll } from '../Models/Poll.Model';
 import { PollCategory } from '../Models/poll-category';
 import { NoticeCategory } from '../Models/Category';
+import { Resource as ResourceModel, CreateResource, UpdateResource } from '../Models/resource.model';
 import { Notice } from '../Models/notice';
 import { WeeklySchedule, WasteCollectionRoute, CreateRoute, RouteStatusUpdate, Vehicle, Driver, RealtimeUpdate } from '../Models/WasteCollectionRoute';
+import { DisasterEvent, CreateDisasterEvent, UpdateDisasterEvent } from '../Models/DisasterEvent.model';
+// import { CreateResource, UpdateResource } from '../Models/resource.model';
+import { Volunteer, CreateVolunteer, UpdateVolunteer } from '../Models/volunteer.model';
 
 
 @Injectable({
@@ -24,6 +26,14 @@ export class ApiService {
     createUser(signup: any): Observable<any> {
     return this.http.post(
       'https://localhost:7069/api/SignUp/Register',signup);
+  }
+
+   verifyEmail(data: { userId: string, otpCode: string }) {
+    return this.http.post(`https://localhost:7069/api/SignUp/VerifyEmail`, data);
+  }
+
+  resendOtp(data: { email: string }) {
+    return this.http.post(`https://localhost:7069/api/SignUp/ResendOTP`, data);
   }
   
     createStaff(newStaff: any): Observable<any> {
@@ -233,6 +243,92 @@ export class ApiService {
       status: 3 // Completed
     });
   }
+
+  private volunteerapiUrl = `https://localhost:7069/api/Volunteers`;
+
+    getVolunteers(): Observable<Volunteer[]> {
+    return this.http.get<Volunteer[]>(this.volunteerapiUrl);
+  }
+
+  getVolunteer(id: string): Observable<Volunteer> {
+    return this.http.get<Volunteer>(`${this.volunteerapiUrl}/${id}`);
+  }
+
+  createVolunteer(volunteer: CreateVolunteer): Observable<Volunteer> {
+    return this.http.post<Volunteer>(this.volunteerapiUrl, volunteer);
+  }
+
+  updateVolunteer(id: string, volunteer: UpdateVolunteer): Observable<void> {
+    return this.http.put<void>(`${this.volunteerapiUrl}/${id}`, volunteer);
+  }
+
+  deleteVolunteer(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.volunteerapiUrl}/${id}`);
+  }
+
+   
+  private resourcesapiUrl = `https://localhost:7069/api/Resources`;
+
+  getResources(): Observable<ResourceModel[]> {
+    return this.http.get<ResourceModel[]>(this.resourcesapiUrl);
+  }
+
+  getResourcesByType(type: string): Observable<ResourceModel[]> {
+    return this.http.get<ResourceModel[]>(`${this.resourcesapiUrl}/type/${type}`);
+  }
+
+  getLowStockResources(): Observable<ResourceModel[]> {
+    return this.http.get<ResourceModel[]>(`${this.resourcesapiUrl}/lowstock`);
+  }
+
+  getResource(id: string): Observable<ResourceModel> {
+    return this.http.get<ResourceModel>(`${this.resourcesapiUrl}/${id}`);
+  }
+
+  createResource(resource: CreateResource): Observable<ResourceModel> {
+    return this.http.post<ResourceModel>(this.resourcesapiUrl, resource);
+  }
+
+  updateResource(id: string, resource: UpdateResource): Observable<void> {
+    return this.http.put<void>(`${this.resourcesapiUrl}/${id}`, resource);
+  }
+
+  updateQuantity(id: string, quantity: number): Observable<void> {
+    return this.http.patch<void>(`${this.resourcesapiUrl}/${id}/quantity`, quantity);
+  }
+
+  deleteResource(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.resourcesapiUrl}/${id}`);
+  }
+
+   private disasterapiUrl = `https://localhost:7069/api/DisasterEvents`;
+
+
+  getDisasterEvents(): Observable<DisasterEvent[]> {
+    return this.http.get<DisasterEvent[]>(this.disasterapiUrl);
+  }
+
+  getActiveEvents(): Observable<DisasterEvent[]> {
+    return this.http.get<DisasterEvent[]>(`${this.disasterapiUrl}/active`);
+  }
+
+  getDisasterEvent(id: string): Observable<DisasterEvent> {
+    return this.http.get<DisasterEvent>(`${this.disasterapiUrl}/${id}`);
+  }
+
+  createDisasterEvent(event: CreateDisasterEvent): Observable<DisasterEvent> {
+    return this.http.post<DisasterEvent>(this.disasterapiUrl, event);
+  }
+
+  updateDisasterEvent(id: string, event: UpdateDisasterEvent): Observable<void> {
+    return this.http.put<void>(`${this.disasterapiUrl}/${id}`, event);
+  }
+
+  deleteDisasterEvent(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.disasterapiUrl}/${id}`);
+  }
+
+
 
   
 }

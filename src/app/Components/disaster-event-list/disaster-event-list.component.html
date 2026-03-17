@@ -1,0 +1,105 @@
+<!-- src/app/components/disaster-event-list/disaster-event-list.component.html -->
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Disaster Events</h2>
+    <div>
+      <button (click)="toggleActiveOnly()" class="btn btn-info me-2">
+        <i class="bi bi-calendar-check"></i>
+        {{ showActiveOnly ? 'Show All Events' : 'Show Active Only' }}
+      </button>
+      <a routerLink="/disaster-events/new" class="btn btn-primary">
+        <i class="bi bi-plus"></i> Add Event
+      </a>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="text-center">
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+  <div class="row" *ngIf="!loading && events.length > 0">
+    <div class="col-12 mb-3" *ngFor="let event of events">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">{{ event.eventName }}</h5>
+          <div>
+            <span [class]="getSeverityClass(event.severity)" class="me-2">{{ event.severity }}</span>
+            <span [class]="getStatusClass(event.status)">{{ event.status }}</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-8">
+              <p class="card-text">{{ event.description || 'No description provided' }}</p>
+              
+              <div class="row mt-3">
+                <div class="col-sm-6">
+                  <strong>Type:</strong> {{ event.eventType }}
+                </div>
+                <div class="col-sm-6">
+                  <strong>Location:</strong> {{ event.location }}
+                </div>
+              </div>
+              
+              <div class="row mt-2">
+                <div class="col-sm-6">
+                  <strong>Start Date:</strong> {{ formatDate(event.startDate) }}
+                </div>
+                <div class="col-sm-6">
+                  <strong>End Date:</strong> {{ formatDate(event.endDate) }}
+                </div>
+              </div>
+              
+              <div class="row mt-2">
+                <div class="col-sm-6">
+                  <strong>Affected People:</strong> {{ event.affectedPeople | number }}
+                </div>
+                <div class="col-sm-6">
+                  <strong>Assigned Volunteers:</strong> {{ event.assignedVolunteers }}
+                </div>
+              </div>
+              
+              <div class="mt-2" *ngIf="event.requiredResources">
+                <strong>Required Resources:</strong> {{ event.requiredResources }}
+              </div>
+            </div>
+            
+            <div class="col-md-4">
+              <div class="card bg-light">
+                <div class="card-body">
+                  <h6 class="card-title">Coordinator</h6>
+                  <p class="card-text mb-1">{{ event.coordinator || 'Not assigned' }}</p>
+                  <p class="card-text" *ngIf="event.contactNumber">
+                    <i class="bi bi-telephone"></i> {{ event.contactNumber }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer">
+          <a [routerLink]="['/disaster-events', event.id]" class="btn btn-sm btn-info me-1">
+            <i class="bi bi-eye"></i> View
+          </a>
+          <a [routerLink]="['/disaster-events', event.id, 'edit']" class="btn btn-sm btn-warning me-1">
+            <i class="bi bi-pencil"></i> Edit
+          </a>
+          <a [routerLink]="['/volunteer-assignments', event.id]" class="btn btn-sm btn-success me-1">
+            <i class="bi bi-people"></i> Assign Volunteers
+          </a>
+          <button (click)="deleteEvent(event.id)" class="btn btn-sm btn-danger">
+            <i class="bi bi-trash"></i> Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!loading && events.length === 0" class="alert alert-info">
+    No disaster events found.
+  </div>
+</div>

@@ -25,6 +25,12 @@ import { NavigateComponent } from './Components/navigate/navigate.component';
 import { RoutePlanningComponent } from './Components/route-planning/route-planning.component';
 import { WeeklyScheduleComponent } from './Components/weekly-schedule/weekly-schedule.component';
 import { RealtimeUpdatesComponent } from './Components/realtime-updates/realtime-updates.component';
+import { ResourceListComponent } from './Components/resource-list/resource-list.component';
+import { VolunteerListComponent } from './Components/volunteer-list/volunteer-list.component';
+import { DisasterEventFormComponent } from './Components/disaster-event-form/disaster-event-form.component';
+import { DisasterEventListComponent } from './Components/disaster-event-list/disaster-event-list.component';
+import { ResourceFormComponent } from './Components/resource-form/resource-form.component';
+import { VolunteerFormComponent } from './Components/volunteer-form/volunteer-form.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -81,5 +87,17 @@ export const routes: Routes = [
   { path: 'navigate/:id', component: NavigateComponent },
   { path: 'route-planning', component: RoutePlanningComponent },
   { path: 'weekly-schedule', component: WeeklyScheduleComponent },
-  { path: 'realtime-updates', component: RealtimeUpdatesComponent }
+  { path: 'realtime-updates', component: RealtimeUpdatesComponent },
+  { path: 'volunteers', component: VolunteerListComponent },
+  { path: 'volunteers/new', component: VolunteerFormComponent },
+  { path: 'volunteers/:id', component: VolunteerFormComponent },
+  { path: 'volunteers/:id/edit', component: VolunteerFormComponent },
+  { path: 'resources', component: ResourceListComponent },
+  { path: 'resources/new', component: ResourceFormComponent },
+  { path: 'resources/:id', component: ResourceFormComponent },
+  { path: 'resources/:id/edit', component: ResourceFormComponent },
+  { path: 'disaster-events', component: DisasterEventListComponent },
+  { path: 'disaster-events/new', component: DisasterEventFormComponent },
+  { path: 'disaster-events/:id', component: DisasterEventFormComponent },
+  { path: 'disaster-events/:id/edit', component: DisasterEventFormComponent }
 ];

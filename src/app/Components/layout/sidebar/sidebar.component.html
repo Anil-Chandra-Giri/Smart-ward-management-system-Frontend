@@ -15,8 +15,11 @@
     <a *ngIf="isStaff" href="/ward/notices">📄 Notices</a>
     <a *ngIf="isStaff" href="/ward/createPoll">📄 Create Poll</a>
     <a *ngIf="isStaff" href="/ward/appointments">📅 Appointments</a>
-    <a *ngIf="isStaff" href="/ward/my-details">🪪 My Details</a>
-    <a *ngIf="isStaff" href="/ward/settings">⚙️ Settings</a>
+    <a *ngIf="isStaff" href="/ward/appointments">📅 Create Waste Collection Schedule</a>
+    <a *ngIf="isStaff" href="/volunteers">Volunteers</a>
+    <a *ngIf="isStaff" href="/resources">Available Resources</a>
+    <a *ngIf="isStaff" href="/disaster-events/new">Add New Disaster Event</a>
+    <a *ngIf="isStaff" href="/disaster-events">Get Disaster Events</a>
 
     <!-- Citizen-specific menu -->
     <a *ngIf="!isStaff" class="active" href="/citizen/dashboard">📊 Dashboard</a>
@@ -25,8 +28,12 @@
     <a *ngIf="!isStaff" href="/citizen/submit-complaint">📢 Submit Complaint</a>
     <a *ngIf="!isStaff" href="/citizen/book-appointment">📅Book Appointment</a>
     <a *ngIf="!isStaff" href="/citizen/polls">Vote Poll</a>
-    <a *ngIf="!isStaff" href="/citizen/my-details">🪪 My Details</a>
-    <a *ngIf="!isStaff" href="/citizen/settings">⚙️ Settings</a>
+    <a *ngIf="!isStaff" href="/volunteers/new">Register As Volunteer</a>
+    <a *ngIf="!isStaff" href="/volunteers">Volunteers</a>
+    <a *ngIf="!isStaff" href="/weekly-schedule">Waste Collection Schedule</a>
+    <a *ngIf="!isStaff" href="/resources">Available Resources</a>
+    <a *ngIf="!isStaff" href="/disaster-events/new">Add New Disaster Event</a>
+    <a *ngIf="!isStaff" href="/disaster-events">Get Disaster Events</a>
   </nav>
 
   <!-- Logout Button -->
