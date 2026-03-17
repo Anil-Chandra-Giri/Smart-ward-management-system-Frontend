@@ -21,6 +21,10 @@ import { PollResultsComponent } from './Components/layout/sidebar/Citizen/poll-r
 import { PollListComponent } from './Components/layout/sidebar/Citizen/poll-list/poll-list.component';
 import { AuthGuardService } from './Services/auth-guard.service';
 import { StaffDetailsComponent } from './Components/layout/sidebar/Staff/staff-details/staff-details.component';
+import { NavigateComponent } from './Components/navigate/navigate.component';
+import { RoutePlanningComponent } from './Components/route-planning/route-planning.component';
+import { WeeklyScheduleComponent } from './Components/weekly-schedule/weekly-schedule.component';
+import { RealtimeUpdatesComponent } from './Components/realtime-updates/realtime-updates.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -74,4 +78,8 @@ export const routes: Routes = [
     ],
   },
   { path: 'registerUser', component: UserRegisterComponent, pathMatch: 'full' },
+  { path: 'navigate/:id', component: NavigateComponent },
+  { path: 'route-planning', component: RoutePlanningComponent },
+  { path: 'weekly-schedule', component: WeeklyScheduleComponent },
+  { path: 'realtime-updates', component: RealtimeUpdatesComponent }
 ];

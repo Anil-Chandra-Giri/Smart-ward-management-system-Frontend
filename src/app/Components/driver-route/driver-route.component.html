@@ -1,0 +1,136 @@
+<!-- src/app/components/driver-route/driver-route.component.html -->
+
+<div class="driver-container" *ngIf="routeDetails; else loadingTemplate">
+  <!-- Header -->
+  <div class="header">
+    <h2>{{ routeDetails.routeName || 'Unnamed Route' }}</h2>
+    <div class="status" [ngClass]="routeDetails.status?.toLowerCase() || 'unknown'">
+      Status: {{ routeDetails.status || 'Unknown' }}
+    </div>
+  </div>
+
+  <!-- Message Display -->
+  <div *ngIf="message" class="message" [ngClass]="messageType">
+    {{ message }}
+  </div>
+
+  <!-- Not Started State -->
+  <div *ngIf="routeDetails.status === 'Planned'" class="start-section">
+    <button class="btn-start" (click)="startRoute()" [disabled]="loading">
+      <span *ngIf="!loading">Start Route</span>
+      <span *ngIf="loading">
+        <i class="spinner"></i> Starting...
+      </span>
+    </button>
+  </div>
+
+  <!-- In Progress State -->
+  <div *ngIf="routeDetails.status === 'InProgress'" class="active-route">
+    <!-- Current Point Card -->
+    <div class="current-point" *ngIf="currentPoint; else noPoints">
+      <h3>Current Collection Point</h3>
+      <div class="point-details">
+        <p><strong>Address:</strong> {{ currentPoint.address || 'No address' }}</p>
+        <p><strong>Stop #:</strong> {{ currentPoint.sequenceOrder || 0 }} of {{ getTotalPointsCount() }}</p>
+        
+        <!-- Collection Form -->
+        <div class="collection-form">
+          <label>Waste Quantity (kg) *</label>
+          <input 
+            type="number" 
+            #quantityInput 
+            step="0.1" 
+            min="0.1"
+            placeholder="Enter quantity"
+            [disabled]="loading"
+            required>
+          
+          <label>Notes (optional)</label>
+          <textarea 
+            #notesInput 
+            placeholder="Any issues or notes"
+            [disabled]="loading"
+            rows="3"></textarea>
+          
+          <button class="btn-complete" 
+                  (click)="completeCurrentPoint(quantityInput.value, notesInput.value)"
+                  [disabled]="loading || !quantityInput.value">
+            <span *ngIf="!loading">Complete Collection</span>
+            <span *ngIf="loading">
+              <i class="spinner"></i> Processing...
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #noPoints>
+      <div class="no-points">
+        <p>No collection points available</p>
+      </div>
+    </ng-template>
+
+    <!-- Progress -->
+    <div class="progress-section">
+      <h4>Route Progress</h4>
+      <div class="progress-bar">
+        <div class="progress-fill" 
+             [style.width.%]="getProgressPercentage()">
+        </div>
+      </div>
+      <div class="progress-stats">
+        <p>{{ getCompletedPointsCount() }} of {{ getTotalPointsCount() }} points completed</p>
+        <p>Est. time remaining: {{ getEstimatedTimeRemaining() }}</p>
+      </div>
+    </div>
+
+    <!-- Delay Report -->
+    <div class="delay-section">
+      <button class="btn-delay" (click)="showDelayForm = !showDelayForm" [disabled]="loading">
+        {{ showDelayForm ? 'Cancel' : 'Report Delay' }}
+      </button>
+      
+      <div *ngIf="showDelayForm" class="delay-form">
+        <input 
+          type="text" 
+          [(ngModel)]="delayReason" 
+          placeholder="Delay reason"
+          [disabled]="loading">
+        <input 
+          type="number" 
+          [(ngModel)]="delayMinutes" 
+          placeholder="Delay minutes"
+          min="1"
+          [disabled]="loading">
+        <button (click)="reportDelay()" [disabled]="loading || !delayReason || delayMinutes <= 0">
+          <span *ngIf="!loading">Submit Delay Report</span>
+          <span *ngIf="loading">Submitting...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Completed State -->
+  <div *ngIf="routeDetails.status === 'Completed'" class="completed">
+    <h3>Route Completed!</h3>
+    <p>End time: {{ routeDetails.endTime | date:'medium' }}</p>
+    <button class="btn-new-route" [routerLink]="['/driver/dashboard']">
+      Back to Dashboard
+    </button>
+  </div>
+
+  <!-- Delayed State -->
+  <div *ngIf="routeDetails.status === 'Delayed'" class="delayed">
+    <h3>Route Delayed</h3>
+    <p>Reason: {{ routeDetails.delayReason || 'Unknown' }}</p>
+    <p>Delay: {{ routeDetails.delayMinutes || 0 }} minutes</p>
+  </div>
+</div>
+
+<!-- Loading Template -->
+<ng-template #loadingTemplate>
+  <div class="loading-container">
+    <div class="spinner"></div>
+    <p>Loading route details...</p>
+  </div>
+</ng-template>

@@ -1,0 +1,156 @@
+<!-- src/app/components/route-planning/route-planning.component.html -->
+
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header bg-primary text-white">
+          <h3 class="mb-0">
+            <i class="bi bi-map me-2"></i>
+            Plan New Waste Collection Route
+          </h3>
+        </div>
+        
+        <div class="card-body">
+          <!-- Alert Messages -->
+          <div *ngIf="success" class="alert alert-success">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            {{success}}
+          </div>
+          
+          <div *ngIf="error" class="alert alert-danger">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            {{error}}
+          </div>
+
+          <form [formGroup]="routeForm" (ngSubmit)="onSubmit()">
+            <div class="row">
+              <div class="col-md-6">
+                <!-- Route Name -->
+                <div class="mb-3">
+                  <label class="form-label">Route Name *</label>
+                  <input type="text" class="form-control" formControlName="routeName"
+                         [class.is-invalid]="isFieldInvalid('routeName')">
+                  <div class="invalid-feedback" *ngIf="routeForm.get('routeName')?.errors?.['required']">
+                    Route name is required
+                  </div>
+                </div>
+
+                <!-- Waste Type - Updated to use numeric values -->
+                <div class="mb-3">
+                  <label class="form-label">Waste Type *</label>
+                  <select class="form-control" formControlName="wasteType"
+                          [class.is-invalid]="isFieldInvalid('wasteType')">
+                    <option value="">Select Waste Type</option>
+                    <option *ngFor="let type of wasteTypeOptions" [value]="type.value">
+                      {{type.name}}
+                    </option>
+                  </select>
+                  <div class="invalid-feedback" *ngIf="routeForm.get('wasteType')?.errors?.['required']">
+                    Waste type is required
+                  </div>
+                </div>
+
+                <!-- Scheduled Date -->
+                <div class="mb-3">
+                  <label class="form-label">Scheduled Date *</label>
+                  <input type="datetime-local" class="form-control" formControlName="scheduledDate"
+                         [attr.min]="minDate" (change)="onDateChange($event)"
+                         [class.is-invalid]="isFieldInvalid('scheduledDate')">
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <!-- Vehicle -->
+                <div class="mb-3">
+                  <label class="form-label">Assign Vehicle *</label>
+                  <select class="form-control" formControlName="assignedVehicleId"
+                          [class.is-invalid]="isFieldInvalid('assignedVehicleId')">
+                    <option value="">Select Vehicle</option>
+                    <option *ngFor="let vehicle of vehicles" [value]="vehicle.id">
+                      {{vehicle.vehicleName}} ({{vehicle.vehicleNumber}})
+                    </option>
+                  </select>
+                </div>
+
+                <!-- Driver -->
+                <div class="mb-3">
+                  <label class="form-label">Assign Driver *</label>
+                  <select class="form-control" formControlName="assignedDriverId"
+                          [class.is-invalid]="isFieldInvalid('assignedDriverId')">
+                    <option value="">Select Driver</option>
+                    <option *ngFor="let driver of drivers" [value]="driver.id">
+                      {{driver.name}} ({{driver.phoneNumber}})
+                    </option>
+                  </select>
+                </div>
+
+                <!-- Description -->
+                <div class="mb-3">
+                  <label class="form-label">Description</label>
+                  <textarea class="form-control" formControlName="description" rows="3"></textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- Collection Points -->
+            <div class="mt-4">
+              <h5>
+                Collection Points
+                <button type="button" class="btn btn-primary btn-sm ms-2" (click)="addCollectionPoint()">
+                  <i class="bi bi-plus"></i> Add Point
+                </button>
+              </h5>
+
+              <div formArrayName="collectionPoints">
+                <div *ngFor="let point of collectionPoints.controls; let i = index" 
+                     [formGroupName]="i" class="card mt-2">
+                  <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                      <h6>Point #{{i + 1}}</h6>
+                      <button type="button" class="btn btn-danger btn-sm" 
+                              (click)="removeCollectionPoint(i)">
+                        <i class="bi bi-trash"></i> Remove
+                      </button>
+                    </div>
+
+                    <div class="row mt-2">
+                      <div class="col-md-6">
+                        <label class="form-label">Address *</label>
+                        <input type="text" class="form-control" formControlName="address">
+                      </div>
+                      <div class="col-md-3">
+                        <label class="form-label">Latitude</label>
+                        <input type="number" class="form-control" formControlName="latitude" step="any">
+                      </div>
+                      <div class="col-md-3">
+                        <label class="form-label">Longitude</label>
+                        <input type="number" class="form-control" formControlName="longitude" step="any">
+                      </div>
+                    </div>
+
+                    <div class="row mt-2">
+                      <div class="col-md-12">
+                        <label class="form-label">Notes</label>
+                        <input type="text" class="form-control" formControlName="notes">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="mt-4 text-center">
+              <button type="submit" class="btn btn-success" [disabled]="routeForm.invalid || loading">
+                <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+                {{loading ? 'Creating...' : 'Create Route'}}
+              </button>
+              <button type="button" class="btn btn-secondary ms-2" (click)="resetForm()">Reset</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

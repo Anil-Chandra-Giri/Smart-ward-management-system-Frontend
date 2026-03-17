@@ -5,12 +5,14 @@ import { ColDef } from 'ag-grid-community';
 import NepaliDate from 'nepali-date-converter';
 import { AuthService } from '../../../../../Services/auth.service';
 import { ApiService } from '../../../../../Services/api.service';
+import { FormsModule } from '@angular/forms';
 
 
 const StatusLabels: Record<number, string> = {
   1: 'Pending',
-  2: 'Approved',
-  3: 'Rejected',
+  2:'In Review',
+  3: 'Approved',
+  4: 'Rejected',
 };
 const ServiceType:any={
   1: 'Birth Certificate',
@@ -27,7 +29,7 @@ const PriorityLevels:any={
 }
 @Component({
   selector: 'app-service-request',
-  imports: [CommonModule,AgGridAngular],
+  imports: [CommonModule,AgGridAngular, FormsModule],
   templateUrl: './service-request.component.html',
   styleUrl: './service-request.component.css'
 })
@@ -35,6 +37,10 @@ export class ServiceRequestComponent implements OnInit{
 pageSize = 7;
 rowData: any[] = [];
 isBrowser = true;
+
+selectedService:any = null;
+selectedStatus:number = 1;
+showModal:boolean=false;
 
 columnDefs:ColDef[]=[
     {field: 'applicationNumber', headerName: 'Appliction Number', flex: 1, filter: true },
@@ -46,18 +52,60 @@ columnDefs:ColDef[]=[
     },
     {field:'purpose',headerName:'Purpose', flex:1, filter:true},
     {field:'requestedWard', headerName:'Requested Ward', flex:1, filter:true},
-    {field:'status', headerName:'Status', flex:1, filter:true,
-cellRenderer: (params:any) => {
-    const text = StatusLabels[params.value] ?? 'Unknown';
-    let color = '#666'; // Default Gray
-    
-    if (params.value === 1) color = 'orange'; // Pending
-    if (params.value === 2) color = 'green';  // Approved
-    if (params.value === 3) color = 'red';    // Rejected
+    {
+  field: 'status',
+  headerName: 'Status',
+  flex: 1,
+  filter: true,
+  editable: true,
 
-    return `<span style="color: ${color}; font-weight: bold;">${text}</span>`;
+  valueFormatter: (params: any) => {
+    const labels: Record<number,string> = {
+      1:'Pending',
+      2:'In Review',
+      3:'Approved',
+      4:'Rejected'
+    };
+    return labels[params.value] ?? 'Unknown';
+  },
+
+  cellRenderer: (params: any) => {
+    const colorMap: Record<number,string> = {
+      1:'orange',
+      2:'blue',
+      3:'green',
+      4:'red'
+    };
+
+    const labels: Record<number,string> = {
+      1:'Pending',
+      2:'In Review',
+      3:'Approved',
+      4:'Rejected'
+    };
+
+    return `<span style="color:${colorMap[params.value]}; font-weight:bold;">
+            ${labels[params.value]}
+            </span>`;
+  },
+  cellEditorParams: {
+    values: [1,2,3,4]
+  },
+
+  cellEditor: 'agSelectCellEditor',
+  
+  
+  onCellValueChanged: (params: any) => {
+
+    const newStatus = Number(params.newValue);
+    const serviceId = params.data.serviceRequestId;
+
+    if(newStatus !== params.oldValue){
+      params.context.componentParent.updateStatusInline(serviceId, newStatus, params);
+    }
+
   }
-    },
+},
     {field:'priorityLevel', headerName:'Priority Level', flex:1, filter:true,
       cellRenderer:(params:any)=>{
         const text = PriorityLevels[params.value]??'Unknown'
@@ -84,32 +132,40 @@ cellRenderer: (params:any) => {
 
     },
     {
-      headerName: 'Actions',
-      cellRenderer: (params: any) =>
-      {
-        return `
-        <button class="btn btn-sm btn-outline-primary me-2" data-action="view">
-          <i class="bi bi-pencil"></i> View
-        </button>
-            <button class="btn btn-sm btn-outline-primary me-2" data-action="edit">
-        <i class="bi bi-pencil"></i> Edit
+  headerName: 'Actions',
+  flex:1.5,
+  cellRenderer: (params: any) =>
+  {
+    return `
+    <div class="d-flex gap-2">
+      <button class="btn btn-sm btn-outline-warning" data-action="view">
+        <i class="bi bi-eye"></i> View
       </button>
-      <button class="btn btn-sm btn-outline-danger" data-action="delete">
-        <i class="bi bi-trash"></i> Delete
+
+      <button class="btn btn-sm btn-outline-primary" data-action="edit">
+        <i class="bi bi-pencil"></i> Change Status
       </button>
-        `;
-      },
-      onCellClicked: (params: any) => {
-    const action = params.event.target.getAttribute('data-action') || 
-                   params.event.target.parentElement.getAttribute('data-action');
-    
-    if (action === 'edit') {
-      //this.getStaffById(params.data.id);
-    } else if (action === 'delete') {
-      //this.deleteStaff(params.data.id);
-    }
+    </div>
+    `;
+  },
+
+  onCellClicked: (params: any) => {
+  const action =
+    params.event.target.getAttribute('data-action') ||
+    params.event.target.parentElement.getAttribute('data-action');
+
+  if (action === 'view') {
+    this.openViewModal(params.data);
   }
-    }
+  else if (action === 'edit') {
+    // Start editing the 'status' cell
+    params.api.startEditingCell({
+      rowIndex: params.node.rowIndex,
+      colKey: 'status'
+    });
+  }
+}
+}
   ]
 
   constructor(private authService:AuthService, private apiService:ApiService){}
@@ -117,6 +173,54 @@ cellRenderer: (params:any) => {
  ngOnInit(): void {
     this.listRequestedServices();
   }
+
+  updateStatusInline(serviceId: number, status: number) {
+  const payload = {
+    id: serviceId,
+    status: status
+  };
+
+  console.log("Inline status payload:", payload);
+
+  this.apiService.updateServiceStatus(payload).subscribe(
+    res => {
+      alert("✅ Status Updated Successfully");
+      this.listRequestedServices(); // refresh grid
+    },
+    err => {
+      console.log(err);
+      alert("❌ Failed to update status");
+      this.listRequestedServices(); // revert grid to old value
+    }
+  );
+}
+
+  openViewModal(data:any)
+{
+  this.selectedService = data;
+  this.selectedStatus = data.status;
+  this.showModal = true;
+}
+
+updateStatus(){
+
+const payload={
+id:this.selectedService.serviceRequestId,
+status: Number(this.selectedStatus),
+}
+  console.log("Payload sent to API:", payload);
+this.apiService.updateServiceStatus(payload).subscribe(
+res=>{
+alert("✅ Status Updated Successfully");
+this.listRequestedServices();
+},
+err=>{
+console.log(err);
+alert("❌ Failed to update status");
+}
+)
+
+}
   
   listRequestedServices(){
   const UserId=this.authService.decodeToken().UserId;

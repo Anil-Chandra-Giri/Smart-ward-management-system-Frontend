@@ -11,8 +11,9 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 
 const StatusLabels: Record<number, string> = {
   1: 'Pending',
-  2: 'Approved',
-  3: 'Rejected',
+  2: 'In Review',
+  3: 'Approved',
+  4:'Rejected'
 };
 const ServiceType:any={
   1: 'Birth Certificate',
@@ -52,15 +53,24 @@ columnDefs:ColDef[]=[
     {field:'purpose',headerName:'Purpose', flex:1, filter:true},
     {field:'requestedWard', headerName:'Requested Ward', flex:1, filter:true},
     {field:'status', headerName:'Status', flex:1, filter:true,
-cellRenderer: (params:any) => {
-    const text = StatusLabels[params.value] ?? 'Unknown';
-    let color = '#666'; // Default Gray
-    
-    if (params.value === 1) color = 'orange'; // Pending
-    if (params.value === 2) color = 'green';  // Approved
-    if (params.value === 3) color = 'red';    // Rejected
+cellRenderer: (params: any) => {
+    const colorMap: Record<number,string> = {
+      1:'orange',
+      2:'blue',
+      3:'green',
+      4:'red'
+    };
 
-    return `<span style="color: ${color}; font-weight: bold;">${text}</span>`;
+    const labels: Record<number,string> = {
+      1:'Pending',
+      2:'In Review',
+      3:'Approved',
+      4:'Rejected'
+    };
+
+    return `<span style="color:${colorMap[params.value]}; font-weight:bold;">
+            ${labels[params.value]}
+            </span>`;
   }
     },
     {field:'priorityLevel', headerName:'Priority Level', flex:1, filter:true,

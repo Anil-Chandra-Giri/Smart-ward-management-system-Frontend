@@ -1,52 +1,159 @@
 <div class="dashboard-page">
-  <!-- Dashboard Header -->
+
+  <!-- Header -->
   <header class="dashboard-header">
-    <h1>{{ isStaff ? 'Staff Dashboard' : 'Citizen Dashboard' }}</h1>
+    <div>
+      <h1>{{ isStaff ? 'Ward Staff Dashboard' : 'Citizen Dashboard' }}</h1>
+      <p class="subtitle">
+        {{ isStaff ? 'Manage ward services and requests' : 'Stay updated with ward activities' }}
+      </p>
+    </div>
+
     <div class="user-info">
       <span>{{ isStaff ? 'Ward Staff' : 'Citizen' }}</span>
-      <img src="https://i.pravatar.cc/40" alt="User" />
+      <img src="https://i.pravatar.cc/40" alt="User">
     </div>
   </header>
 
-  <!-- Stats Section -->
+  <!-- Statistics -->
   <section class="stats">
-    <!-- Staff Stats -->
-    <div *ngIf="isStaff" class="card">
-      <h3>Total Requests</h3>
-      <p>128</p>
-    </div>
-    <div *ngIf="isStaff" class="card">
-      <h3>Pending Approvals</h3>
-      <p>34</p>
-    </div>
-    <div *ngIf="isStaff" class="card">
-      <h3>Reports</h3>
-      <p>12</p>
-    </div>
 
-    <!-- Citizen Stats -->
-    <div *ngIf="!isStaff" class="card">
-      <h3>My Requests</h3>
-      <p>5 Active</p>
-    </div>
-    <div *ngIf="!isStaff" class="card">
-      <h3>Complaints</h3>
-      <p>2 Pending</p>
-    </div>
-    <div *ngIf="!isStaff" class="card">
-      <h3>Appointments</h3>
-      <p>1 Upcoming</p>
-    </div>
+    <!-- STAFF -->
+    <ng-container *ngIf="isStaff">
+
+      <div class="card gradient1">
+        <h3>Service Requests</h3>
+        <p>{{serviceRequests}}</p>
+      </div>
+
+      <div class="card gradient2">
+        <h3>Pending Services</h3>
+        <p>{{pendingServices}}</p>
+      </div>
+
+      <div class="card gradient3">
+        <h3>Approved Services</h3>
+        <p>{{approvedServices}}</p>
+      </div>
+
+      <div class="card gradient4">
+        <h3>In Review Services</h3>
+        <p>{{inReviewServices}}</p>
+      </div>
+
+      <div class="card gradient5">
+        <h3>Rejected Services</h3>
+        <p>{{rejectedServices}}</p>
+      </div>
+
+    </ng-container>
+
+    <!-- CITIZEN -->
+    <ng-container *ngIf="!isStaff">
+
+      <div class="card gradient1">
+        <h3>My Requests</h3>
+        <p>5 Active</p>
+      </div>
+
+      <div class="card gradient2">
+        <h3>Complaints</h3>
+        <p>2 Pending</p>
+      </div>
+
+      <div class="card gradient3">
+        <h3>Appointments</h3>
+        <p>1 Upcoming</p>
+      </div>
+
+      <div class="card gradient4">
+        <h3>Ward Notices</h3>
+        <p>8 New</p>
+      </div>
+
+    </ng-container>
+
   </section>
 
-  <!-- Recent Activities / Notices Section -->
-  <section *ngIf="isStaff" class="recent-activities">
-    <h2>Recent Activities</h2>
-    <p>Latest updates on service requests and approvals will appear here.</p>
+  <!-- Charts Section -->
+
+  <section class="charts">
+
+    <div class="chart-card">
+  <h3>{{ isStaff ? 'Complaint Status' : 'My Complaint Status' }}</h3>
+  <canvas #statusChart></canvas>
+</div>
+
+<div class="chart-card">
+  <h3>{{ isStaff ? 'Monthly Service Requests' : 'Ward Activity Overview' }}</h3>
+  <canvas #monthlyChart></canvas>
+</div>
+
   </section>
 
-  <section *ngIf="!isStaff" class="notices">
-    <h2>Recent Notices</h2>
-    <p>View important updates from your ward.</p>
+  <!-- Progress + Activity -->
+
+  <section class="info-grid">
+
+    <!-- Projects Progress (Staff) -->
+    <div *ngIf="isStaff" class="panel">
+
+      <h2>Ward Project Progress</h2>
+
+      <div class="progress-item">
+        <span>Road Construction</span>
+        <div class="progress-bar">
+          <div class="progress" style="width:70%"></div>
+        </div>
+      </div>
+
+      <div class="progress-item">
+        <span>Water Supply Upgrade</span>
+        <div class="progress-bar">
+          <div class="progress" style="width:50%"></div>
+        </div>
+      </div>
+
+      <div class="progress-item">
+        <span>Street Light Installation</span>
+        <div class="progress-bar">
+          <div class="progress" style="width:85%"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Notices -->
+    <div class="panel">
+
+      <h2>{{ isStaff ? 'Recent Activities' : 'Recent Notices' }}</h2>
+
+      <ul class="activity-list">
+
+        <li>
+          <span class="dot"></span>
+          Road maintenance scheduled tomorrow
+        </li>
+
+        <li>
+          <span class="dot"></span>
+          Vaccination campaign announcement
+        </li>
+
+        <li>
+          <span class="dot"></span>
+          Agriculture subsidy program open
+        </li>
+
+        <li>
+          <span class="dot"></span>
+          Ward meeting on Friday
+        </li>
+
+      </ul>
+
+    </div>
+
   </section>
+
 </div>

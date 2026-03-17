@@ -5,6 +5,7 @@ import { ColDef } from 'ag-grid-community';
 import { ImageCellRendererComponent } from '../../../../shared/image-cell/image-cell.component';
 import { AuthService } from '../../../../../Services/auth.service';
 import { ApiService } from '../../../../../Services/api.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-complaints',
@@ -16,16 +17,12 @@ export class ComplaintsComponent {
 pageSize = 7;
 rowData: any[] = [];
 isBrowser = true;
+selectedComplaint:any = null;
+selectedStatus:string = '';
+context:any;
 
 columnDefs: ColDef[] = [
-  { 
-    field: 'complaintId', 
-    headerName: 'ID', 
-    width: 100, 
-    pinned: 'left',
-    cellStyle: { fontWeight: 'bold' } 
-  },
-  
+
   { 
     field: 'category', 
     headerName: 'Category', 
@@ -33,18 +30,34 @@ columnDefs: ColDef[] = [
     flex: 1 
   },
   
-  { field: 'wardNumber', headerName: 'Ward', width: 90, filter: 'agNumberColumnFilter' },
-  { field: 'municipality', headerName: 'Municipality', flex: 1 },
-  
   { 
     field: 'status', 
     headerName: 'Status', 
     width: 130,
+    editable:true,
     cellClassRules: {
       'text-danger': "x === 'Pending'",
       'text-warning': "x === 'In Progress'",
+      'text-info': "x === 'Approved'",
       'text-success': "x === 'Resolved'"
+    },
+    cellEditorParams: {
+    values: ["Pending","Approved","In Review","Resolved"]
+  },
+
+  cellEditor: 'agSelectCellEditor',
+  
+  
+  onCellValueChanged: (params: any) => {
+
+    const newStatus = params.newValue;
+    const complaintId = params.data.complaintId;
+
+    if(newStatus !== params.oldValue){
+      params.context.componentParent.updateStatus(complaintId, newStatus, params);
     }
+
+  }
   },
   {
     headerName:'Image',
@@ -61,43 +74,65 @@ columnDefs: ColDef[] = [
     valueFormatter: (params) => new Date(params.value).toLocaleDateString() 
   },
 
-  { field: 'latitude', headerName: 'Lat', width: 100, hide: true }, 
-  { field: 'longitude', headerName: 'Lng', width: 100, hide: true },
+  { field: 'latitude', headerName: 'Latitude', width: 100}, 
+  { field: 'longitude', headerName: 'Longitude', width: 100},
 
   { field: 'complaintDetails', headerName: 'Details', flex: 2, tooltipField: 'complaintDetails' },
 
-    {
+     {
       headerName: 'Actions',
-      cellRenderer: (params: any) =>
-      {
+      cellRenderer: (params: any) => {
+        const hasLocation = params.data.latitude && params.data.longitude;
+        
         return `
-        <button class="btn btn-sm btn-outline-primary me-2" data-action="view">
-          <i class="bi bi-pencil"></i> View
-        </button>
-            <button class="btn btn-sm btn-outline-primary me-2" data-action="edit">
-        <i class="bi bi-pencil"></i> Edit
-      </button>
-      <button class="btn btn-sm btn-outline-danger" data-action="delete">
-        <i class="bi bi-trash"></i> Delete
-      </button>
+          <div class="action-buttons">
+            
+            <button class="btn btn-sm btn-outline-primary me-1" data-action="edit" title="Edit Complaint">
+              <i class="bi bi-pencil"></i> Change Status
+            </button>
+            ${hasLocation ? 
+              `<button class="btn btn-sm btn-outline-success me-1" data-action="navigate" title="Navigate to Location">
+                <i class="bi bi-geo-alt-fill"></i> Navigate
+              </button>` : 
+              `<button class="btn btn-sm btn-outline-secondary me-1" disabled title="No Location Available">
+                <i class="bi bi-geo-alt"></i>
+              </button>`
+            }
+          </div>
         `;
       },
-      onCellClicked: (params: any) => {
-    const action = params.event.target.getAttribute('data-action') || 
-                   params.event.target.parentElement.getAttribute('data-action');
-    
-    if (action === 'edit') {
-      //this.getStaffById(params.data.id);
-    } else if (action === 'delete') {
-      //this.deleteStaff(params.data.id);
+
+       onCellClicked: (params: any) => {
+        const action = params.event.target.getAttribute('data-action') || 
+                       params.event.target.parentElement?.getAttribute('data-action') ||
+                       params.event.target.parentElement?.parentElement?.getAttribute('data-action');
+        
+        if (action === 'edit') {
+          // this.editComplaint(params.data);
+          setTimeout(() => {
+  params.api.startEditingCell({
+    rowIndex: params.node.rowIndex,
+    colKey: 'status'
+  });
+});
+        } else if (action === 'delete') {
+          // this.deleteComplaint(params.data);
+        } else if (action === 'view') {
+          // this.viewComplaint(params.data);
+        } else if (action === 'navigate') {
+          this.navigateToComplaint(params.data);
+        }
+      },
+      width: 250,
+      cellStyle: { 'text-align': 'center' }
     }
-  }
-    }
+  
 ];
 
- constructor(private authService:AuthService, private apiService:ApiService){}
+ constructor(private authService:AuthService, private apiService:ApiService, private router:Router){}
 
 ngOnInit(): void {
+    this.context = { componentParent: this };
     this.listAllComplaints();
   }
   
@@ -119,5 +154,41 @@ ngOnInit(): void {
     )
   }
   }
+
+  navigateToComplaint(complaint: any) {
+    if (complaint.latitude && complaint.longitude) {
+      // Navigate to the tracking component with complaint details
+      this.router.navigate(['/navigate', complaint.complaintId], {
+        queryParams: {
+          lat: complaint.latitude,
+          lng: complaint.longitude,
+          category: complaint.category,
+          address: complaint.municipality + ', Ward ' + complaint.wardNumber
+        }
+      });
+    } else {
+      alert('No location coordinates available for this complaint');
+    }
+  }
+
+  updateStatus(complaintId: number, newStatus: string, params: any){
+
+      const payload={
+      id:complaintId,
+      status: newStatus,
+      }
+        console.log("Payload sent to API:", payload);
+      this.apiService.updateComplaintStatus(payload).subscribe(
+      res=>{
+      alert("✅ Status Updated Successfully");
+      this.listAllComplaints();
+      },
+      err=>{
+      console.log(err);
+      alert("❌ Failed to update status");
+      }
+      )
+
+}
 
 }

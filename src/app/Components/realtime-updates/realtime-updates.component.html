@@ -1,0 +1,94 @@
+<!-- src/app/components/realtime-updates/realtime-updates.component.html -->
+
+<div class="container mt-4">
+  <h2 class="mb-4">Real-time Route Updates</h2>
+
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Active Routes</h5>
+          <span class="badge bg-light text-dark">{{activeRoutes.length}} Active</span>
+        </div>
+        <div class="card-body">
+          <div *ngIf="activeRoutes.length > 0; else noActiveRoutes">
+            <div class="row">
+              <div *ngFor="let route of activeRoutes" class="col-md-6 mb-3">
+                <div class="card border-primary">
+                  <div class="card-header bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                      <h6 class="mb-0">{{route.routeName}}</h6>
+                      <span class="badge bg-success">In Progress</span>
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    <div class="row mb-2">
+                      <div class="col-sm-6">
+                        <small class="text-muted d-block">Vehicle</small>
+                        <strong>{{route.vehicleNumber}}</strong>
+                      </div>
+                      <div class="col-sm-6">
+                        <small class="text-muted d-block">Driver</small>
+                        <strong>{{route.driverName}}</strong>
+                      </div>
+                    </div>
+
+                    <div class="mb-2">
+                      <small class="text-muted d-block">Progress</small>
+                      <div class="progress">
+                        <div 
+                          class="progress-bar" 
+                          role="progressbar" 
+                          [style.width.%]="getProgressPercentage(route)"
+                          [attr.aria-valuenow]="getProgressPercentage(route)" 
+                          aria-valuemin="0" 
+                          aria-valuemax="100">
+                          {{getProgressPercentage(route) | number:'1.0-0'}}%
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="row">
+                      <div class="col-sm-6">
+                        <small class="text-muted d-block">Started</small>
+                        <span>{{route.startTime | date:'shortTime'}}</span>
+                      </div>
+                      <div class="col-sm-6">
+                        <small class="text-muted d-block">Est. Completion</small>
+                        <span>{{getEstimatedCompletion(route)}}</span>
+                      </div>
+                    </div>
+
+                    <hr>
+
+                    <div>
+                      <small class="text-muted d-block mb-1">Collection Points</small>
+                      <div *ngFor="let point of route.collectionPoints" class="small">
+                        <div class="d-flex justify-content-between">
+                          <span>{{point.address}}</span>
+                          <span *ngIf="point.actualCollectionTime" class="text-success">
+                            <i class="bi bi-check-circle-fill"></i>
+                          </span>
+                          <span *ngIf="!point.actualCollectionTime" class="text-warning">
+                            <i class="bi bi-hourglass-split"></i>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <ng-template #noActiveRoutes>
+            <div class="text-center py-4">
+              <i class="bi bi-truck display-1 text-muted"></i>
+              <p class="lead text-muted mt-3">No active routes at the moment</p>
+            </div>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
