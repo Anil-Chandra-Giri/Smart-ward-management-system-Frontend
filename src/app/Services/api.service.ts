@@ -1,14 +1,11 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
-import { ServiceRequest } from '../Models/service-request';
 import { Login } from '../Models/login';
-import { Complaint } from '../Models/complaint';
 import { Vote } from '../Models/vote.model';
 import { Poll } from '../Models/Poll.Model';
 import { PollCategory } from '../Models/poll-category';
 import { NoticeCategory } from '../Models/Category';
-import { Notice } from '../Models/notice';
 import { WeeklySchedule, WasteCollectionRoute, CreateRoute, RouteStatusUpdate, Vehicle, Driver, RealtimeUpdate } from '../Models/WasteCollectionRoute';
 
 
@@ -87,8 +84,8 @@ export class ApiService {
     return this.http.get('https://localhost:7069/api/Appointment/GetAllAppointments');
   }
 
-   getNotices():Observable<Notice[]>{
-    return this.http.get<Notice[]>('https://localhost:7069/api/Notice/');
+   getNotices():Observable<any>{
+    return this.http.get<any>('https://localhost:7069/api/Notice/');
   }
 
   createNotice(data:FormData){
@@ -234,5 +231,8 @@ export class ApiService {
     });
   }
 
-  
+   scandocument(previews:any): Observable<any> {
+    return this.http.post('https://localhost:7069/api/Ocr/scan',previews);
+  }
+ 
 }

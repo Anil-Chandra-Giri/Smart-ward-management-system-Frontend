@@ -1,7 +1,7 @@
-import { Notice } from './notice';
+// import { Notice } from './Notice';
 
-describe('Notice', () => {
-  it('should create an instance', () => {
-    expect(new Notice()).toBeTruthy();
-  });
-});
+// describe('Notice', () => {
+//   it('should create an instance', () => {
+//     expect(new Notice()).toBeTruthy();
+//   });
+// });

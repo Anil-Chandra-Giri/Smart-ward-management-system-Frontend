@@ -1,10 +1,12 @@
-export interface Notice {
-  id:number
-  title:string
-  description:string
-  category:string
-  fileUrl:string
-  isUrgent:boolean
-  publishDate:Date
-  expiryDate:Date
+export class Notice {
+  constructor(
+    public id: number,
+    public title: string,
+    public description: string,
+    public category: string,
+    public fileUrl: string,
+    public isUrgent: boolean,
+    public publishDate: Date,
+    public expiryDate: Date
+  ) {}
 }
