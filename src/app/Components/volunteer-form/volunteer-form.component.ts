@@ -62,7 +62,8 @@ export class VolunteerFormComponent implements OnInit {
       availability: [[]], // Initialize as empty array for multiple select
       emergencyContact: ['', Validators.required],
       emergencyPhone: ['', [Validators.required, Validators.pattern('^[0-9+\\-\\s]+$')]],
-      isActive: [true]
+      isActive: [true],
+      profilePicture:['']
     });
   }
 
@@ -112,24 +113,26 @@ export class VolunteerFormComponent implements OnInit {
     this.error = '';
     this.successMessage = '';
 
-    const formData = this.volunteerForm.value;
+    const formValue = this.volunteerForm.value;
+    const formData = new FormData();
 
     // Convert arrays to comma-separated strings for the backend
-    const skillsString = Array.isArray(formData.skills) ? formData.skills.join(', ') : '';
-    const availabilityString = Array.isArray(formData.availability) ? formData.availability.join(', ') : '';
+    const skillsString = Array.isArray(formValue.skills) ? formValue.skills.join(', ') : '';
+    const availabilityString = Array.isArray(formValue.availability) ? formValue.availability.join(', ') : '';
 
     if (this.isEditMode && this.volunteerId) {
       const updateData: UpdateVolunteer = {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        phoneNumber: formData.phoneNumber,
-        address: formData.address,
+        firstName: formValue.firstName,
+        lastName: formValue.lastName,
+        email: formValue.email,
+        phoneNumber: formValue.phoneNumber,
+        address: formValue.address,
         skills: skillsString,
         availability: availabilityString,
-        isActive: formData.isActive,
-        emergencyContact: formData.emergencyContact,
-        emergencyPhone: formData.emergencyPhone
+        isActive: formValue.isActive,
+        emergencyContact: formValue.emergencyContact,
+        emergencyPhone: formValue.emergencyPhone,
+        
       };
 
       console.log('Sending update data:', updateData); // For debugging
@@ -149,35 +152,36 @@ export class VolunteerFormComponent implements OnInit {
         }
       });
     } else {
-      const createData: CreateVolunteer = {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        phoneNumber: formData.phoneNumber,
-        address: formData.address,
-        dateOfBirth: new Date(formData.dateOfBirth),
-        skills: skillsString,
-        availability: availabilityString,
-        emergencyContact: formData.emergencyContact,
-        emergencyPhone: formData.emergencyPhone
-      };
 
-      console.log('Sending create data:', createData); // For debugging
+formData.append('firstName', formValue.firstName);
+formData.append('lastName', formValue.lastName);
+formData.append('email', formValue.email);
+formData.append('phoneNumber', formValue.phoneNumber);
+formData.append('address', formValue.address);
+formData.append('dateOfBirth', formValue.dateOfBirth);
+formData.append('skills', skillsString);
+formData.append('availability', availabilityString);
+formData.append('emergencyContact', formValue.emergencyContact);
+formData.append('emergencyPhone', formValue.emergencyPhone);
 
-      this.volunteerService.createVolunteer(createData).subscribe({
-        next: () => {
-          this.successMessage = 'Volunteer registered successfully!';
-          this.submitting = false;
-          setTimeout(() => {
-            this.router.navigate(['/volunteers']);
-          }, 2000);
-        },
-        error: (error) => {
-          this.error = 'Error registering volunteer: ' + (error.error?.message || 'Unknown error');
-          this.submitting = false;
-          console.error('Error:', error);
-        }
-      });
+// ✅ Append image file
+if (this.selectedFile) {
+  formData.append('profilePicture', this.selectedFile);
+}
+
+this.volunteerService.createVolunteer(formData).subscribe({
+  next: () => {
+    this.successMessage = 'Volunteer registered successfully!';
+    this.submitting = false;
+    setTimeout(() => {
+      this.router.navigate(['/volunteers']);
+    }, 2000);
+  },
+  error: (error) => {
+    this.error = 'Error registering volunteer';
+    this.submitting = false;
+  }
+});
     }
   }
 
@@ -189,6 +193,28 @@ export class VolunteerFormComponent implements OnInit {
       }
     });
   }
+
+  imagePreview: string | ArrayBuffer | null = null;
+selectedFile: File | null = null;
+
+onFileSelected(event: any) {
+  const file = event.target.files[0];
+
+  if (file.size > 2 * 1024 * 1024) {
+  alert('File too large');
+  return;
+}
+  
+  if (file) {
+    this.selectedFile = file;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.imagePreview = reader.result;
+    };
+    reader.readAsDataURL(file);
+  }
+}
 
   hasError(field: string, error: string): boolean {
     const control = this.volunteerForm.get(field);

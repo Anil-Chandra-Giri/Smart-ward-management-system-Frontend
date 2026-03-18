@@ -1,8 +1,22 @@
-<div class="page-container">
-<div class="top-bar">
-  <button class="book-btn" (click)="openModal()">
+
+<button class="book-btn" (click)="openModal()">
     📅 Book Appointment
   </button>
+<div class="mt-4">
+  <ag-grid-angular
+    class="ag-theme-alpine"
+    style="width: 100%; height: 500px;"
+    [rowData]="rowData"
+    [columnDefs]="columnDefs"
+    [pagination]="true"
+    [rowHeight]="110"
+    [paginationPageSize]="pageSize">
+  </ag-grid-angular>
+</div>
+
+<div class="page-container">
+<div class="top-bar">
+  
   </div>
 
   <!-- Modal Overlay -->
@@ -62,5 +76,8 @@
       </form>
     </div>
   </div>
+
+
+
 
 </div>

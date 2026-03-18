@@ -2,6 +2,7 @@ import {Inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { JwtPayload } from './jwtPayload/jwtpayload.module';
 import { Router } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
+import { BehaviorSubject } from 'rxjs';
 
 
 @Injectable({
@@ -9,6 +10,8 @@ import { isPlatformBrowser } from '@angular/common';
 })
 export class AuthService {
   jwtPayload: JwtPayload = new JwtPayload();
+  private userProfileSubject = new BehaviorSubject<any>(null);
+  userProfile$ = this.userProfileSubject.asObservable();
   constructor(private route:Router,@Inject(PLATFORM_ID) private platformId: Object ) {
     
   }
@@ -29,6 +32,13 @@ export class AuthService {
     const payload = token.split('.')[1];
     const decodedPayload = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
     return JSON.parse(decodedPayload);
+  }
+
+  setUserProfile(profile: any) {
+    this.userProfileSubject.next(profile);
+    if (profile?.profilePicturePath) {
+      localStorage.setItem('userProfilePicture', profile.profilePicturePath);
+    }
   }
 
   getTokenExpirationDate(): Date {

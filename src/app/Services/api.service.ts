@@ -12,6 +12,7 @@ import { WeeklySchedule, WasteCollectionRoute, CreateRoute, RouteStatusUpdate, V
 import { DisasterEvent, CreateDisasterEvent, UpdateDisasterEvent } from '../Models/DisasterEvent.model';
 // import { CreateResource, UpdateResource } from '../Models/resource.model';
 import { Volunteer, CreateVolunteer, UpdateVolunteer } from '../Models/volunteer.model';
+import { AuthService } from './auth.service';
 
 
 @Injectable({
@@ -21,7 +22,7 @@ export class ApiService {
 
   private apiUrl = 'https://localhost:7069/api/WasteCollection';
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private authService:AuthService) { }
 
     createUser(signup: any): Observable<any> {
     return this.http.post(
@@ -97,17 +98,56 @@ export class ApiService {
     return this.http.get('https://localhost:7069/api/Appointment/GetAllAppointments');
   }
 
-   getNotices():Observable<Notice[]>{
-    return this.http.get<Notice[]>('https://localhost:7069/api/Notice/');
+  getMyAppointments(UserId:string): Observable<any> {
+    return this.http.get('https://localhost:7069/api/Appointment/MyAppointments',{params: { userId: UserId }});
+  }
+
+   getNotices():Observable<any>{
+    return this.http.get<any>('https://localhost:7069/api/Notice/');
   }
 
   createNotice(data:FormData){
     return this.http.post('https://localhost:7069/api/Notice/',data);
   }
 
-  deleteNotice(id:number){
-    return this.http.delete(`https://localhost:7069/api/Notice/${id}`);
+  getUserProfile(userId: string): Observable<any> {
+    return this.http.get(`https://localhost:7069/api/SignUp/GetUserProfile/${userId}`);
   }
+
+  // Get profile picture URL
+  // getProfilePictureUrl(userId: string): string {
+  //   return `https://localhost:7069/api/SignUp/GetProfilePicture/${userId}?t=${new Date().getTime()}`;
+  // }
+  getDirectProfilePictureUrl(profilePicturePath: string): string {
+  if (!profilePicturePath) return 'https://i.pravatar.cc/40';
+  
+  // Remove leading slash if present
+  const path = profilePicturePath.startsWith('/') 
+    ? profilePicturePath.substring(1) 
+    : profilePicturePath;
+  
+  // Add timestamp to prevent caching
+  return `https://localhost:7069/${path}?t=${new Date().getTime()}`;
+}
+
+  // Get stored profile picture path or return default
+  // getUserProfilePicture(): string {
+  //   const profilePic = localStorage.getItem('userProfilePicture');
+  //   const userId = this.authService.decodeToken()?.UserId;
+    
+  //   if (profilePic && userId) {
+  //     return this.getProfilePictureUrl(userId);
+  //   }
+  //   return 'https://i.pravatar.cc/40'; // Default avatar
+  // }
+
+updateNotice(id: string, formData: FormData): Observable<any> {
+  return this.http.put(`https://localhost:7069/api/Notice/${id}`, formData);
+}
+
+deleteNotice(id: string): Observable<any> {
+  return this.http.delete(`https://localhost:7069/api/Notice/${id}`);
+}
 
   getCategories():Observable<NoticeCategory[]>{
     return this.http.get<NoticeCategory[]>('https://localhost:7069/api/NoticeCategory/')
@@ -254,7 +294,7 @@ export class ApiService {
     return this.http.get<Volunteer>(`${this.volunteerapiUrl}/${id}`);
   }
 
-  createVolunteer(volunteer: CreateVolunteer): Observable<Volunteer> {
+  createVolunteer(volunteer: FormData): Observable<Volunteer> {
     return this.http.post<Volunteer>(this.volunteerapiUrl, volunteer);
   }
 
@@ -330,5 +370,12 @@ export class ApiService {
 
 
 
-  
+   scandocument(previews:any): Observable<any> {
+    return this.http.post('https://localhost:7069/api/Ocr/scan',previews);
+  }
+
+  scanBothSides(formData: FormData): Observable<any> {
+  return this.http.post('https://localhost:7069/api/Ocr/scan-both-sides', formData);
+}
+ 
 }

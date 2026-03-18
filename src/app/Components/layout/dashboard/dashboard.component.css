@@ -200,3 +200,32 @@ grid-template-columns:1fr;
 }
 
 }
+
+/* Add to your dashboard.component.css */
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-info img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover; /* Ensures image covers the area without distortion */
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Optional: Add hover effect */
+.user-info img:hover {
+  transform: scale(1.05);
+  transition: transform 0.2s ease;
+  cursor: pointer;
+}
+
+/* Fallback for broken images */
+.user-info img.error {
+  content: url('https://i.pravatar.cc/40');
+}

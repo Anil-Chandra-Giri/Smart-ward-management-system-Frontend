@@ -9,9 +9,12 @@
       </p>
     </div>
 
-    <div class="user-info">
-      <span>{{ isStaff ? 'Ward Staff' : 'Citizen' }}</span>
-      <img src="https://i.pravatar.cc/40" alt="User">
+     <div class="user-info">
+      <span>{{ Username }}</span>
+      <img 
+        [src]="profilePictureUrl" 
+        alt="User" 
+        class="profile-pic">
     </div>
   </header>
 
@@ -52,23 +55,28 @@
     <ng-container *ngIf="!isStaff">
 
       <div class="card gradient1">
-        <h3>My Requests</h3>
-        <p>5 Active</p>
+        <h3>My Service Requests</h3>
+        <p>{{serviceRequests}}</p>
       </div>
 
       <div class="card gradient2">
-        <h3>Complaints</h3>
-        <p>2 Pending</p>
+        <h3>Pending Services</h3>
+        <p>{{pendingServices}}</p>
       </div>
 
       <div class="card gradient3">
-        <h3>Appointments</h3>
-        <p>1 Upcoming</p>
+        <h3>Approved Services</h3>
+        <p>{{approvedServices}}</p>
       </div>
 
       <div class="card gradient4">
-        <h3>Ward Notices</h3>
-        <p>8 New</p>
+        <h3>In Review Services</h3>
+        <p>{{inReviewServices}}</p>
+      </div>
+
+      <div class="card gradient5">
+        <h3>Rejected Services</h3>
+        <p>{{rejectedServices}}</p>
       </div>
 
     </ng-container>
@@ -80,7 +88,7 @@
   <section class="charts">
 
     <div class="chart-card">
-  <h3>{{ isStaff ? 'Complaint Status' : 'My Complaint Status' }}</h3>
+  <h3>{{ isStaff ? 'Complaint Status' : 'Ward Complaint Status' }}</h3>
   <canvas #statusChart></canvas>
 </div>
 
@@ -124,35 +132,22 @@
     </div>
 
     <!-- Notices -->
-    <div class="panel">
+    <!-- Notices -->
+<div class="panel">
+  <h2>Recent Notices</h2>
 
-      <h2>{{ isStaff ? 'Recent Activities' : 'Recent Notices' }}</h2>
+  <ul class="activity-list" *ngIf="notices && notices.length > 0">
+    <li *ngFor="let notice of notices | slice:0:5">
+      <span class="dot"></span>
+      {{ notice.title }} <!-- Display only the title -->
+    </li>
+  </ul>
 
-      <ul class="activity-list">
-
-        <li>
-          <span class="dot"></span>
-          Road maintenance scheduled tomorrow
-        </li>
-
-        <li>
-          <span class="dot"></span>
-          Vaccination campaign announcement
-        </li>
-
-        <li>
-          <span class="dot"></span>
-          Agriculture subsidy program open
-        </li>
-
-        <li>
-          <span class="dot"></span>
-          Ward meeting on Friday
-        </li>
-
-      </ul>
-
-    </div>
+  <!-- Show message if no notices -->
+  <p *ngIf="!notices || notices.length === 0" class="no-data-message">
+    No notices available
+  </p>
+</div>
 
   </section>
 

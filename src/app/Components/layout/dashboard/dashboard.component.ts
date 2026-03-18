@@ -1,8 +1,9 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { AfterViewInit, Component, ElementRef, Inject, PLATFORM_ID, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, Inject, PLATFORM_ID, ViewChild } from '@angular/core';
 import { AuthService } from '../../../Services/auth.service';
 import { Chart } from 'chart.js/auto';
 import { ApiService } from '../../../Services/api.service';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-dashboard',
@@ -25,18 +26,34 @@ export class DashboardComponent implements AfterViewInit {
 
     statusChartInstance: Chart | undefined;
     monthlyChartInstance: Chart | undefined;
+    Username:string=''
+    UserId:string=''
+    notices: any[] = [];
+    profilePictureUrl: string=''// Default
+    userProfile: any = null;
 
-
-  constructor(@Inject(PLATFORM_ID) private platformId: Object,private authService: AuthService, private apiCallService:ApiService) {}
+  constructor(@Inject(PLATFORM_ID) private platformId: Object,private authService: AuthService, private apiCallService:ApiService, private sanitizer: DomSanitizer,  private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
+    this.Username = this.authService.decodeToken().UserName;
+    this.UserId = this.authService.decodeToken().UserId;
     let role = this.authService.decodeToken().Role;
     console.log(role);
+
+     if (this.UserId) {
+            this.loadUserProfile();
+        }
+
     if(role=='Staff')
     {
       this.isStaff=true
       this.getServices();
+      
     }
+    else{
+      this.getMyServiceRequests();
+    }
+    this.loadNotices()
   }
 
   ngAfterViewInit() {
@@ -82,6 +99,47 @@ export class DashboardComponent implements AfterViewInit {
       }
     });
   }
+
+// In your component
+loadUserProfile() {
+  if (!this.UserId) return;
+  
+  this.apiCallService.getUserProfile(this.UserId).subscribe({
+    next: (profile) => {
+      console.log('Profile loaded:', profile);
+      this.userProfile = profile;
+      
+      if (profile?.profilePicturePath) {
+        // Construct the direct URL
+        const path = profile.profilePicturePath.startsWith('/') 
+          ? profile.profilePicturePath.substring(1) 
+          : profile.profilePicturePath;
+        
+        const imageUrl = `https://localhost:7069/${path}?t=${new Date().getTime()}`;
+        console.log(imageUrl)
+        this.profilePictureUrl = imageUrl
+         this.cdr.detectChanges();
+        
+        // Sanitize the URL
+        // this.profilePictureUrl = this.sanitizer.bypassSecurityTrustUrl(imageUrl);
+      } else {
+        this.profilePictureUrl = 'https://i.pravatar.cc/40';
+      }
+    },
+    error: (error) => {
+      console.error('Error loading profile:', error);
+      this.profilePictureUrl = 'https://i.pravatar.cc/40';
+    }
+  });
+}
+
+// Add this test method
+testImageLoad(url: string) {
+  const img = new Image();
+  img.onload = () => console.log('Image loaded successfully:', url);
+  img.onerror = () => console.error('Image failed to load:', url);
+  img.src = url;
+}
 
   loadMonthlyServiceChart(): void {
     this.apiCallService.getAllServices().subscribe((res: any[]) => {
@@ -139,9 +197,39 @@ export class DashboardComponent implements AfterViewInit {
     )
   }
 
-   
+  getMyServiceRequests(){
+    this.apiCallService.getAllService(this.UserId).subscribe((res:any[])=>{
+      this.serviceRequests = res.length;
 
+      this.pendingServices = res.filter(x => x.status === 1).length;
 
+      this.inReviewServices = res.filter(x=>x.status === 2).length;
+
+      this.approvedServices = res.filter(x => x.status === 3).length;
+
+      this.rejectedServices = res.filter(x => x.status === 4).length;
+    },
+    err=>{
+      console.log(err);
+    }
   
+  )
+  }
+
+    loadNotices() {
+  this.apiCallService.getNotices().subscribe({
+    next: (data) => {
+      this.notices = data; // Store all notices
+      console.log(this.notices)
+    },
+    error: (error) => {
+      console.error('Error fetching notices:', error);
+    }
+  });
+}
+
+   onImageError(event: any) {
+    event.target.src = 'https://i.pravatar.cc/40'; // Fallback to default on error
+  }
 
 }

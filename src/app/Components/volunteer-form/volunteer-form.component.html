@@ -112,6 +112,34 @@
               </div>
             </div>
 
+            <!-- Profile Picture -->
+<h5 class="mb-3 mt-4">Profile Picture</h5>
+<div class="row mb-3">
+  <div class="col-md-12 text-center">
+
+    <!-- Image Preview -->
+    <div class="mb-3">
+      <img 
+        *ngIf="imagePreview" 
+        [src]="imagePreview" 
+        alt="Profile Preview"
+        style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 2px solid #ddd;" />
+    </div>
+
+    <!-- File Input -->
+    <input 
+      type="file" 
+      class="form-control" 
+      accept="image/*"
+      (change)="onFileSelected($event)" />
+
+    <small class="text-muted d-block mt-2">
+      Upload a profile picture (JPG, PNG). Max size: 2MB
+    </small>
+
+  </div>
+</div>
+
             <!-- Skills and Availability -->
             <h5 class="mb-3 mt-4">Skills & Availability</h5>
             <div class="row mb-3">

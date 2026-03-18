@@ -1,117 +1,506 @@
 <div class="registration-wrapper">
   <div class="registration-card">
-    <h2>Citizen Registration</h2>
-    <p class="subtitle">Smart Ward Management System</p>
+    <div class="header">
+      <h2>Smart Ward Management System</h2>
+      <p class="subtitle">Citizen Registration Portal</p>
+    </div>
 
     <!-- STEP INDICATOR -->
     <div class="steps">
-      <div class="step" [class.active]="currentStep === 1">1. Personal Info</div>
-      <div class="step" [class.active]="currentStep === 2">2. Documents</div>
-      <div class="step" [class.active]="currentStep === 3">3. Verification</div>
-      <div class="step" [class.active]="currentStep === 4">4. Email OTP</div>
+      <div class="step" [class.active]="currentStep === 1" [class.completed]="currentStep > 1">
+        <span class="step-icon">📄</span>
+        <span class="step-label">Upload Documents</span>
+      </div>
+      <div class="step" [class.active]="currentStep === 2" [class.completed]="currentStep > 2">
+        <span class="step-icon">✏️</span>
+        <span class="step-label">Verify Details</span>
+      </div>
+      <div class="step" [class.active]="currentStep === 3" [class.completed]="currentStep > 3">
+        <span class="step-icon">✓</span>
+        <span class="step-label">Verification</span>
+      </div>
+      <div class="step" [class.active]="currentStep === 4">
+        <span class="step-icon">🔐</span>
+        <span class="step-label">Email OTP</span>
+      </div>
     </div>
 
-    <!-- STEP 1: PERSONAL INFO -->
-    <section class="section" *ngIf="currentStep === 1" [formGroup]="registrationForm">
-      <h3>Personal & Address Information</h3>
+    <!-- STEP 1: DOCUMENT UPLOAD & OCR -->
+    <section class="section" *ngIf="currentStep === 1">
+      <div class="section-header">
+        <h3>Step 1: Upload Citizenship Documents</h3>
+        <p class="section-subtitle">Upload your citizenship documents for automatic data extraction</p>
+      </div>
 
-      <div class="form-grid">
-        <input formControlName="fullNameEnglish" placeholder="Full Name (English)">
-        <input formControlName="fullNameNepali" placeholder="Full Name (Nepali)">
-        <select formControlName="gender">
-          <option value="">Gender</option>
-          <option>Male</option>
-          <option>Female</option>
-          <option>Other</option>
-        </select>
-        <input type="date" formControlName="dateOfBirth" placeholder="Date of Birth">
-        <input placeholder="Phone Number" formControlName="phoneNumber">
-        <input type="email" placeholder="Email" formControlName="email">
-        <input placeholder="Citizenship Number" formControlName="citizenshipNumber">
-        <input placeholder="Citizenship Issued District" formControlName="citizenshipIssuedDistrict">
-        <input type="date" placeholder="Citizenship Issued Date" formControlName="citizenshipIssuedDate">
-        <input placeholder="National ID Number" formControlName="nationalIdNumber">
-        <input placeholder="Permanent Address" formControlName="permanentAddress">
-        <input placeholder="Temporary Address" formControlName="temporaryAddress">
-        <input placeholder="Ward Number" formControlName="wardNumber">
-        <input placeholder="Municipality" formControlName="municipality">
-        <input placeholder="District" formControlName="district">
-        <input placeholder="Province" formControlName="province">
-        <input placeholder="Username" formControlName="username">
-        <input placeholder="Password" formControlName="passwordHash" type="password">
+      <div class="upload-area">
+        <div class="upload-grid">
+          <!-- Citizenship Front -->
+          <div class="upload-card" [class.uploaded]="previews['front']" [class.processed]="frontProcessed">
+            <div class="upload-label">
+              <span class="label-icon">🪪</span>
+              <span>Citizenship Front</span>
+              <span class="status-badge" *ngIf="frontProcessed" title="OCR Completed">✓</span>
+              <span class="status-badge processing" *ngIf="isOcrProcessing && !frontProcessed">⟳</span>
+            </div>
+            <label class="upload-box">
+              <input type="file" (change)="onFileSelect($event, 'front')" accept="image/*" #frontInput>
+              <div class="upload-placeholder" *ngIf="!previews['front']">
+                <span class="plus-icon">+</span>
+                <span class="upload-text">Click to upload</span>
+                <span class="upload-hint">Front side of citizenship</span>
+              </div>
+              <img *ngIf="previews['front']" [src]="previews['front']" class="preview-img" alt="Front preview">
+            </label>
+            <div class="file-status" *ngIf="citizenshipFront">
+              <span class="status-icon">📄</span>
+              <span class="status-text">{{citizenshipFront.name | slice:0:20}}{{citizenshipFront.name.length > 20 ? '...' : ''}}</span>
+            </div>
+          </div>
+
+          <!-- Citizenship Back -->
+          <div class="upload-card" [class.uploaded]="previews['back']" [class.processed]="backProcessed">
+            <div class="upload-label">
+              <span class="label-icon">🪪</span>
+              <span>Citizenship Back</span>
+              <span class="status-badge" *ngIf="backProcessed" title="OCR Completed">✓</span>
+              <span class="status-badge processing" *ngIf="isOcrProcessing && !backProcessed">⟳</span>
+            </div>
+            <label class="upload-box">
+              <input type="file" (change)="onFileSelect($event, 'back')" accept="image/*" #backInput>
+              <div class="upload-placeholder" *ngIf="!previews['back']">
+                <span class="plus-icon">+</span>
+                <span class="upload-text">Click to upload</span>
+                <span class="upload-hint">Back side of citizenship</span>
+              </div>
+              <img *ngIf="previews['back']" [src]="previews['back']" class="preview-img" alt="Back preview">
+            </label>
+            <div class="file-status" *ngIf="citizenshipBack">
+              <span class="status-icon">📄</span>
+              <span class="status-text">{{citizenshipBack.name | slice:0:20}}{{citizenshipBack.name.length > 20 ? '...' : ''}}</span>
+            </div>
+          </div>
+
+          <!-- Live Photo with Camera -->
+          <div class="upload-card" [class.uploaded]="previews['live']">
+            <div class="upload-label">
+              <span class="label-icon">📸</span>
+              <span>Live Photo</span>
+              <span class="camera-badge" *ngIf="!livePhoto">📷</span>
+            </div>
+            
+            <!-- Camera Button (shows when no photo) -->
+            <div class="camera-option" *ngIf="!previews['live']" (click)="openCamera()">
+              <div class="camera-icon">📷</div>
+              <div class="camera-text">Open Camera</div>
+              <div class="camera-hint">Take a live photo</div>
+            </div>
+            
+            <!-- OR Separator -->
+            <div class="or-separator" *ngIf="!previews['live']">
+              <span class="or-line"></span>
+              <span class="or-text">OR</span>
+              <span class="or-line"></span>
+            </div>
+            
+            <!-- File Upload Option -->
+            <label class="upload-box">
+              <input type="file" (change)="onFileSelect($event, 'live')" accept="image/*" #liveInput>
+              <div class="upload-placeholder" *ngIf="!previews['live']">
+                <span class="plus-icon">+</span>
+                <span class="upload-text">Browse Files</span>
+                <span class="upload-hint">Choose from gallery</span>
+              </div>
+              <img *ngIf="previews['live']" [src]="previews['live']" class="preview-img" alt="Live photo preview">
+            </label>
+            
+            <!-- Retake Button (shows when photo exists) -->
+            <div class="retake-option" *ngIf="previews['live']" (click)="retakePhoto()">
+              <span class="retake-icon">↻</span>
+              <span class="retake-text">Retake Photo</span>
+            </div>
+            
+            <div class="file-status" *ngIf="livePhoto">
+              <span class="status-icon">📸</span>
+              <span class="status-text">Photo captured</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Camera Modal -->
+      <div class="camera-modal" *ngIf="showCamera" (click)="closeCamera()">
+        <div class="camera-modal-content" (click)="$event.stopPropagation()">
+          <div class="camera-header">
+            <h4>Take Live Photo</h4>
+            <button class="close-btn" (click)="closeCamera()">✕</button>
+          </div>
+          
+          <div class="camera-container">
+            <video #videoElement id="camera-feed" autoplay playsinline></video>
+            <canvas #canvasElement id="camera-canvas" style="display: none;"></canvas>
+            
+            <div class="camera-controls">
+              <button class="capture-btn" (click)="capturePhoto()">
+                <span class="capture-icon">📸</span>
+                Capture
+              </button>
+              <button class="cancel-btn" (click)="closeCamera()">
+                Cancel
+              </button>
+            </div>
+          </div>
+          
+          <div class="camera-instructions">
+            <p>Position your face clearly in the frame</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- OCR Progress Indicator -->
+      <div class="ocr-progress" *ngIf="isOcrProcessing">
+        <div class="progress-header">
+          <span class="progress-title">Processing Documents...</span>
+          <span class="progress-percent">{{ocrProgress}}%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" [style.width.%]="ocrProgress"></div>
+        </div>
+        <div class="progress-status">
+          <span class="status-item" [class.done]="frontProcessed">
+            <span class="status-dot"></span>
+            Front Side {{frontProcessed ? '✓' : 'Processing...'}}
+          </span>
+          <span class="status-item" [class.done]="backProcessed">
+            <span class="status-dot"></span>
+            Back Side {{backProcessed ? '✓' : 'Processing...'}}
+          </span>
+        </div>
+      </div>
+
+      <!-- OCR Results Preview -->
+      <!-- <div class="ocr-results" *ngIf="ocrExtractedData && Object.keys(ocrExtractedData).length > 0 && !isOcrProcessing"> -->
+        <div class="ocr-results" *ngIf="ocrExtractedData && objectKeys(ocrExtractedData).length > 0 && !isOcrProcessing">
+        <div class="results-header">
+          <span class="success-icon">✓</span>
+          <span>Data extracted successfully from citizenship!</span>
+          <span class="extracted-count">{{extractedFields.size}} fields found</span>
+        </div>
+        <div class="results-grid">
+  <div class="result-item" *ngFor="let item of ocrExtractedData | keyvalue">
+    <span class="result-label">{{getSafeFieldLabel(item.key)}}:</span>
+    <span class="result-value">{{item.value}}</span>
+  </div>
+</div>
+      </div>
+
+      <!-- OCR Error Display -->
+      <div class="ocr-error" *ngIf="ocrError">
+        <div class="error-icon">⚠️</div>
+        <div class="error-content">
+          <p class="error-message">{{ocrError}}</p>
+          <div class="error-actions">
+            <button class="manual-btn" (click)="processAndGoToStep2()">Continue with Manual Entry</button>
+          </div>
+        </div>
       </div>
       
       <div class="navigation-buttons">
-        <button class="next-btn" (click)="nextStep()" [disabled]="!isStep1Valid()">Next</button>
+        <button class="next-btn" (click)="processAndGoToStep2()" [disabled]="!isStep1Valid()">
+          <span>Continue to Form →</span>
+        </button>
       </div>
     </section>
 
-    <!-- STEP 2: DOCUMENTS -->
-    <section class="section" *ngIf="currentStep === 2">
-      <h3>Upload Documents</h3>
+    <!-- STEP 2: VERIFY & COMPLETE FORM -->
+    <section class="section" *ngIf="currentStep === 2" [formGroup]="registrationForm">
+      <div class="section-header">
+        <h3>Step 2: Verify & Complete Your Information</h3>
+        <p class="section-subtitle">Please review and complete the extracted information</p>
+      </div>
 
-      <div class="upload-grid">
-        <label class="upload-box">
-          <span *ngIf="!previews['front']">Citizenship Front</span>
-          <img *ngIf="previews['front']" [src]="previews['front']" class="preview-img">
-          <input type="file" (change)="onFileSelect($event, 'front')" accept="image/*">
-        </label>
+      <div class="form-container">
+        <!-- Personal Information -->
+        <div class="form-group-header">
+          <span class="header-icon">👤</span>
+          <h4>Personal Information</h4>
+        </div>
+        <div class="form-grid">
+          <div class="form-field" [class.extracted]="isFieldExtracted('fullNameEnglish')">
+            <label>Full Name (English) <span class="required">*</span></label>
+            <input formControlName="fullNameEnglish" placeholder="Enter full name in English">
+            <span class="extracted-badge" *ngIf="isFieldExtracted('fullNameEnglish')">Auto-filled</span>
+          </div>
 
-        <label class="upload-box">
-          <span *ngIf="!previews['back']">Citizenship Back</span>
-          <img *ngIf="previews['back']" [src]="previews['back']" class="preview-img">
-          <input type="file" (change)="onFileSelect($event, 'back')" accept="image/*">
-        </label>
+          <div class="form-field" [class.extracted]="isFieldExtracted('fullNameNepali')">
+            <label>Full Name (Nepali) <span class="required">*</span></label>
+            <input formControlName="fullNameNepali" placeholder="पूरा नाम नेपालीमा">
+            <span class="extracted-badge" *ngIf="isFieldExtracted('fullNameNepali')">Auto-filled</span>
+          </div>
 
-        <label class="upload-box">
-          <span *ngIf="!previews['live']">Live Photo</span>
-          <img *ngIf="previews['live']" [src]="previews['live']" class="preview-img">
-          <input type="file" (change)="onFileSelect($event, 'live')" accept="image/*">
-        </label>
+          <div class="form-field" [class.extracted]="isFieldExtracted('gender')">
+            <label>Gender <span class="required">*</span></label>
+            <select formControlName="gender">
+              <option value="">Select Gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+            <span class="extracted-badge" *ngIf="isFieldExtracted('gender')">Auto-filled</span>
+          </div>
+
+          <div class="form-field" [class.extracted]="isFieldExtracted('dateOfBirth')">
+            <label>Date of Birth <span class="required">*</span></label>
+            <input type="date" formControlName="dateOfBirth">
+            <span class="extracted-badge" *ngIf="isFieldExtracted('dateOfBirth')">Auto-filled</span>
+          </div>
+
+          <div class="form-field">
+            <label>Phone Number <span class="required">*</span></label>
+            <input formControlName="phoneNumber" placeholder="98XXXXXXXX">
+          </div>
+
+          <div class="form-field">
+            <label>Email Address <span class="required">*</span></label>
+            <input type="email" formControlName="email" placeholder="your@email.com">
+          </div>
+        </div>
+
+        <!-- Citizenship Details -->
+        <div class="form-group-header">
+          <span class="header-icon">🆔</span>
+          <h4>Citizenship Details</h4>
+        </div>
+        <div class="form-grid">
+          <div class="form-field" [class.extracted]="isFieldExtracted('citizenshipNumber')">
+            <label>Citizenship Number <span class="required">*</span></label>
+            <input formControlName="citizenshipNumber" placeholder="Enter citizenship number">
+            <span class="extracted-badge" *ngIf="isFieldExtracted('citizenshipNumber')">Auto-filled</span>
+          </div>
+
+          <div class="form-field" [class.extracted]="isFieldExtracted('citizenshipIssuedDistrict')">
+            <label>Issued District <span class="required">*</span></label>
+            <input formControlName="citizenshipIssuedDistrict" placeholder="District name">
+            <span class="extracted-badge" *ngIf="isFieldExtracted('citizenshipIssuedDistrict')">Auto-filled</span>
+          </div>
+
+          <div class="form-field" [class.extracted]="isFieldExtracted('citizenshipIssuedDate')">
+            <label>Issued Date <span class="required">*</span></label>
+            <input type="date" formControlName="citizenshipIssuedDate">
+            <span class="extracted-badge" *ngIf="isFieldExtracted('citizenshipIssuedDate')">Auto-filled</span>
+          </div>
+
+          <div class="form-field">
+            <label>National ID Number</label>
+            <input formControlName="nationalIdNumber" placeholder="If available">
+          </div>
+        </div>
+
+        <!-- Address Information -->
+        <div class="form-group-header">
+          <span class="header-icon">🏠</span>
+          <h4>Address Information</h4>
+        </div>
+        <div class="form-grid">
+          <div class="form-field" [class.extracted]="isFieldExtracted('permanentAddress')">
+            <label>Permanent Address <span class="required">*</span></label>
+            <input formControlName="permanentAddress" placeholder="Full permanent address">
+            <span class="extracted-badge" *ngIf="isFieldExtracted('permanentAddress')">Auto-filled</span>
+          </div>
+
+          <div class="form-field">
+            <label>Temporary Address <span class="required">*</span></label>
+            <input formControlName="temporaryAddress" placeholder="Current address">
+          </div>
+
+          <div class="form-field" [class.extracted]="isFieldExtracted('wardNumber')">
+            <label>Ward Number <span class="required">*</span></label>
+            <input formControlName="wardNumber" placeholder="Ward number">
+            <span class="extracted-badge" *ngIf="isFieldExtracted('wardNumber')">Auto-filled</span>
+          </div>
+
+          <div class="form-field" [class.extracted]="isFieldExtracted('municipality')">
+            <label>Municipality <span class="required">*</span></label>
+            <input formControlName="municipality" placeholder="Municipality name">
+            <span class="extracted-badge" *ngIf="isFieldExtracted('municipality')">Auto-filled</span>
+          </div>
+
+          <div class="form-field" [class.extracted]="isFieldExtracted('district')">
+            <label>District <span class="required">*</span></label>
+            <input formControlName="district" placeholder="District name">
+            <span class="extracted-badge" *ngIf="isFieldExtracted('district')">Auto-filled</span>
+          </div>
+
+          <div class="form-field" [class.extracted]="isFieldExtracted('province')">
+            <label>Province <span class="required">*</span></label>
+            <input formControlName="province" placeholder="Province name">
+            <span class="extracted-badge" *ngIf="isFieldExtracted('province')">Auto-filled</span>
+          </div>
+        </div>
+
+        <!-- Account Information -->
+        <div class="form-group-header">
+          <span class="header-icon">🔑</span>
+          <h4>Account Information</h4>
+        </div>
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Username <span class="required">*</span></label>
+            <input formControlName="username" placeholder="Choose a username">
+          </div>
+
+          <div class="form-field">
+            <label>Password <span class="required">*</span></label>
+            <input type="password" formControlName="passwordHash" placeholder="Minimum 6 characters">
+          </div>
+        </div>
       </div>
       
       <div class="navigation-buttons">
-        <button class="prev-btn" (click)="prevStep()">Previous</button>
-        <button class="next-btn" (click)="nextStep()" [disabled]="!isStep2Valid()">Next</button>
+        <button class="prev-btn" (click)="prevStep()">← Back to Upload</button>
+        <button class="next-btn" (click)="nextStep()" [disabled]="!isStep2Valid()">Continue to Review →</button>
       </div>
     </section>
 
     <!-- STEP 3: VERIFICATION REQUEST -->
     <section class="section" *ngIf="currentStep === 3">
-      <h3>Verification Request</h3>
+      <div class="section-header">
+        <h3>Step 3: Review & Submit</h3>
+        <p class="section-subtitle">Please review your information before submission</p>
+      </div>
 
-      <p class="info-text">
-        After submission, your request will be reviewed by ward officials.
-        You will be notified via email/SMS.
-      </p>
+      <div class="summary-card">
+        <div class="summary-section">
+          <div class="summary-header">
+            <span class="summary-icon">👤</span>
+            <h4>Personal Information</h4>
+          </div>
+          <div class="summary-grid">
+            <div class="summary-row">
+              <span class="summary-label">Full Name (English):</span>
+              <span class="summary-value">{{registrationForm.get('fullNameEnglish')?.value || 'Not provided'}}</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">Full Name (Nepali):</span>
+              <span class="summary-value">{{registrationForm.get('fullNameNepali')?.value || 'Not provided'}}</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">Email:</span>
+              <span class="summary-value">{{registrationForm.get('email')?.value || 'Not provided'}}</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">Phone:</span>
+              <span class="summary-value">{{registrationForm.get('phoneNumber')?.value || 'Not provided'}}</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">Gender:</span>
+              <span class="summary-value">{{registrationForm.get('gender')?.value || 'Not provided'}}</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">Date of Birth:</span>
+              <span class="summary-value">{{registrationForm.get('dateOfBirth')?.value | date}}</span>
+            </div>
+          </div>
+        </div>
 
-      <div class="summary-section" *ngIf="registrationForm.value">
-        <h4>Review Your Information:</h4>
-        <div class="summary-grid">
-          <div><strong>Name:</strong> {{registrationForm.get('fullNameEnglish')?.value}}</div>
-          <div><strong>Email:</strong> {{registrationForm.get('email')?.value}}</div>
-          <div><strong>Phone:</strong> {{registrationForm.get('phoneNumber')?.value}}</div>
-          <div><strong>Username:</strong> {{registrationForm.get('username')?.value}}</div>
+        <div class="summary-section">
+          <div class="summary-header">
+            <span class="summary-icon">🆔</span>
+            <h4>Citizenship Details</h4>
+          </div>
+          <div class="summary-grid">
+            <div class="summary-row">
+              <span class="summary-label">Citizenship Number:</span>
+              <span class="summary-value">{{registrationForm.get('citizenshipNumber')?.value || 'Not provided'}}</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">Issued District:</span>
+              <span class="summary-value">{{registrationForm.get('citizenshipIssuedDistrict')?.value || 'Not provided'}}</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">Issued Date:</span>
+              <span class="summary-value">{{registrationForm.get('citizenshipIssuedDate')?.value | date}}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="summary-section">
+          <div class="summary-header">
+            <span class="summary-icon">🏠</span>
+            <h4>Address Information</h4>
+          </div>
+          <div class="summary-grid">
+            <div class="summary-row">
+              <span class="summary-label">Ward Number:</span>
+              <span class="summary-value">{{registrationForm.get('wardNumber')?.value || 'Not provided'}}</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">Municipality:</span>
+              <span class="summary-value">{{registrationForm.get('municipality')?.value || 'Not provided'}}</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">District:</span>
+              <span class="summary-value">{{registrationForm.get('district')?.value || 'Not provided'}}</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">Province:</span>
+              <span class="summary-value">{{registrationForm.get('province')?.value || 'Not provided'}}</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">Permanent Address:</span>
+              <span class="summary-value">{{registrationForm.get('permanentAddress')?.value || 'Not provided'}}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="summary-section">
+          <div class="summary-header">
+            <span class="summary-icon">🔑</span>
+            <h4>Account Information</h4>
+          </div>
+          <div class="summary-grid">
+            <div class="summary-row">
+              <span class="summary-label">Username:</span>
+              <span class="summary-value">{{registrationForm.get('username')?.value || 'Not provided'}}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="terms-agreement">
+          <label class="checkbox-container">
+            <input type="checkbox" [(ngModel)]="termsAccepted">
+            <span class="checkmark"></span>
+            <span class="terms-text">I confirm that all information provided is correct and complete</span>
+          </label>
         </div>
       </div>
       
       <div class="navigation-buttons">
-        <button class="prev-btn" (click)="prevStep()">Previous</button>
-        <button class="submit-btn" (click)="submitRegistration()" [disabled]="isSubmitting">
-          {{isSubmitting ? 'Submitting...' : 'Submit Verification Request'}}
+        <button class="prev-btn" (click)="prevStep()">← Back to Edit</button>
+        <button class="submit-btn" (click)="submitRegistration()" [disabled]="isSubmitting || !termsAccepted">
+          <span *ngIf="!isSubmitting">Submit Verification Request</span>
+          <span *ngIf="isSubmitting" class="spinner-text">
+            <span class="spinner">⏳</span> Submitting...
+          </span>
         </button>
       </div>
     </section>
 
     <!-- STEP 4: OTP VERIFICATION -->
     <section class="section" *ngIf="currentStep === 4">
-      <h3>Email Verification</h3>
+      <div class="section-header">
+        <h3>Step 4: Email Verification</h3>
+        <p class="section-subtitle">Verify your email address to complete registration</p>
+      </div>
       
       <div class="otp-container" *ngIf="registrationResponse">
-        <div class="success-icon">✓</div>
-        <p class="success-message">Registration successful! Please verify your email.</p>
+        <div class="success-animation">
+          <div class="success-circle">✓</div>
+        </div>
+        
+        <p class="success-message">Registration successful!</p>
         <p class="info-text">
-          We've sent a 6-digit OTP to <strong>{{registrationResponse.email}}</strong>
+          We've sent a 6-digit verification code to<br>
+          <strong>{{registrationResponse.email}}</strong>
         </p>
         
         <div class="otp-input-group">
@@ -120,30 +509,31 @@
             [(ngModel)]="otpCode" 
             maxlength="6" 
             placeholder="Enter 6-digit OTP"
-            class="otp-input">
+            class="otp-input"
+            [class.error]="otpMessageType === 'error' && otpMessage">
         </div>
         
         <div class="timer-text" *ngIf="otpTimer > 0">
-          OTP expires in: {{formatTime(otpTimer)}}
+          <span class="timer-icon">⏱️</span>
+          Code expires in: {{formatTime(otpTimer)}}
         </div>
         
         <div class="message" [class.error]="otpMessageType === 'error'" 
              [class.success]="otpMessageType === 'success'" *ngIf="otpMessage">
+          <span class="message-icon">{{otpMessageType === 'success' ? '✓' : '⚠'}}</span>
           {{otpMessage}}
         </div>
         
         <div class="otp-actions">
-          <button class="verify-btn" (click)="verifyOtp()" [disabled]="isVerifying || otpCode?.length !== 6">
-            {{isVerifying ? 'Verifying...' : 'Verify Email'}}
+          <button class="verify-btn" (click)="verifyOtp()" [disabled]="isVerifying || (otpCode && otpCode.length !== 6)">
+            <span *ngIf="!isVerifying">Verify Email</span>
+            <span *ngIf="isVerifying" class="spinner-text">Verifying...</span>
           </button>
           
           <button class="resend-btn" (click)="resendOtp()" [disabled]="isResending || otpTimer > 0">
-            {{isResending ? 'Sending...' : 'Resend OTP'}}
+            <span *ngIf="!isResending">Resend Code</span>
+            <span *ngIf="isResending" class="spinner-text">Sending...</span>
           </button>
-        </div>
-        
-        <div class="resend-timer" *ngIf="otpTimer > 0">
-          Resend available in {{formatTime(otpTimer)}}
         </div>
       </div>
     </section>
