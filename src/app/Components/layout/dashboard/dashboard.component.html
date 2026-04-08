@@ -3,152 +3,140 @@
   <!-- Header -->
   <header class="dashboard-header">
     <div>
-      <h1>{{ isStaff ? 'Ward Staff Dashboard' : 'Citizen Dashboard' }}</h1>
+      <h1>
+        {{ isAdmin ? 'Admin Dashboard' : (isStaff ? 'Ward Staff Dashboard' : 'Citizen Dashboard') }}
+      </h1>
       <p class="subtitle">
-        {{ isStaff ? 'Manage ward services and requests' : 'Stay updated with ward activities' }}
+        {{ isAdmin ? 'Manage system, users, and monitor overall performance' : 
+           (isStaff ? 'Manage ward services and requests' : 'Stay updated with ward activities') }}
       </p>
     </div>
 
-     <div class="user-info">
+    <div class="user-info">
       <span>{{ Username }}</span>
       <img 
         [src]="profilePictureUrl" 
         alt="User" 
-        class="profile-pic">
+        class="profile-pic"
+        (error)="onImageError($event)">
     </div>
   </header>
 
   <!-- Statistics -->
   <section class="stats">
 
-    <!-- STAFF -->
-    <ng-container *ngIf="isStaff">
-
+    <!-- ADMIN STATS -->
+    <ng-container *ngIf="isAdmin">
       <div class="card gradient1">
-        <h3>Service Requests</h3>
-        <p>{{serviceRequests}}</p>
+        <h3>Total Citizens</h3>
+        <p>{{ totalCitizens }}</p>
       </div>
 
       <div class="card gradient2">
-        <h3>Pending Services</h3>
-        <p>{{pendingServices}}</p>
+        <h3>Total Staff</h3>
+        <p>{{ totalStaff }}</p>
       </div>
 
       <div class="card gradient3">
-        <h3>Approved Services</h3>
-        <p>{{approvedServices}}</p>
+        <h3>Service Requests</h3>
+        <p>{{ totalServiceRequests }}</p>
       </div>
 
       <div class="card gradient4">
-        <h3>In Review Services</h3>
-        <p>{{inReviewServices}}</p>
+        <h3>Total Complaints</h3>
+        <p>{{ totalComplaints }}</p>
       </div>
 
       <div class="card gradient5">
-        <h3>Rejected Services</h3>
-        <p>{{rejectedServices}}</p>
+        <h3>Pending Complaints</h3>
+        <p>{{ pendingComplaints }}</p>
       </div>
 
+      <div class="card gradient6">
+        <h3>Resolved Complaints</h3>
+        <p>{{ resolvedComplaints }}</p>
+      </div>
+
+      <div class="card gradient7">
+        <h3>Total Polls</h3>
+        <p>{{ totalPolls }}</p>
+      </div>
+
+      <div class="card gradient8">
+        <h3>Active Polls</h3>
+        <p>{{ activePolls }}</p>
+      </div>
     </ng-container>
 
-    <!-- CITIZEN -->
-    <ng-container *ngIf="!isStaff">
-
+    <!-- STAFF STATS -->
+    <ng-container *ngIf="isStaff">
       <div class="card gradient1">
-        <h3>My Service Requests</h3>
-        <p>{{serviceRequests}}</p>
+        <h3>Service Requests</h3>
+        <p>{{ serviceRequests }}</p>
       </div>
 
       <div class="card gradient2">
         <h3>Pending Services</h3>
-        <p>{{pendingServices}}</p>
+        <p>{{ pendingServices }}</p>
       </div>
 
       <div class="card gradient3">
         <h3>Approved Services</h3>
-        <p>{{approvedServices}}</p>
+        <p>{{ approvedServices }}</p>
       </div>
 
       <div class="card gradient4">
         <h3>In Review Services</h3>
-        <p>{{inReviewServices}}</p>
+        <p>{{ inReviewServices }}</p>
       </div>
 
       <div class="card gradient5">
         <h3>Rejected Services</h3>
-        <p>{{rejectedServices}}</p>
+        <p>{{ rejectedServices }}</p>
+      </div>
+    </ng-container>
+
+    <!-- CITIZEN STATS -->
+    <ng-container *ngIf="isCitizen">
+      <div class="card gradient1">
+        <h3>My Service Requests</h3>
+        <p>{{ serviceRequests }}</p>
       </div>
 
+      <div class="card gradient2">
+        <h3>Pending Services</h3>
+        <p>{{ pendingServices }}</p>
+      </div>
+
+      <div class="card gradient3">
+        <h3>Approved Services</h3>
+        <p>{{ approvedServices }}</p>
+      </div>
+
+      <div class="card gradient4">
+        <h3>In Review Services</h3>
+        <p>{{ inReviewServices }}</p>
+      </div>
+
+      <div class="card gradient5">
+        <h3>Rejected Services</h3>
+        <p>{{ rejectedServices }}</p>
+      </div>
     </ng-container>
 
   </section>
 
   <!-- Charts Section -->
-
   <section class="charts">
-
     <div class="chart-card">
-  <h3>{{ isStaff ? 'Complaint Status' : 'Ward Complaint Status' }}</h3>
-  <canvas #statusChart></canvas>
-</div>
-
-<div class="chart-card">
-  <h3>{{ isStaff ? 'Monthly Service Requests' : 'Ward Activity Overview' }}</h3>
-  <canvas #monthlyChart></canvas>
-</div>
-
-  </section>
-
-  <!-- Progress + Activity -->
-
-  <section class="info-grid">
-
-    <!-- Projects Progress (Staff) -->
-    <div *ngIf="isStaff" class="panel">
-
-      <h2>Ward Project Progress</h2>
-
-      <div class="progress-item">
-        <span>Road Construction</span>
-        <div class="progress-bar">
-          <div class="progress" style="width:70%"></div>
-        </div>
-      </div>
-
-      <div class="progress-item">
-        <span>Water Supply Upgrade</span>
-        <div class="progress-bar">
-          <div class="progress" style="width:50%"></div>
-        </div>
-      </div>
-
-      <div class="progress-item">
-        <span>Street Light Installation</span>
-        <div class="progress-bar">
-          <div class="progress" style="width:85%"></div>
-        </div>
-      </div>
-
+      <h3>{{ isAdmin ? 'Complaint Status Distribution' : 'Service Request Status' }}</h3>
+      <canvas #statusChart></canvas>
     </div>
 
-    <!-- Notices -->
-    <!-- Notices -->
-<div class="panel">
-  <h2>Recent Notices</h2>
-
-  <ul class="activity-list" *ngIf="notices && notices.length > 0">
-    <li *ngFor="let notice of notices | slice:0:5">
-      <span class="dot"></span>
-      {{ notice.title }} <!-- Display only the title -->
-    </li>
-  </ul>
-
-  <!-- Show message if no notices -->
-  <p *ngIf="!notices || notices.length === 0" class="no-data-message">
-    No notices available
-  </p>
-</div>
-
+    <div class="chart-card">
+      <h3>{{ isAdmin ? 'Monthly Complaints Trend' : 'Monthly Activity Overview' }}</h3>
+      <canvas #monthlyChart></canvas>
+    </div>
   </section>
 
 </div>

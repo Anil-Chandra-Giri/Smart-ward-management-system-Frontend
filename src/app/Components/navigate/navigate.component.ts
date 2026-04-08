@@ -300,55 +300,55 @@ export class NavigateComponent implements OnInit, OnDestroy {
 
   async ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
-      await this.initializeMap();
+      // await this.initializeMap();
     }
   }
 
-  async initializeMap() {
-    try {
-      // Load Leaflet
-      this.L = await this.leafletService.loadLeaflet();
-      await this.leafletService.loadRoutingMachine();
+  // async initializeMap() {
+  //   try {
+  //     // Load Leaflet
+  //     this.L = await this.leafletService.loadLeaflet();
+  //     await this.leafletService.loadRoutingMachine();
 
-      // Initialize map
-      this.map = this.L.map(this.mapContainer.nativeElement).setView(
-        [this.destinationLat, this.destinationLng], 
-        13
-      );
+  //     // Initialize map
+  //     this.map = this.L.map(this.mapContainer.nativeElement).setView(
+  //       [this.destinationLat, this.destinationLng], 
+  //       13
+  //     );
 
-      // Add tile layer
-      this.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-      }).addTo(this.map);
+  //     // Add tile layer
+  //     this.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  //       attribution: '© OpenStreetMap contributors'
+  //     }).addTo(this.map);
 
-      // Add complaint marker
-      this.complaintMarker = this.L.marker(
-        [this.destinationLat, this.destinationLng],
-        {
-          icon: this.L.divIcon({
-            className: 'complaint-marker',
-            html: '📍',
-            iconSize: [30, 30]
-          })
-        }
-      ).addTo(this.map)
-       .bindPopup(`
-         <b>Complaint #${this.complaintId}</b><br>
-         Category: ${this.complaintCategory}<br>
-         ${this.destinationAddress}
-       `)
-       .openPopup();
+  //     // Add complaint marker
+  //     this.complaintMarker = this.L.marker(
+  //       [this.destinationLat, this.destinationLng],
+  //       {
+  //         icon: this.L.divIcon({
+  //           className: 'complaint-marker',
+  //           html: '📍',
+  //           iconSize: [30, 30]
+  //         })
+  //       }
+  //     ).addTo(this.map)
+  //      .bindPopup(`
+  //        <b>Complaint #${this.complaintId}</b><br>
+  //        Category: ${this.complaintCategory}<br>
+  //        ${this.destinationAddress}
+  //      `)
+  //      .openPopup();
 
-      this.mapInitialized = true;
+  //     this.mapInitialized = true;
       
-      // Start tracking
-      this.startTracking();
+  //     // Start tracking
+  //     this.startTracking();
 
-    } catch (error) {
-      console.error('Error initializing map:', error);
-      alert('Failed to initialize map. Please try again.');
-    }
-  }
+  //   } catch (error) {
+  //     console.error('Error initializing map:', error);
+  //     alert('Failed to initialize map. Please try again.');
+  //   }
+  // }
 
   startTracking() {
     if (!navigator.geolocation) {
@@ -412,122 +412,116 @@ export class NavigateComponent implements OnInit, OnDestroy {
   }
 
   getRoute(origin: {lat: number, lng: number}) {
-    // Remove old route if exists
-    if (this.routeControl) {
-      this.map.removeControl(this.routeControl);
-    }
-    
-    // Remove fallback line if exists
-    if (this.fallbackPolyline) {
-      this.map.removeLayer(this.fallbackPolyline);
-    }
+  // Remove old route and fallback polyline if they exist
+  if (this.routeControl) {
+    this.map.removeControl(this.routeControl);
+  }
+  
+  if (this.fallbackPolyline) {
+    this.map.removeLayer(this.fallbackPolyline);
+  }
 
-    this.routeStatus = 'pending';
-    this.eta = 'Calculating route...';
+  this.routeStatus = 'pending';
+  this.eta = 'Calculating route...';
 
-    try {
-      // Create new route using OSRM
-      this.routeControl = (this.L as any).Routing.control({
-        waypoints: [
-          this.L.latLng(origin.lat, origin.lng),
-          this.L.latLng(this.destinationLat, this.destinationLng)
-        ],
-        router: (this.L as any).Routing.osrmv1({
-          serviceUrl: 'https://router.project-osrm.org/route/v1',
-          profile: 'driving',
-          timeout: 15000
-        }),
-        lineOptions: {
-          styles: [
-            {color: '#007bff', opacity: 0.7, weight: 6}
-          ]
-        },
-        show: false,
-        addWaypoints: false,
-        routeWhileDragging: false,
-        fitSelectedRoutes: true
-      }).addTo(this.map);
+  try {
+    // Create new route using OSRM (or another routing service if you prefer)
+    this.routeControl = (this.L as any).Routing.control({
+      waypoints: [
+        this.L.latLng(origin.lat, origin.lng), // officer position
+        this.L.latLng(this.destinationLat, this.destinationLng) // destination
+      ],
+      router: (this.L as any).Routing.osrmv1({
+        serviceUrl: 'https://router.project-osrm.org/route/v1', // Ensure this URL is accessible
+        profile: 'driving', // You can change this to 'walking', 'cycling', etc. based on the use case
+        timeout: 15000
+      }),
+      lineOptions: {
+        styles: [
+          {color: '#007bff', opacity: 0.7, weight: 6} // Styling for the route line
+        ]
+      },
+      show: false, // Don't show waypoints, we only care about the route
+      addWaypoints: false, // No intermediate waypoints
+      routeWhileDragging: false, // Disable dragging for this case
+      fitSelectedRoutes: true // Fit the route to the map after calculating
+    }).addTo(this.map);
 
-      // Handle successful route
-      this.routeControl.on('routesfound', (e: any) => {
-        console.log('Routes found:', e);
-        this.routeStatus = 'success';
+    // Handle successful route calculation
+    this.routeControl.on('routesfound', (e: any) => {
+      this.routeStatus = 'success';
+      
+      if (e.routes && e.routes.length > 0) {
+        const route = e.routes[0];
+        // Distance and time info
+        const distanceInMeters = route.summary.totalDistance;
+        const distanceInKm = distanceInMeters / 1000;
+
+        // Update distance
+        this.rawDistance = distanceInKm;
+        this.distance = distanceInKm;
+
+        // Update ETA based on route distance
+        this.calculateETA(distanceInKm);
         
-        if (e.routes && e.routes.length > 0) {
-          const route = e.routes[0];
-          console.log('Route details:', route);
-          
-          // Get distance in meters and convert to km
-          const distanceInMeters = route.summary.totalDistance;
-          const distanceInKm = distanceInMeters / 1000;
-          
-          // Update distance with road route
-          this.rawDistance = distanceInKm;
-          this.distance = distanceInKm;
-          
-          // Calculate ETA based on road distance
-          this.calculateETA(distanceInKm);
-          
-          // Calculate progress along route
-          this.calculateProgress(route, origin);
-        }
-      });
+        // Update progress
+        this.calculateProgress(route, origin);
+      }
+    });
 
-      // Handle routing errors
-      this.routeControl.on('routingerror', (e: any) => {
-        console.error('Routing error:', e);
-        this.routeStatus = 'failed';
-        
-        // Show fallback straight line
-        this.drawFallbackRoute(origin, {
-          lat: this.destinationLat,
-          lng: this.destinationLng
-        });
-      });
-
-    } catch (error) {
-      console.error('Error creating route:', error);
+    // Handle routing errors (e.g., no route found)
+    this.routeControl.on('routingerror', (e: any) => {
+      console.error('Routing error:', e);
       this.routeStatus = 'failed';
       this.drawFallbackRoute(origin, {
         lat: this.destinationLat,
         lng: this.destinationLng
       });
-    }
-  }
+    });
 
-  drawFallbackRoute(origin: {lat: number, lng: number}, destination: {lat: number, lng: number}) {
-    // Draw straight line as fallback
-    const latlngs = [
-      [origin.lat, origin.lng],
-      [destination.lat, destination.lng]
-    ];
-    
-    this.fallbackPolyline = this.L.polyline(latlngs, {
-      color: '#ff6b6b',
-      weight: 4,
-      opacity: 0.7,
-      dashArray: '10, 10'
-    }).addTo(this.map);
-    
-    // Add distance label
-    const midPoint = {
-      lat: (origin.lat + destination.lat) / 2,
-      lng: (origin.lng + destination.lng) / 2
-    };
-    
-    this.L.marker([midPoint.lat, midPoint.lng], {
-      icon: this.L.divIcon({
-        className: 'distance-label',
-        html: `<div style="background: white; padding: 2px 5px; border-radius: 3px; border: 1px solid #ccc; font-size: 12px;">
-                ${this.formatDistance(this.distance)} (direct)
-               </div>`,
-        iconSize: [100, 20]
-      })
-    }).addTo(this.map);
-    
-    // We already have distance from straight-line calculation
-    this.eta = this.eta + ' (direct)';
+  } catch (error) {
+    console.error('Error creating route:', error);
+    this.routeStatus = 'failed';
+    this.drawFallbackRoute(origin, {
+      lat: this.destinationLat,
+      lng: this.destinationLng
+    });
   }
+}
+
+drawFallbackRoute(origin: { lat: number, lng: number }, destination: { lat: number, lng: number }) {
+  // Create a straight-line polyline
+  const latlngs = [
+    [origin.lat, origin.lng],
+    [destination.lat, destination.lng]
+  ];
+
+  this.fallbackPolyline = this.L.polyline(latlngs, {
+    color: '#ff6b6b',  // Red color for the fallback line
+    weight: 4,
+    opacity: 0.7,
+    dashArray: '10, 10'  // Dotted line style
+  }).addTo(this.map);
+
+  // Display the fallback distance at the midpoint of the line
+  const midPoint = {
+    lat: (origin.lat + destination.lat) / 2,
+    lng: (origin.lng + destination.lng) / 2
+  };
+
+  this.L.marker([midPoint.lat, midPoint.lng], {
+    icon: this.L.divIcon({
+      className: 'distance-label',
+      html: `<div style="background: white; padding: 2px 5px; border-radius: 3px; border: 1px solid #ccc; font-size: 12px;">
+              ${this.formatDistance(this.distance)} (direct)
+            </div>`,
+      iconSize: [100, 20]
+    })
+  }).addTo(this.map);
+
+  // Add direct distance to ETA (for fallback)
+  this.eta = this.eta + ' (direct)';
+}
 
   calculateETA(distanceInKm: number) {
     // Different speeds based on road type

@@ -1,31 +1,68 @@
-import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../../Services/auth.service';
-import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-sidebar',
-  imports: [CommonModule],
+  standalone: true,
+  imports: [CommonModule, RouterModule],
   templateUrl: './sidebar.component.html',
-  styleUrl: './sidebar.component.css'
+  styleUrls: ['./sidebar.component.css']
 })
-export class SidebarComponent {
-    isStaff: boolean = false;
+export class SidebarComponent implements OnInit {
+  
+  isStaff = false;
+  isCitizen = false;
+  isAdmin = true;
+  isBrowser = false;
+  userName: string = '';
+  userRole: string = '';
 
-  constructor(private authService: AuthService, private router: Router) {}
-    ngOnInit(): void {
-    let role = this.authService.decodeToken().Role;
-    console.log(role);
-    if(role=='Staff')
-    {
-      this.isStaff=true
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {}
+
+  ngOnInit(): void {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+    
+    if (this.isBrowser) {
+      this.loadUserData();
     }
   }
 
-  logout(): void {
-    localStorage.removeItem('userToken');
-    this.authService.logout();
-    this.router.navigate(['/login']);
+  loadUserData(): void {
+    try {
+      const token = localStorage.getItem('token');
+      if (token) {
+        const decodedToken = this.authService.decodeToken();
+        if (decodedToken) {
+          this.userRole = decodedToken.Role;
+          this.userName = decodedToken.UserName;
+          
+          // Set role flags
+          this.isAdmin = this.userRole === 'Admin' || this.userRole === 'admin';
+          this.isStaff = this.userRole === 'Staff' || this.userRole === 'staff';
+          this.isCitizen = this.userRole === 'Citizen' || this.userRole === 'citizen';
+          
+          console.log('Sidebar - User role:', this.userRole);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading user data in sidebar:', error);
+    }
   }
 
+  isActive(route: string): boolean {
+    return this.router.url === route || this.router.url.startsWith(route + '/');
+  }
+
+  logout(): void {
+    if (this.isBrowser) {
+      localStorage.removeItem('token');
+      this.router.navigate(['/login']);
+    }
+  }
 }
