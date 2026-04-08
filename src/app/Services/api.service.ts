@@ -77,6 +77,15 @@ export class ApiService {
     return this.http.get('https://localhost:7069/api/ServiceRequest/GetAllRequestedServices');
   }
 
+  updateServiceRequest(id: string, payload: any): Observable<any> {
+  return this.http.put(`https://localhost:7069/api/ServiceRequest/${id}`, payload);
+}
+
+// Delete a service request
+deleteServiceRequest(id: string): Observable<any> {
+  return this.http.delete(`https://localhost:7069/api/ServiceRequest/${id}`);
+}
+
   updateServiceStatus(data:any): Observable<any>{
   return this.http.put('https://localhost:7069/api/ServiceRequest/update-status',data);
 }
@@ -377,5 +386,27 @@ deleteNotice(id: string): Observable<any> {
   scanBothSides(formData: FormData): Observable<any> {
   return this.http.post('https://localhost:7069/api/Ocr/scan-both-sides', formData);
 }
+
+  getOfficerAssignments(officerId: string): Observable<any> {
+    return this.http.get(`https://localhost:7069/api/FollowUp/officer-assignments/${officerId}`);
+  }
+
+  getEscalatedTasks(adminId: string): Observable<any> {
+    return this.http.get(`https://localhost:7069/api/FollowUp/escalated-tasks/${adminId}`);
+  }
+
+  sendReminder(reminder: any): Observable<any> {
+    return this.http.post(`https://localhost:7069/api/FollowUp/send-reminder`, reminder);
+  }
+
+  escalateTask(assignmentId: string, reason: string): Observable<any> {
+    return this.http.post(`https://localhost:7069/api/FollowUp/escalate/${assignmentId}`, JSON.stringify(reason), {
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+
+  getDashboardStats(userId: string, role: string): Observable<any> {
+    return this.http.get(`https://localhost:7069/api/FollowUp/dashboard-stats/${userId}?role=${role}`);
+  }
  
 }

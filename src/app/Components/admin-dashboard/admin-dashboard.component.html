@@ -1,0 +1,177 @@
+<div class="container-fluid">
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col">
+      <h2>Escalated Tasks Dashboard</h2>
+      <p class="text-muted">Tasks that require your immediate attention</p>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <div class="card text-white bg-danger">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="card-title">Total Escalated</h5>
+              <h2 class="card-text">{{stats.totalEscalated}}</h2>
+            </div>
+            <i class="fas fa-exclamation-triangle fa-3x"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card text-white bg-warning">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="card-title">Critical Tasks</h5>
+              <h2 class="card-text">{{stats.criticalTasks}}</h2>
+            </div>
+            <i class="fas fa-clock fa-3x"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card text-white bg-info">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="card-title">Pending Review</h5>
+              <h2 class="card-text">{{stats.pendingReview}}</h2>
+            </div>
+            <i class="fas fa-eye fa-3x"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Escalated Tasks Table -->
+  <div class="card">
+    <div class="card-header bg-danger text-white">
+      <h5 class="mb-0">Escalated Tasks</h5>
+    </div>
+    <div class="card-body">
+      <div *ngIf="loading" class="text-center">
+        <div class="spinner-border text-danger" role="status">
+          <span class="sr-only">Loading...</span>
+        </div>
+      </div>
+
+      <div *ngIf="!loading && escalatedTasks.length === 0" class="text-center p-5">
+        <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+        <h5>No escalated tasks</h5>
+        <p class="text-muted">All tasks are being handled within the normal workflow.</p>
+      </div>
+
+      <div class="table-responsive" *ngIf="!loading && escalatedTasks.length > 0">
+        <table class="table table-hover">
+          <thead class="thead-light">
+            <tr>
+              <th>Reference #</th>
+              <th>Task Details</th>
+              <th>Original Officer</th>
+              <th>Escalation Level</th>
+              <th>Days Pending</th>
+              <th>Priority</th>
+              <th>Ward</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let task of escalatedTasks" 
+                [class.table-danger]="task.daysPending > 10"
+                [class.highlighted-row]="task.isHighlighted">
+              <td>
+                <strong>{{task.referenceNumber}}</strong>
+                <br>
+                <small class="text-muted">{{task.referenceType}}</small>
+              </td>
+              <td>
+                <strong>{{task.title}}</strong>
+                <br>
+                <small class="text-muted">{{task.description | slice:0:60}}...</small>
+              </td>
+              <td>{{task.originalOfficerName}}</td>
+              <td>
+                <span [class]="getEscalationLevelClass(task.escalationLevel)">
+                  {{getEscalationLevelText(task.escalationLevel)}}
+                </span>
+              </td>
+              <td>
+                <span [class.text-danger]="task.daysPending > 7" class="font-weight-bold">
+                  {{task.daysPending}} days
+                </span>
+              </td>
+              <td>
+                <span [class]="getPriorityClass(task.priority)">
+                  {{task.priority}}
+                </span>
+              </td>
+              <td>Ward {{task.wardNumber}}</td>
+              <td>
+                <button class="btn btn-sm btn-info mr-1" 
+                        (click)="viewDetails(task)"
+                        title="View Details">
+                  <i class="fas fa-eye"></i>
+                </button>
+                <button class="btn btn-sm btn-warning mr-1" 
+                        (click)="reassignTask(task)"
+                        title="Reassign">
+                  <i class="fas fa-user-plus"></i>
+                </button>
+                <button class="btn btn-sm btn-success" 
+                        (click)="markAsReviewed(task)"
+                        *ngIf="task.isHighlighted"
+                        title="Mark as Reviewed">
+                  <i class="fas fa-check"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Timeline for Critical Tasks -->
+  <div class="card mt-4" *ngIf="!loading && escalatedTasks.length > 0">
+    <div class="card-header">
+      <h5>Task Timeline</h5>
+    </div>
+    <div class="card-body">
+      <div class="timeline">
+        <div *ngFor="let task of escalatedTasks.slice(0,5)" class="timeline-item">
+          <div class="timeline-badge" [class.bg-danger]="task.daysPending > 10" 
+               [class.bg-warning]="task.daysPending <= 10">
+            <i class="fas fa-exclamation"></i>
+          </div>
+          <div class="timeline-panel">
+            <div class="timeline-heading">
+              <h6 class="timeline-title">
+                {{task.title}} 
+                <small class="text-muted">- {{task.referenceNumber}}</small>
+              </h6>
+              <p class="text-muted">
+                <small>
+                  <i class="fas fa-clock"></i> 
+                  Escalated {{task.escalatedDate | date:'medium'}}
+                </small>
+              </p>
+            </div>
+            <div class="timeline-body">
+              <p>{{task.description | slice:0:100}}...</p>
+              <span class="badge badge-danger" *ngIf="task.daysPending > 10">
+                Critical: {{task.daysPending}} days overdue
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

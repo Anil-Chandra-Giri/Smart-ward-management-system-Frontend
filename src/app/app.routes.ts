@@ -31,6 +31,8 @@ import { DisasterEventFormComponent } from './Components/disaster-event-form/dis
 import { DisasterEventListComponent } from './Components/disaster-event-list/disaster-event-list.component';
 import { ResourceFormComponent } from './Components/resource-form/resource-form.component';
 import { VolunteerFormComponent } from './Components/volunteer-form/volunteer-form.component';
+import { OfficerDashboardComponent } from './Components/officer-dashboard/officer-dashboard.component';
+import { AdminDashboardComponent } from './Components/admin-dashboard/admin-dashboard.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -99,5 +101,17 @@ export const routes: Routes = [
   { path: 'disaster-events', component: DisasterEventListComponent },
   { path: 'disaster-events/new', component: DisasterEventFormComponent },
   { path: 'disaster-events/:id', component: DisasterEventFormComponent },
-  { path: 'disaster-events/:id/edit', component: DisasterEventFormComponent }
+  { path: 'disaster-events/:id/edit', component: DisasterEventFormComponent },
+  {
+    path: 'officer-dashboard',
+    component: OfficerDashboardComponent,
+    // canActivate: [AuthGuard],
+    data: { roles: ['Officer', 'SeniorOfficer'] }
+  },
+  {
+    path: 'admin-dashboard',
+    component: AdminDashboardComponent,
+    // canActivate: [AuthGuard],
+    data: { roles: ['Admin', 'SuperAdmin'] }
+  },
 ];

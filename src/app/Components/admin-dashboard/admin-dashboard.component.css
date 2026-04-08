@@ -1,0 +1,60 @@
+.highlighted-row {
+  background-color: #fff3cd !important;
+  border-left: 4px solid #ffc107;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    background-color: #fff3cd;
+  }
+  50% {
+    background-color: #ffe69c;
+  }
+  100% {
+    background-color: #fff3cd;
+  }
+}
+
+.timeline {
+  position: relative;
+  padding: 20px 0;
+}
+
+.timeline-item {
+  position: relative;
+  padding-left: 40px;
+  margin-bottom: 20px;
+}
+
+.timeline-badge {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.timeline-badge.bg-danger {
+  background-color: #dc3545;
+}
+
+.timeline-badge.bg-warning {
+  background-color: #ffc107;
+}
+
+.timeline-panel {
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 5px;
+  border-left: 3px solid #dee2e6;
+}
+
+.timeline-panel:hover {
+  background: #e9ecef;
+}

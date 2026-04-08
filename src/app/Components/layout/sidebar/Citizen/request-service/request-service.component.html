@@ -1,7 +1,9 @@
+<!-- Request Service Button -->
 <button type="button" class="btn btn-primary" (click)="toggleModal(true)">
   Request Service
 </button>
 
+<!-- Create Request Modal -->
 <div class="modal fade" id="serviceRequestModal" [ngClass]="{'show': isModalOpen}" 
      [style.display]="isModalOpen ? 'block' : 'none'" tabindex="-1">
   <div class="modal-dialog modal-xl">
@@ -49,7 +51,8 @@
               <h6 class="text-success">Birth Details</h6>
               <div class="col-md-4"><label>Child Full Name</label><input class="form-control" formControlName="ChildFullName"></div>
               <div class="col-md-4"><label>Date of Birth</label><input type="date" class="form-control" formControlName="DateOfBirth"></div>
-              <div class="col-md-4"><label>Gender</label><select class="form-select" formControlName="Gender"><option value="Male">Male</option><option value="Female">Female</option></select></div>
+              <div class="col-md-4"><label>Gender</label><select class="form-select" formControlName="Gender"><option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option></select></div>
+              <div class="col-md-4"><label>Place of Birth</label><input class="form-control" formControlName="PlaceOfBirth"></div>
               <div class="col-md-4"><label>Father's Name</label><input class="form-control" formControlName="FatherFullName"></div>
               <div class="col-md-4"><label>Mother's Name</label><input class="form-control" formControlName="MotherFullName"></div>
               <div class="col-md-4"><label>Grandfather's Name</label><input class="form-control" formControlName="GrandfatherFullName"></div>
@@ -59,6 +62,9 @@
               <h6 class="text-danger">Deceased Details</h6>
               <div class="col-md-4"><label>Deceased Name</label><input class="form-control" formControlName="DeceasedFullName"></div>
               <div class="col-md-4"><label>Date of Death</label><input type="date" class="form-control" formControlName="DateOfDeath"></div>
+              <div class="col-md-4"><label>Place of Death</label><input class="form-control" formControlName="PlaceOfDeath"></div>
+              <div class="col-md-4"><label>Cause of Death</label><input class="form-control" formControlName="CauseOfDeath"></div>
+              <div class="col-md-4"><label>Relationship to Applicant</label><input class="form-control" formControlName="RelationshipToApplicant"></div>
               <div class="col-md-4"><label>Citizenship No</label><input class="form-control" formControlName="CitizenshipNoOfDeceased"></div>
             </div>
 
@@ -73,6 +79,8 @@
               <div class="col-md-3"><label>Kitta No (Plot)</label><input class="form-control" formControlName="PlotNumber"></div>
               <div class="col-md-3"><label>Sheet No</label><input class="form-control" formControlName="SheetNumber"></div>
               <div class="col-md-3"><label>Total Area</label><input class="form-control" formControlName="TotalArea"></div>
+              <div class="col-md-3"><label>Property Type</label><input class="form-control" formControlName="PropertyType"></div>
+              <div class="col-md-3"><label>Current Owner</label><input class="form-control" formControlName="CurrentOwnerName"></div>
               <div class="col-md-3"><label>Revenue Receipt No</label><input class="form-control" formControlName="LandRevenueReceiptNumber"></div>
             </div>
 
@@ -83,6 +91,7 @@
               <div class="col-md-6"><label>Groom Citizenship</label><input class="form-control" formControlName="GroomCitizenshipNo"></div>
               <div class="col-md-6"><label>Bride Citizenship</label><input class="form-control" formControlName="BrideCitizenshipNo"></div>
               <div class="col-md-6"><label>Date</label><input type="date" class="form-control" formControlName="MarriageDate"></div>
+              <div class="col-md-6"><label>Venue</label><input class="form-control" formControlName="MarriageVenue"></div>
             </div>
 
             <div *ngSwitchCase="5" class="row g-3">
@@ -90,6 +99,8 @@
               <div class="col-md-4"><label>Type</label><select class="form-select" formControlName="MigrationType"><option value="Incoming">Incoming</option><option value="Outgoing">Outgoing</option></select></div>
               <div class="col-md-4"><label>From</label><input class="form-control" formControlName="OriginAddress"></div>
               <div class="col-md-4"><label>To</label><input class="form-control" formControlName="DestinationAddress"></div>
+              <div class="col-md-4"><label>Family Members Moving</label><input type="number" class="form-control" formControlName="TotalFamilyMembersMoving"></div>
+              <div class="col-md-8"><label>Reason</label><input class="form-control" formControlName="ReasonForMigration"></div>
             </div>
 
             <div *ngSwitchCase="6" class="row g-3">
@@ -119,8 +130,276 @@
   </div>
 </div>
 
+<!-- View Modal -->
+<div class="modal fade" id="viewModal" [ngClass]="{'show': isViewModalOpen}" 
+     [style.display]="isViewModalOpen ? 'block' : 'none'" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-info text-white">
+        <h5 class="modal-title">Service Request Details</h5>
+        <button type="button" class="btn-close btn-close-white" (click)="toggleViewModal(false)"></button>
+      </div>
+      <div class="modal-body" *ngIf="selectedRequest">
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <strong>Application Number:</strong> {{selectedRequest.applicationNumber}}
+          </div>
+          <div class="col-md-6">
+            <strong>Service Type:</strong> {{getServiceTypeName(selectedRequest.serviceType)}}
+          </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <strong>Status:</strong> 
+            <span [style.color]="selectedRequest.status === 1 ? 'orange' : selectedRequest.status === 2 ? 'blue' : selectedRequest.status === 3 ? 'green' : 'red'">
+              {{getStatusName(selectedRequest.status)}}
+            </span>
+          </div>
+          <div class="col-md-6">
+            <strong>Priority:</strong>
+            <span [style.color]="selectedRequest.priorityLevel === 0 ? 'green' : 'red'">
+              {{getPriorityName(selectedRequest.priorityLevel)}}
+            </span>
+          </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <strong>Purpose:</strong> {{selectedRequest.purpose}}
+          </div>
+          <div class="col-md-6">
+            <strong>Ward/Municipality:</strong> {{selectedRequest.requestedWard}}, {{selectedRequest.requestedMunicipality}}
+          </div>
+        </div>
+        
+        <hr>
+        
+        <!-- Service-specific details based on service type -->
+        <div [ngSwitch]="selectedRequest.serviceType">
+          <!-- Birth Certificate Details -->
+          <div *ngSwitchCase="7">
+            <h6 class="text-success">Birth Details</h6>
+            <div class="row">
+              <div class="col-md-6"><strong>Child Name:</strong> {{selectedRequest.childFullName}}</div>
+              <div class="col-md-6"><strong>Date of Birth:</strong> {{selectedRequest.dateOfBirth | date:'yyyy-MM-dd'}}</div>
+              <div class="col-md-6"><strong>Gender:</strong> {{selectedRequest.gender}}</div>
+              <div class="col-md-6"><strong>Place of Birth:</strong> {{selectedRequest.placeOfBirth}}</div>
+              <div class="col-md-6"><strong>Father's Name:</strong> {{selectedRequest.fatherFullName}}</div>
+              <div class="col-md-6"><strong>Mother's Name:</strong> {{selectedRequest.motherFullName}}</div>
+              <div class="col-md-6"><strong>Grandfather's Name:</strong> {{selectedRequest.grandfatherFullName}}</div>
+            </div>
+          </div>
+          
+          <!-- Death Certificate Details -->
+          <div *ngSwitchCase="1">
+            <h6 class="text-danger">Deceased Details</h6>
+            <div class="row">
+              <div class="col-md-6"><strong>Deceased Name:</strong> {{selectedRequest.deceasedFullName}}</div>
+              <div class="col-md-6"><strong>Date of Death:</strong> {{selectedRequest.dateOfDeath | date:'yyyy-MM-dd'}}</div>
+              <div class="col-md-6"><strong>Place of Death:</strong> {{selectedRequest.placeOfDeath}}</div>
+              <div class="col-md-6"><strong>Cause of Death:</strong> {{selectedRequest.causeOfDeath}}</div>
+              <div class="col-md-6"><strong>Citizenship No:</strong> {{selectedRequest.citizenshipNoOfDeceased}}</div>
+            </div>
+          </div>
+          
+          <!-- Recommendation Letter Details -->
+          <div *ngSwitchCase="2">
+            <h6 class="text-info">Recommendation Details</h6>
+            <div class="row">
+              <div class="col-md-6"><strong>Category:</strong> {{selectedRequest.letterCategory}}</div>
+              <div class="col-md-6"><strong>Recipient Organization:</strong> {{selectedRequest.recipientOrganization}}</div>
+            </div>
+          </div>
+          
+          <!-- Property Document Details -->
+          <div *ngSwitchCase="3">
+            <h6 class="text-warning">Property Details</h6>
+            <div class="row">
+              <div class="col-md-4"><strong>Plot Number:</strong> {{selectedRequest.plotNumber}}</div>
+              <div class="col-md-4"><strong>Sheet Number:</strong> {{selectedRequest.sheetNumber}}</div>
+              <div class="col-md-4"><strong>Total Area:</strong> {{selectedRequest.totalArea}}</div>
+              <div class="col-md-4"><strong>Property Type:</strong> {{selectedRequest.propertyType}}</div>
+              <div class="col-md-4"><strong>Current Owner:</strong> {{selectedRequest.currentOwnerName}}</div>
+              <div class="col-md-4"><strong>Revenue Receipt No:</strong> {{selectedRequest.landRevenueReceiptNumber}}</div>
+            </div>
+          </div>
+          
+          <!-- Marriage Registration Details -->
+          <div *ngSwitchCase="4">
+            <h6 class="text-primary">Marriage Details</h6>
+            <div class="row">
+              <div class="col-md-6"><strong>Groom Name:</strong> {{selectedRequest.groomFullName}}</div>
+              <div class="col-md-6"><strong>Bride Name:</strong> {{selectedRequest.brideFullName}}</div>
+              <div class="col-md-6"><strong>Groom Citizenship:</strong> {{selectedRequest.groomCitizenshipNo}}</div>
+              <div class="col-md-6"><strong>Bride Citizenship:</strong> {{selectedRequest.brideCitizenshipNo}}</div>
+              <div class="col-md-6"><strong>Marriage Date:</strong> {{selectedRequest.marriageDate | date:'yyyy-MM-dd'}}</div>
+              <div class="col-md-6"><strong>Venue:</strong> {{selectedRequest.marriageVenue}}</div>
+            </div>
+          </div>
+          
+          <!-- Migration Certificate Details -->
+          <div *ngSwitchCase="5">
+            <h6 class="text-secondary">Migration Details</h6>
+            <div class="row">
+              <div class="col-md-6"><strong>Type:</strong> {{selectedRequest.migrationType}}</div>
+              <div class="col-md-6"><strong>From:</strong> {{selectedRequest.originAddress}}</div>
+              <div class="col-md-6"><strong>To:</strong> {{selectedRequest.destinationAddress}}</div>
+              <div class="col-md-6"><strong>Family Members:</strong> {{selectedRequest.totalFamilyMembersMoving}}</div>
+              <div class="col-md-12"><strong>Reason:</strong> {{selectedRequest.reasonForMigration}}</div>
+            </div>
+          </div>
+          
+          <!-- Address Verification Details -->
+          <div *ngSwitchCase="6">
+            <h6 class="text-dark">Address Verification Details</h6>
+            <div class="row">
+              <div class="col-md-4"><strong>House Number:</strong> {{selectedRequest.houseNumber}}</div>
+              <div class="col-md-4"><strong>Street Name:</strong> {{selectedRequest.streetName}}</div>
+              <div class="col-md-4"><strong>Years of Stay:</strong> {{selectedRequest.yearsOfStay}}</div>
+            </div>
+          </div>
+        </div>
+        
+        <hr>
+        
+        <div class="row">
+          <div class="col-12">
+            <strong>Description:</strong> {{selectedRequest.description}}
+          </div>
+        </div>
+        <div class="row mt-2">
+          <div class="col-md-6">
+            <strong>Submitted On:</strong> {{selectedRequest.createdAt | date:'yyyy-MM-dd HH:mm'}}
+          </div>
+          <div class="col-md-6">
+            <strong>Last Updated:</strong> {{selectedRequest.updatedAt | date:'yyyy-MM-dd HH:mm'}}
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="toggleViewModal(false)">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal fade" id="editModal" [ngClass]="{'show': isEditModalOpen}" 
+     [style.display]="isEditModalOpen ? 'block' : 'none'" tabindex="-1">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">Edit Service Request</h5>
+        <button type="button" class="btn-close btn-close-white" (click)="toggleEditModal(false)"></button>
+      </div>
+
+      <form [formGroup]="editRequestForm" (ngSubmit)="onUpdateSubmit()">
+        <div class="modal-body">
+          <div class="row g-3 border-bottom pb-4 mb-4">
+            <h6 class="text-primary">General Information</h6>
+            <div class="col-md-4">
+              <label class="form-label">Purpose</label>
+              <input type="text" class="form-control" formControlName="purpose">
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Ward No</label>
+              <input type="text" class="form-control" formControlName="requestedWard">
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Municipality</label>
+              <input type="text" class="form-control" formControlName="requestedMunicipality">
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Priority</label>
+              <select class="form-select" formControlName="priorityLevel">
+                <option value="0">Normal</option>
+                <option value="1">Urgent</option>
+              </select>
+            </div>
+          </div>
+
+          <div [ngSwitch]="editSelectedService" *ngIf="editSelectedService">
+            
+            <div *ngSwitchCase="7" class="row g-3">
+              <h6 class="text-success">Birth Details</h6>
+              <div class="col-md-4"><label>Child Full Name</label><input class="form-control" formControlName="childFullName"></div>
+              <div class="col-md-4"><label>Date of Birth</label><input type="date" class="form-control" formControlName="dateOfBirth"></div>
+              <div class="col-md-4"><label>Gender</label><select class="form-select" formControlName="gender"><option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option></select></div>
+              <div class="col-md-4"><label>Place of Birth</label><input class="form-control" formControlName="placeOfBirth"></div>
+              <div class="col-md-4"><label>Father's Name</label><input class="form-control" formControlName="fatherFullName"></div>
+              <div class="col-md-4"><label>Mother's Name</label><input class="form-control" formControlName="motherFullName"></div>
+              <div class="col-md-4"><label>Grandfather's Name</label><input class="form-control" formControlName="grandfatherFullName"></div>
+            </div>
+
+            <div *ngSwitchCase="1" class="row g-3">
+              <h6 class="text-danger">Deceased Details</h6>
+              <div class="col-md-4"><label>Deceased Name</label><input class="form-control" formControlName="deceasedFullName"></div>
+              <div class="col-md-4"><label>Date of Death</label><input type="date" class="form-control" formControlName="dateOfDeath"></div>
+              <div class="col-md-4"><label>Place of Death</label><input class="form-control" formControlName="placeOfDeath"></div>
+              <div class="col-md-4"><label>Cause of Death</label><input class="form-control" formControlName="causeOfDeath"></div>
+              <div class="col-md-4"><label>Relationship to Applicant</label><input class="form-control" formControlName="relationshipToApplicant"></div>
+              <div class="col-md-4"><label>Citizenship No</label><input class="form-control" formControlName="citizenshipNoOfDeceased"></div>
+            </div>
+
+            <div *ngSwitchCase="2" class="row g-3">
+              <h6 class="text-info">Recommendation Details</h6>
+              <div class="col-md-6"><label>Category</label><input class="form-control" formControlName="letterCategory"></div>
+              <div class="col-md-6"><label>Recipient Org</label><input class="form-control" formControlName="recipientOrganization"></div>
+            </div>
+
+            <div *ngSwitchCase="3" class="row g-3">
+              <h6 class="text-warning">Land/House Details</h6>
+              <div class="col-md-3"><label>Kitta No</label><input class="form-control" formControlName="plotNumber"></div>
+              <div class="col-md-3"><label>Sheet No</label><input class="form-control" formControlName="sheetNumber"></div>
+              <div class="col-md-3"><label>Total Area</label><input class="form-control" formControlName="totalArea"></div>
+              <div class="col-md-3"><label>Property Type</label><input class="form-control" formControlName="propertyType"></div>
+              <div class="col-md-3"><label>Current Owner</label><input class="form-control" formControlName="currentOwnerName"></div>
+              <div class="col-md-3"><label>Revenue Receipt No</label><input class="form-control" formControlName="landRevenueReceiptNumber"></div>
+            </div>
+
+            <div *ngSwitchCase="4" class="row g-3">
+              <h6 class="text-primary">Marriage Details</h6>
+              <div class="col-md-6"><label>Groom Name</label><input class="form-control" formControlName="groomFullName"></div>
+              <div class="col-md-6"><label>Bride Name</label><input class="form-control" formControlName="brideFullName"></div>
+              <div class="col-md-6"><label>Groom Citizenship</label><input class="form-control" formControlName="groomCitizenshipNo"></div>
+              <div class="col-md-6"><label>Bride Citizenship</label><input class="form-control" formControlName="brideCitizenshipNo"></div>
+              <div class="col-md-6"><label>Date</label><input type="date" class="form-control" formControlName="marriageDate"></div>
+              <div class="col-md-6"><label>Venue</label><input class="form-control" formControlName="marriageVenue"></div>
+            </div>
+
+            <div *ngSwitchCase="5" class="row g-3">
+              <h6 class="text-secondary">Migration Details</h6>
+              <div class="col-md-4"><label>Type</label><select class="form-select" formControlName="migrationType"><option value="Incoming">Incoming</option><option value="Outgoing">Outgoing</option></select></div>
+              <div class="col-md-4"><label>From</label><input class="form-control" formControlName="originAddress"></div>
+              <div class="col-md-4"><label>To</label><input class="form-control" formControlName="destinationAddress"></div>
+              <div class="col-md-4"><label>Family Members</label><input type="number" class="form-control" formControlName="totalFamilyMembersMoving"></div>
+              <div class="col-md-8"><label>Reason</label><input class="form-control" formControlName="reasonForMigration"></div>
+            </div>
+
+            <div *ngSwitchCase="6" class="row g-3">
+              <h6 class="text-dark">Verification Details</h6>
+              <div class="col-md-4"><label>House No</label><input class="form-control" formControlName="houseNumber"></div>
+              <div class="col-md-4"><label>Street Name</label><input class="form-control" formControlName="streetName"></div>
+              <div class="col-md-4"><label>Years of Stay</label><input type="number" class="form-control" formControlName="yearsOfStay"></div>
+            </div>
+          </div>
+
+          <div class="mt-4">
+            <label class="form-label">Description / Extra Details</label>
+            <textarea class="form-control" formControlName="description" rows="2"></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="toggleEditModal(false)">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="editRequestForm.invalid">Update Request</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <!-- AgGrid -->
- <div  *ngIf="isBrowser" class="mt-4">
+<div *ngIf="isBrowser" class="mt-4">
   <ag-grid-angular
     style="width: 100%; height: 500px;"
     [rowData]="rowData"

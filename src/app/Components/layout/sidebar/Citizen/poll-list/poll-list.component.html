@@ -2,7 +2,7 @@
     
     <div class="poll-card" *ngFor="let poll of polls">
       <p>Start Date: {{poll.startDate | date:'YY-MM-dd'}}</p>
-      <p>End Date: {{poll.endDate}}</p>
+      <p *ngIf="poll.endDate !== null">End Date: {{poll.endDate}}</p>
 
     <h3>{{poll.title}}</h3>
     <p>{{poll.description}}</p>
@@ -29,21 +29,16 @@
 
     <p>{{selectedPoll?.description}}</p>
 
-    <div class="option" *ngFor="let option of selectedPoll?.options">
-
-      <label>
-
-        <input
-          type="radio"
-          name="vote"
-          [value]="option.id"
-          [(ngModel)]="selectedOption">
-
-        {{option.optionText}}
-
-      </label>
-
-    </div>
+    <div class="option" *ngFor="let option of selectedPoll?.options; trackBy: trackByOptionId">
+  <label>
+    <input
+      type="radio"
+      name="voteOption"
+      [value]="option.id"
+      [(ngModel)]="selectedOption">
+    {{option.optionText}}
+  </label>
+</div>
 
     <div class="modal-buttons">
 

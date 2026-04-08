@@ -62,4 +62,8 @@ alert(err.error?.message)
 
 }
 
+trackByOptionId(index: number, option: any): number {
+  return option.id; // or option.id, or index if no unique id
+}
+
 }

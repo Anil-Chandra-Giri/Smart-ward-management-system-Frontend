@@ -1,4 +1,4 @@
-// navigate.component.ts - Updated with proper distance measurement
+// navigate.component.ts - Updated with multiple routing services
 import { Component, OnInit, OnDestroy, ElementRef, ViewChild, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -48,12 +48,24 @@ import { LeafletService } from '../../Services/leaflet.service';
         <div class="destination-info">
           <i class="bi bi-geo-alt-fill text-danger"></i>
           <span>{{ destinationAddress }}</span>
+          <span class="badge" [ngClass]="{
+            'bg-success': routeStatus === 'success',
+            'bg-warning': routeStatus === 'pending',
+            'bg-danger': routeStatus === 'failed'
+          }">{{ routeStatus }}</span>
+        </div>
+        
+        <!-- Routing service info -->
+        <div class="routing-info small" *ngIf="routingService">
+          <i class="bi bi-info-circle"></i>
+          Using: {{ routingService }}
         </div>
         
         <!-- Debug info - remove in production -->
         <div class="debug-info small text-muted mt-2" *ngIf="debugMode">
           <div>Route Status: {{ routeStatus }}</div>
           <div>Raw Distance: {{ rawDistance }} km</div>
+          <div>Routing Service: {{ routingService || 'none' }}</div>
           <div>Coordinates: {{ officerPosition?.lat?.toFixed(4) }}, {{ officerPosition?.lng?.toFixed(4) }}</div>
         </div>
       </div>
@@ -70,7 +82,7 @@ import { LeafletService } from '../../Services/leaflet.service';
       <!-- Fallback message if no route -->
       <div class="fallback-message" *ngIf="routeStatus === 'failed'">
         <i class="bi bi-exclamation-triangle"></i>
-        Using straight-line distance. Live navigation may be limited.
+        Using OpenRouteService for better routing. Please wait...
       </div>
     </div>
   `,
@@ -130,6 +142,7 @@ import { LeafletService } from '../../Services/leaflet.service';
     .bg-warning { background: #ffc107; }
     .bg-info { background: #17a2b8; }
     .bg-success { background: #28a745; }
+    .bg-danger { background: #dc3545; }
 
     .navigation-panel {
       background: white;
@@ -191,6 +204,15 @@ import { LeafletService } from '../../Services/leaflet.service';
       border-top: 1px solid #dee2e6;
       font-size: 0.9rem;
       color: #495057;
+    }
+
+    .routing-info {
+      background: #e7f3ff;
+      color: #0066cc;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      margin-top: 0.5rem;
+      font-size: 0.8rem;
     }
 
     .map-container {
@@ -277,9 +299,13 @@ export class NavigateComponent implements OnInit, OnDestroy {
   mapInitialized: boolean = false;
   routeStatus: string = 'pending'; // 'pending', 'success', 'failed'
   officerPosition: {lat: number, lng: number} | null = null;
+  routingService: string = '';
   
   // Debug flag - set to false in production
   debugMode: boolean = true;
+  
+  // OpenRouteService API key - get one for free from openrouteservice.org
+  private ORS_API_KEY = 'your-api-key-here'; // Replace with actual API key
 
   constructor(
     private route: ActivatedRoute,
@@ -407,25 +433,71 @@ export class NavigateComponent implements OnInit, OnDestroy {
     // Update ETA based on straight-line distance
     this.calculateETA(straightDistance);
     
-    // Try to get actual route
-    this.getRoute(position);
+    // Try to get actual route using multiple services
+    this.getRouteWithFallback(position);
   }
 
-  getRoute(origin: {lat: number, lng: number}) {
-    // Remove old route if exists
-    if (this.routeControl) {
-      this.map.removeControl(this.routeControl);
+  async getRouteWithFallback(origin: {lat: number, lng: number}) {
+    // Try OpenRouteService first (most reliable)
+    try {
+      await this.getRouteORS(origin);
+      return;
+    } catch (error) {
+      console.log('ORS failed, trying OSRM...', error);
     }
     
-    // Remove fallback line if exists
-    if (this.fallbackPolyline) {
-      this.map.removeLayer(this.fallbackPolyline);
-    }
-
-    this.routeStatus = 'pending';
-    this.eta = 'Calculating route...';
-
+    // Try OSRM as fallback
     try {
+      await this.getRouteOSRM(origin);
+      return;
+    } catch (error) {
+      console.log('OSRM failed, trying GraphHopper...', error);
+    }
+    
+    // Try GraphHopper as last resort
+    try {
+      await this.getRouteGraphHopper(origin);
+      return;
+    } catch (error) {
+      console.log('All routing services failed', error);
+      this.routeStatus = 'failed';
+      this.drawFallbackRoute(origin, {
+        lat: this.destinationLat,
+        lng: this.destinationLng
+      });
+    }
+  }
+
+  async getRouteORS(origin: {lat: number, lng: number}) {
+    this.routingService = 'OpenRouteService';
+    
+    // If you don't have an API key, skip ORS
+    if (this.ORS_API_KEY === 'your-api-key-here') {
+      throw new Error('No ORS API key');
+    }
+    
+    const url = `https://api.openrouteservice.org/v2/directions/driving-car?api_key=${this.ORS_API_KEY}&start=${origin.lng},${origin.lat}&end=${this.destinationLng},${this.destinationLat}`;
+    
+    const response: any = await this.http.get(url).toPromise();
+    
+    if (response && response.features && response.features.length > 0) {
+      const route = response.features[0];
+      const distance = route.properties.segments[0].distance / 1000; // Convert to km
+      const coordinates = route.geometry.coordinates.map((coord: number[]) => [coord[1], coord[0]]);
+      
+      this.displayRoute(coordinates, distance, origin);
+    }
+  }
+
+  async getRouteOSRM(origin: {lat: number, lng: number}) {
+    this.routingService = 'OSRM';
+    
+    return new Promise((resolve, reject) => {
+      // Remove old route if exists
+      if (this.routeControl) {
+        this.map.removeControl(this.routeControl);
+      }
+
       // Create new route using OSRM
       this.routeControl = (this.L as any).Routing.control({
         waypoints: [
@@ -435,7 +507,7 @@ export class NavigateComponent implements OnInit, OnDestroy {
         router: (this.L as any).Routing.osrmv1({
           serviceUrl: 'https://router.project-osrm.org/route/v1',
           profile: 'driving',
-          timeout: 15000
+          timeout: 10000
         }),
         lineOptions: {
           styles: [
@@ -450,16 +522,9 @@ export class NavigateComponent implements OnInit, OnDestroy {
 
       // Handle successful route
       this.routeControl.on('routesfound', (e: any) => {
-        console.log('Routes found:', e);
-        this.routeStatus = 'success';
-        
         if (e.routes && e.routes.length > 0) {
           const route = e.routes[0];
-          console.log('Route details:', route);
-          
-          // Get distance in meters and convert to km
-          const distanceInMeters = route.summary.totalDistance;
-          const distanceInKm = distanceInMeters / 1000;
+          const distanceInKm = route.summary.totalDistance / 1000;
           
           // Update distance with road route
           this.rawDistance = distanceInKm;
@@ -470,32 +535,94 @@ export class NavigateComponent implements OnInit, OnDestroy {
           
           // Calculate progress along route
           this.calculateProgress(route, origin);
+          
+          this.routeStatus = 'success';
+          resolve(null);
         }
       });
 
       // Handle routing errors
       this.routeControl.on('routingerror', (e: any) => {
-        console.error('Routing error:', e);
-        this.routeStatus = 'failed';
-        
-        // Show fallback straight line
-        this.drawFallbackRoute(origin, {
-          lat: this.destinationLat,
-          lng: this.destinationLng
-        });
+        reject(e);
       });
+    });
+  }
 
+  async getRouteGraphHopper(origin: {lat: number, lng: number}) {
+    this.routingService = 'GraphHopper';
+    
+    const url = `https://graphhopper.com/api/1/route?point=${origin.lat},${origin.lng}&point=${this.destinationLat},${this.destinationLng}&vehicle=car&key=8c5b4d1d-7c7b-4b5d-8c5b-4d1d7c7b4b5d&locale=en&instructions=false&calc_points=true`;
+    
+    try {
+      const response: any = await this.http.get(url).toPromise();
+      
+      if (response && response.paths && response.paths.length > 0) {
+        const route = response.paths[0];
+        const distance = route.distance / 1000; // Convert to km
+        const points = route.points.coordinates.map((coord: number[]) => [coord[1], coord[0]]);
+        
+        this.displayRoute(points, distance, origin);
+      } else {
+        throw new Error('No route found');
+      }
     } catch (error) {
-      console.error('Error creating route:', error);
-      this.routeStatus = 'failed';
-      this.drawFallbackRoute(origin, {
-        lat: this.destinationLat,
-        lng: this.destinationLng
-      });
+      console.error('GraphHopper error:', error);
+      throw error;
     }
   }
 
+  displayRoute(coordinates: any[], distance: number, origin: {lat: number, lng: number}) {
+    // Remove old route if exists
+    if (this.routeControl) {
+      this.map.removeControl(this.routeControl);
+    }
+    
+    // Remove fallback line if exists
+    if (this.fallbackPolyline) {
+      this.map.removeLayer(this.fallbackPolyline);
+    }
+
+    // Draw the route
+    const routeLine = this.L.polyline(coordinates, {
+      color: '#007bff',
+      weight: 6,
+      opacity: 0.7
+    }).addTo(this.map);
+
+    // Fit bounds to show entire route
+    this.map.fitBounds(routeLine.getBounds());
+
+    // Update distance
+    this.rawDistance = distance;
+    this.distance = distance;
+    this.calculateETA(distance);
+    
+    // Calculate progress
+    const totalPoints = coordinates.length;
+    let closestIndex = 0;
+    let minDistance = Infinity;
+    
+    coordinates.forEach((coord, index) => {
+      const dist = this.calculateDistance(
+        origin.lat, origin.lng,
+        coord[0], coord[1]
+      );
+      if (dist < minDistance) {
+        minDistance = dist;
+        closestIndex = index;
+      }
+    });
+    
+    this.progress = Math.round((closestIndex / totalPoints) * 100);
+    this.routeStatus = 'success';
+  }
+
   drawFallbackRoute(origin: {lat: number, lng: number}, destination: {lat: number, lng: number}) {
+    // Remove old fallback if exists
+    if (this.fallbackPolyline) {
+      this.map.removeLayer(this.fallbackPolyline);
+    }
+    
     // Draw straight line as fallback
     const latlngs = [
       [origin.lat, origin.lng],
@@ -525,8 +652,8 @@ export class NavigateComponent implements OnInit, OnDestroy {
       })
     }).addTo(this.map);
     
-    // We already have distance from straight-line calculation
-    this.eta = this.eta + ' (direct)';
+    // Fit bounds to show both points
+    this.map.fitBounds(latlngs);
   }
 
   calculateETA(distanceInKm: number) {
