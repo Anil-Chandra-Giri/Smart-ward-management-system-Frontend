@@ -14,7 +14,7 @@ export class SidebarComponent implements OnInit {
   
   isStaff = false;
   isCitizen = false;
-  isAdmin = true;
+  isAdmin = false;
   isBrowser = false;
   userName: string = '';
   userRole: string = '';

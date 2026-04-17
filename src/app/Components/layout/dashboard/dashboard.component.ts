@@ -15,7 +15,7 @@ export class DashboardComponent implements AfterViewInit {
   
   isStaff: boolean = false;
   isCitizen: boolean = false;
-  isAdmin: boolean = true;
+  isAdmin: boolean = false;
   
   // Staff & Citizen Stats
   serviceRequests: number = 0;
@@ -68,10 +68,9 @@ export class DashboardComponent implements AfterViewInit {
         this.UserId = decodedToken.UserId;
         const role = decodedToken.Role;
         
-        // Set role flags
-        // this.isAdmin = role === 'Admin' || role === 'admin';
-        // this.isStaff = role === 'Staff' || role === 'staff';
-        // this.isCitizen = role === 'Citizen' || role === 'citizen';
+        this.isAdmin = role === 'Admin' || role === 'admin';
+        this.isStaff = role === 'Staff' || role === 'staff';
+        this.isCitizen = role === 'Citizen' || role === 'citizen';
         
         console.log('Dashboard - User role:', role);
         console.log('Admin:', this.isAdmin, 'Staff:', this.isStaff, 'Citizen:', this.isCitizen);

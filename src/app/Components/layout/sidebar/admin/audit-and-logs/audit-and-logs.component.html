@@ -1,1 +1,94 @@
-<p>audit-and-logs works!</p>
+<!-- audit-and-logs.component.html - Pure AG Grid version -->
+<div class="logs-container">
+  <!-- Header -->
+  <div class="logs-header">
+    <h2>System Logs</h2>
+    <div class="header-actions">
+      <button class="btn-primary" (click)="exportLogs('csv')">📥 Export CSV</button>
+      <button class="btn-accent" (click)="exportToExcel()">📊 Export Excel</button>
+      <button class="btn-warn" (click)="clearOldLogs()">🗑️ Clear Old Logs</button>
+    </div>
+  </div>
+
+  <!-- Filter Bar - Pure HTML/CSS -->
+  <div class="filter-bar">
+    <div class="filter-group">
+      <div class="filter-field">
+        <input 
+          type="text" 
+          class="filter-input" 
+          placeholder="🔍 Quick search..." 
+          [(ngModel)]="quickFilterText" 
+          (ngModelChange)="onQuickFilterChanged()"
+        />
+      </div>
+
+      <div class="filter-field">
+        <select class="filter-select" [(ngModel)]="filter.level" (ngModelChange)="onLevelChange($event)">
+          <option value="">All Levels</option>
+          <option *ngFor="let level of levels" [value]="level">{{level}}</option>
+        </select>
+      </div>
+
+      <div class="filter-field">
+        <select class="filter-select" [(ngModel)]="filter.category" (ngModelChange)="onCategoryChange($event)">
+          <option value="">All Categories</option>
+          <option *ngFor="let category of categories" [value]="category">{{category}}</option>
+        </select>
+      </div>
+
+      <div class="filter-field">
+        <input type="date" class="filter-input" [(ngModel)]="filter.startDate" (ngModelChange)="onDateRangeChange()" placeholder="Start Date" />
+      </div>
+
+      <div class="filter-field">
+        <input type="date" class="filter-input" [(ngModel)]="filter.endDate" (ngModelChange)="onDateRangeChange()" placeholder="End Date" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div *ngIf="loading" class="loading-overlay">
+    <div class="spinner"></div>
+    <span>Loading logs...</span>
+  </div>
+
+  <!-- AG Grid Table -->
+  <div class="ag-grid-container">
+    <ag-grid-angular
+      #agGrid
+      style="width: 100%; height: 600px;"
+      class="ag-theme-alpine"
+      [rowData]="rowData"
+      [columnDefs]="columnDefs"
+      [defaultColDef]="defaultColDef"
+      [pagination]="true"
+      [paginationPageSize]="paginationPageSize"
+      [paginationPageSizeSelector]="paginationPageSizeSelector"
+      [cacheQuickFilter]="true"
+      [rowSelection]="'multiple'"
+      [suppressRowClickSelection]="true"
+      [tooltipShowDelay]="500"
+      (gridReady)="onGridReady($event)"
+      (selectionChanged)="onSelectionChanged($event)">
+    </ag-grid-angular>
+  </div>
+
+  <!-- Pagination Info -->
+  <div class="pagination-info">
+    <span>Total Records: {{totalRows}}</span>
+    
+    <div class="page-size-control">
+      <label>Rows per page:</label>
+      <select [(ngModel)]="filter.pageSize" (ngModelChange)="onPageSizeChange($event)">
+        <option *ngFor="let size of [10, 20, 50, 100]" [value]="size">{{size}}</option>
+      </select>
+    </div>
+    
+    <div class="pagination-controls">
+      <button [disabled]="filter.page === 1" (click)="onPageChange(filter.page! - 1)">◀ Previous</button>
+      <span>Page {{filter.page}} of {{Math.ceil(totalRows / filter.pageSize!)}}</span>
+      <button [disabled]="filter.page! >= Math.ceil(totalRows / filter.pageSize!)" (click)="onPageChange(filter.page! + 1)">Next ▶</button>
+    </div>
+  </div>
+</div>
