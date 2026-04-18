@@ -1,7 +1,7 @@
 // src/app/components/volunteer-list/volunteer-list.component.ts
 import { Component, OnInit } from '@angular/core';
-import { ApiService } from '../../Services/api.service';
-import { Volunteer } from '../../Models/volunteer.model';
+import { ApiService } from '../../../../../Services/api.service';
+import { Volunteer } from '../../../../../Models/volunteer.model';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 

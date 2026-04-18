@@ -1,8 +1,8 @@
 // src/app/components/weekly-schedule/weekly-schedule.component.ts
 
 import { Component, OnInit } from '@angular/core';
-import { WeeklySchedule, Schedule } from '../../Models/WasteCollectionRoute';
-import { ApiService } from '../../Services/api.service';
+import { WeeklySchedule, Schedule } from '../../../../../Models/WasteCollectionRoute';
+import { ApiService } from '../../../../../Services/api.service';
 import { CommonModule } from '@angular/common';
 
 @Component({

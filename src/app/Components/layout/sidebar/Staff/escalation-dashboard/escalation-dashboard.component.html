@@ -1,0 +1,328 @@
+<div class="escalation-dashboard">
+  <!-- Header -->
+  <div class="dashboard-header">
+    <div class="header-title">
+      <h2>
+        <i class="fas fa-chart-line"></i>
+        Escalation Dashboard
+      </h2>
+      <p class="text-muted">Monitor and manage escalated tasks</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-outline-primary" (click)="refreshData()">
+        <i class="fas fa-sync-alt"></i> Refresh
+      </button>
+      <div class="notification-bell" (click)="showNotifications = !showNotifications">
+        <i class="fas fa-bell"></i>
+        <span class="badge badge-danger" *ngIf="unreadCount > 0">{{unreadCount}}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notifications Dropdown -->
+  <div class="notifications-dropdown" *ngIf="showNotifications">
+    <div class="dropdown-header">
+      <h6>Notifications</h6>
+      <button class="btn btn-sm btn-link" (click)="markAllNotificationsAsRead()">
+        Mark all as read
+      </button>
+    </div>
+    <div class="dropdown-body">
+      <div *ngIf="notifications.length === 0" class="text-center p-3">
+        <i class="fas fa-bell-slash fa-2x text-muted"></i>
+        <p class="text-muted mt-2">No notifications</p>
+      </div>
+      <div *ngFor="let notification of notifications" 
+           class="notification-item" 
+           [class.unread]="!notification.isRead"
+           (click)="markNotificationAsRead(notification.id)">
+        <div class="notification-icon" [class]="getNotificationIconClass(notification.type)">
+          <i class="fas" [class]="getNotificationIcon(notification.type)"></i>
+        </div>
+        <div class="notification-content">
+          <div class="notification-title">{{notification.title}}</div>
+          <div class="notification-message">{{notification.message}}</div>
+          <div class="notification-time">{{notification.createdAt | date:'medium'}}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+    <div class="stat-card" *ngIf="userRole === 'Officer'">
+      <div class="stat-icon bg-primary">
+        <i class="fas fa-tasks"></i>
+      </div>
+      <div class="stat-info">
+        <h3>{{dashboardStats.totalTasks || 0}}</h3>
+        <p>Total Tasks</p>
+      </div>
+    </div>
+    <div class="stat-card" *ngIf="userRole === 'Officer'">
+      <div class="stat-icon bg-danger">
+        <i class="fas fa-exclamation-triangle"></i>
+      </div>
+      <div class="stat-info">
+        <h3 class="text-danger">{{dashboardStats.overdueTasks || 0}}</h3>
+        <p>Overdue Tasks</p>
+      </div>
+    </div>
+    <div class="stat-card" *ngIf="userRole === 'Officer'">
+      <div class="stat-icon bg-warning">
+        <i class="fas fa-arrow-up"></i>
+      </div>
+      <div class="stat-info">
+        <h3>{{dashboardStats.escalatedToMe || 0}}</h3>
+        <p>Escalated to Me</p>
+      </div>
+    </div>
+    <div class="stat-card" *ngIf="userRole === 'Officer'">
+      <div class="stat-icon bg-success">
+        <i class="fas fa-clock"></i>
+      </div>
+      <div class="stat-info">
+        <h3>{{dashboardStats.pendingTasks || 0}}</h3>
+        <p>Pending Tasks</p>
+      </div>
+    </div>
+
+    <!-- Admin Stats -->
+    <div class="stat-card" *ngIf="userRole === 'Admin' || userRole === 'SuperAdmin'">
+      <div class="stat-icon bg-danger">
+        <i class="fas fa-arrow-up"></i>
+      </div>
+      <div class="stat-info">
+        <h3>{{dashboardStats.totalEscalated || 0}}</h3>
+        <p>Total Escalated</p>
+      </div>
+    </div>
+    <div class="stat-card" *ngIf="userRole === 'Admin' || userRole === 'SuperAdmin'">
+      <div class="stat-icon bg-warning">
+        <i class="fas fa-fire"></i>
+      </div>
+      <div class="stat-info">
+        <h3 class="text-warning">{{dashboardStats.criticalTasks || 0}}</h3>
+        <p>Critical Tasks</p>
+      </div>
+    </div>
+    <div class="stat-card" *ngIf="userRole === 'Admin' || userRole === 'SuperAdmin'">
+      <div class="stat-icon bg-info">
+        <i class="fas fa-eye"></i>
+      </div>
+      <div class="stat-info">
+        <h3>{{dashboardStats.pendingReview || 0}}</h3>
+        <p>Pending Review</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Officer View - My Assignments -->
+  <div class="dashboard-section" *ngIf="userRole === 'Officer' || userRole === 'SeniorOfficer'">
+    <div class="section-header">
+      <h4>My Assignments</h4>
+      <div class="section-filters">
+        <div class="btn-group">
+          <button class="btn btn-sm" [class.btn-primary]="selectedFilter === 'all'" 
+                  (click)="selectedFilter='all'; filterAssignments()">
+            All
+          </button>
+          <button class="btn btn-sm" [class.btn-danger]="selectedFilter === 'overdue'" 
+                  (click)="selectedFilter='overdue'; filterAssignments()">
+            Overdue
+          </button>
+          <button class="btn btn-sm" [class.btn-warning]="selectedFilter === 'escalated'" 
+                  (click)="selectedFilter='escalated'; filterAssignments()">
+            Escalated
+          </button>
+          <button class="btn btn-sm" [class.btn-success]="selectedFilter === 'pending'" 
+                  (click)="selectedFilter='pending'; filterAssignments()">
+            Pending
+          </button>
+        </div>
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Search assignments..." [(ngModel)]="searchTerm" 
+                 (keyup)="filterAssignments()">
+        </div>
+      </div>
+    </div>
+
+    <div class="assignments-table" *ngIf="!loading">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Reference</th>
+            <th>Title</th>
+            <th>Type</th>
+            <th>Ward</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th>Days Left</th>
+            <th>Reminders</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let assignment of assignments" 
+              [class.overdue-row]="assignment.isOverdue"
+              [class.escalated-row]="assignment.isEscalated">
+            <td>
+              <strong>{{assignment.referenceNumber}}</strong>
+            </td>
+            <td>
+              {{assignment.title}}
+              <br>
+              <small class="text-muted">{{assignment.description | slice:0:50}}...</small>
+            </td>
+            <td>
+              <span class="badge badge-info">{{assignment.referenceType}}</span>
+            </td>
+            <td>Ward {{assignment.wardNumber}}</td>
+            <td>
+              <span class="badge badge-{{getPriorityClass(assignment.priority)}}">
+                {{assignment.priority}}
+              </span>
+            </td>
+            <td>
+              <span class="badge badge-{{getStatusClass(assignment.status)}}">
+                {{assignment.status}}
+              </span>
+            </td>
+            <td>
+              <div *ngIf="assignment.isOverdue" class="overdue-indicator">
+                <i class="fas fa-exclamation-circle text-danger"></i>
+                <span class="text-danger font-weight-bold">{{assignment.daysOverdue}} days overdue</span>
+              </div>
+              <div *ngIf="!assignment.isOverdue" class="ontime-indicator">
+                <i class="fas fa-check-circle text-success"></i>
+                <span class="text-success">On time</span>
+              </div>
+            </td>
+            <td>
+              <div class="reminder-badge" *ngIf="assignment.reminderCount > 0">
+                <i class="fas fa-bell"></i> {{assignment.reminderCount}}
+              </div>
+              <div *ngIf="assignment.reminderCount === 0">-</div>
+            </td>
+            <td class="action-buttons">
+              <button class="btn btn-sm btn-info" (click)="viewDetails(assignment)" title="View Details">
+                <i class="fas fa-eye"></i>
+              </button>
+              <button class="btn btn-sm btn-warning" (click)="sendReminder(assignment)" 
+                      *ngIf="assignment.isOverdue && !assignment.isEscalated" title="Send Reminder">
+                <i class="fas fa-bell"></i>
+              </button>
+              <button class="btn btn-sm btn-danger" (click)="escalateTask(assignment, '')" 
+                      *ngIf="assignment.daysOverdue > 7 && !assignment.isEscalated" title="Escalate">
+                <i class="fas fa-arrow-up"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div *ngIf="assignments.length === 0" class="empty-state">
+        <i class="fas fa-check-circle fa-3x text-success"></i>
+        <h5>No assignments found</h5>
+        <p>All tasks are up to date!</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin View - Escalated Tasks -->
+  <div class="dashboard-section" *ngIf="userRole === 'Admin' || userRole === 'SuperAdmin'">
+    <div class="section-header">
+      <h4>Escalated Tasks</h4>
+      <div class="section-filters">
+        <div class="btn-group">
+          <button class="btn btn-sm btn-primary" (click)="selectedFilter='all'">All</button>
+          <button class="btn btn-sm btn-danger" (click)="selectedFilter='critical'">Critical</button>
+          <button class="btn btn-sm btn-warning" (click)="selectedFilter='pending'">Pending Review</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="escalated-tasks-grid" *ngIf="!loading">
+      <div class="task-card" *ngFor="let task of escalatedTasks" 
+           [class.critical]="task.daysPending > 10"
+           [class.highlighted]="task.isHighlighted">
+        <div class="task-header">
+          <div class="task-badges">
+            <span class="badge badge-{{getEscalationLevelClass(task.escalationLevel)}}">
+              {{getEscalationLevelText(task.escalationLevel)}}
+            </span>
+            <span class="badge badge-{{getPriorityClass(task.priority)}}">
+              {{task.priority}}
+            </span>
+          </div>
+          <div class="task-days">
+            <i class="fas fa-clock"></i>
+            <span [class.text-danger]="task.daysPending > 10">
+              {{task.daysPending}} days
+            </span>
+          </div>
+        </div>
+        
+        <div class="task-body">
+          <h5>{{task.title}}</h5>
+          <p>{{task.description | slice:0:100}}...</p>
+          <div class="task-meta">
+            <div class="meta-item">
+              <i class="fas fa-hashtag"></i>
+              <span>{{task.referenceNumber}}</span>
+            </div>
+            <div class="meta-item">
+              <i class="fas fa-user"></i>
+              <span>From: {{task.originalOfficerName}}</span>
+            </div>
+            <div class="meta-item">
+              <i class="fas fa-map-marker-alt"></i>
+              <span>Ward {{task.wardNumber}}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="task-footer">
+          <button class="btn btn-sm btn-info" (click)="viewDetails(task)">
+            <i class="fas fa-eye"></i> View Details
+          </button>
+          <button class="btn btn-sm btn-primary" (click)="reassignTask(task)">
+            <i class="fas fa-user-plus"></i> Reassign
+          </button>
+          <button class="btn btn-sm btn-success" (click)="markAsResolved(task)">
+            <i class="fas fa-check"></i> Resolve
+          </button>
+        </div>
+      </div>
+      
+      <div *ngIf="escalatedTasks.length === 0" class="empty-state">
+        <i class="fas fa-check-double fa-3x text-success"></i>
+        <h5>No escalated tasks</h5>
+        <p>All tasks are being handled within the normal workflow.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div class="loading-overlay" *ngIf="loading">
+    <div class="spinner-border text-primary" role="status">
+      <span class="sr-only">Loading...</span>
+    </div>
+  </div>
+</div>
+<!-- Message Toast/Alert -->
+<div class="message-container" *ngIf="message">
+    <div class="alert" [class]="'alert-' + message.type" role="alert">
+        <div class="message-content">
+            <i class="fas" [class.fa-check-circle]="message.type === 'success'"
+                       [class.fa-exclamation-circle]="message.type === 'error'"
+                       [class.fa-exclamation-triangle]="message.type === 'warning'"
+                       [class.fa-info-circle]="message.type === 'info'"></i>
+            <span>{{message.text}}</span>
+        </div>
+        <button type="button" class="close" (click)="clearMessage()">
+            <span>&times;</span>
+        </button>
+    </div>
+</div>
+

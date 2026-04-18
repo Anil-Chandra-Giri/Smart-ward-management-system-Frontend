@@ -23,16 +23,17 @@ import { AuthGuardService } from './Services/auth-guard.service';
 import { StaffDetailsComponent } from './Components/layout/sidebar/Staff/staff-details/staff-details.component';
 import { NavigateComponent } from './Components/navigate/navigate.component';
 import { RoutePlanningComponent } from './Components/route-planning/route-planning.component';
-import { WeeklyScheduleComponent } from './Components/weekly-schedule/weekly-schedule.component';
+import { WeeklyScheduleComponent } from './Components/layout/sidebar/Staff/weekly-schedule/weekly-schedule.component';
 import { RealtimeUpdatesComponent } from './Components/realtime-updates/realtime-updates.component';
 import { ResourceListComponent } from './Components/resource-list/resource-list.component';
-import { VolunteerListComponent } from './Components/volunteer-list/volunteer-list.component';
-import { DisasterEventFormComponent } from './Components/disaster-event-form/disaster-event-form.component';
-import { DisasterEventListComponent } from './Components/disaster-event-list/disaster-event-list.component';
+import { VolunteerListComponent } from './Components/layout/sidebar/Staff/volunteer-list/volunteer-list.component';
 import { ResourceFormComponent } from './Components/resource-form/resource-form.component';
-import { VolunteerFormComponent } from './Components/volunteer-form/volunteer-form.component';
+import { VolunteerFormComponent } from './Components/layout/sidebar/Staff/volunteer-form/volunteer-form.component';
 import { OfficerDashboardComponent } from './Components/officer-dashboard/officer-dashboard.component';
 import { AdminDashboardComponent } from './Components/admin-dashboard/admin-dashboard.component';
+import { EscalationDashboardComponent } from './Components/layout/sidebar/Staff/escalation-dashboard/escalation-dashboard.component';
+import { DisasterEventListComponent } from './Components/layout/sidebar/Staff/disaster-event-list/disaster-event-list.component';
+import { DisasterEventFormComponent } from './Components/layout/sidebar/Staff/disaster-event-form/disaster-event-form.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -58,7 +59,23 @@ export const routes: Routes = [
       { path: 'notices', component: StaffNoticesComponent, canActivate: [AuthGuardService]},
       { path: 'appointments', component: AppointmentsComponent, canActivate: [AuthGuardService] },
       { path: 'my-details', component: StaffDetailsComponent, canActivate: [AuthGuardService] },
-      { path: 'settings', component: StaffSettingsComponent, canActivate: [AuthGuardService] }
+      { path: 'settings', component: StaffSettingsComponent, canActivate: [AuthGuardService] },
+      { path: 'route-planning', component: RoutePlanningComponent },
+      { path: 'weekly-schedule', component: WeeklyScheduleComponent },
+      { path: 'realtime-updates', component: RealtimeUpdatesComponent },
+      { path: 'volunteers', component: VolunteerListComponent },
+      { path: 'volunteers/new', component: VolunteerFormComponent },
+      { path: 'volunteers/:id', component: VolunteerFormComponent },
+      { path: 'volunteers/:id/edit', component: VolunteerFormComponent },
+      { path: 'resources', component: ResourceListComponent },
+      { path: 'resources/new', component: ResourceFormComponent },
+      { path: 'resources/:id', component: ResourceFormComponent },
+      { path: 'resources/:id/edit', component: ResourceFormComponent },
+      { path: 'disaster-events', component: DisasterEventListComponent },
+      { path: 'disaster-events/new', component: DisasterEventFormComponent },
+      { path: 'disaster-events/:id', component: DisasterEventFormComponent },
+      { path: 'disaster-events/:id/edit', component: DisasterEventFormComponent },
+      { path: 'escalation-dashboard', component: EscalationDashboardComponent,data: { roles: ['Officer', 'SeniorOfficer', 'Admin', 'SuperAdmin'] }},
     ],
   },
     {
@@ -73,9 +90,9 @@ export const routes: Routes = [
       { path: 'notices', component:CitizenNoticesComponent },
       { path: 'book-appointment', component: BookAppointmentComponent },
       { path: 'settings', component: CitizenSettingsComponent },
-      {path:'polls',component:PollListComponent},
-      {path:'vote/:id',component:VotePollComponent},
-      {path:'polls/results/:id',component:PollResultsComponent},
+      { path:'polls',component:PollListComponent},
+      { path:'vote/:id',component:VotePollComponent},
+      { path:'polls/results/:id',component:PollResultsComponent},
       { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuardService] },
       { path: 'request-service', component: RequestServiceComponent, canActivate: [AuthGuardService] },
       { path: 'my-details', component: MyDetailsComponent, canActivate: [AuthGuardService] },
@@ -87,21 +104,7 @@ export const routes: Routes = [
   },
   { path: 'registerUser', component: UserRegisterComponent, pathMatch: 'full' },
   { path: 'navigate/:id', component: NavigateComponent },
-  { path: 'route-planning', component: RoutePlanningComponent },
-  { path: 'weekly-schedule', component: WeeklyScheduleComponent },
-  { path: 'realtime-updates', component: RealtimeUpdatesComponent },
-  { path: 'volunteers', component: VolunteerListComponent },
-  { path: 'volunteers/new', component: VolunteerFormComponent },
-  { path: 'volunteers/:id', component: VolunteerFormComponent },
-  { path: 'volunteers/:id/edit', component: VolunteerFormComponent },
-  { path: 'resources', component: ResourceListComponent },
-  { path: 'resources/new', component: ResourceFormComponent },
-  { path: 'resources/:id', component: ResourceFormComponent },
-  { path: 'resources/:id/edit', component: ResourceFormComponent },
-  { path: 'disaster-events', component: DisasterEventListComponent },
-  { path: 'disaster-events/new', component: DisasterEventFormComponent },
-  { path: 'disaster-events/:id', component: DisasterEventFormComponent },
-  { path: 'disaster-events/:id/edit', component: DisasterEventFormComponent },
+  
   {
     path: 'officer-dashboard',
     component: OfficerDashboardComponent,
@@ -114,4 +117,5 @@ export const routes: Routes = [
     // canActivate: [AuthGuard],
     data: { roles: ['Admin', 'SuperAdmin'] }
   },
+ 
 ];

@@ -1,9 +1,9 @@
 // src/app/components/disaster-event-list/disaster-event-list.component.ts
 import { Component, OnInit } from '@angular/core';
-import { DisasterEvent } from '../../Models/DisasterEvent.model';
-import { ApiService } from '../../Services/api.service';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { DisasterEvent } from '../../../../../Models/DisasterEvent.model';
+import { ApiService } from '../../../../../Services/api.service';
 
 @Component({
   selector: 'app-disaster-event-list',

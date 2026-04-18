@@ -2,9 +2,9 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ApiService } from '../../Services/api.service';
-import { UpdateDisasterEvent, CreateDisasterEvent } from '../../Models/DisasterEvent.model';
 import { CommonModule } from '@angular/common';
+import { UpdateDisasterEvent, CreateDisasterEvent } from '../../../../../Models/DisasterEvent.model';
+import { ApiService } from '../../../../../Services/api.service';
 
 @Component({
   selector: 'app-disaster-event-form',

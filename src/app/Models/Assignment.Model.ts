@@ -37,6 +37,15 @@ export interface EscalatedTask {
   isHighlighted: boolean;
 }
 
+export interface ReminderRequest {
+  assignmentId: string;
+  officerId: string;
+  referenceType: string;
+  referenceNumber: string;
+  daysOverdue: number;
+  reminderType: number;
+}
+
 export interface DashboardStats {
   totalTasks?: number;
   overdueTasks?: number;
@@ -47,4 +56,15 @@ export interface DashboardStats {
   totalEscalated?: number;
   criticalTasks?: number;
   pendingReview?: number;
+}
+
+export interface Notification {
+  id: string;
+  userId: string;
+  title: string;
+  message: string;
+  type: number;
+  createdAt: Date;
+  isRead: boolean;
+  actionUrl?: string;
 }

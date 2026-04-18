@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, Resource } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { Login } from '../Models/login';
@@ -407,6 +407,23 @@ deleteNotice(id: string): Observable<any> {
 
   getDashboardStats(userId: string, role: string): Observable<any> {
     return this.http.get(`https://localhost:7069/api/FollowUp/dashboard-stats/${userId}?role=${role}`);
+  }
+
+   markNotificationAsRead(notificationId: string): Observable<any> {
+    return this.http.put(`https://localhost:7069/api/FollowUp/Notification/mark-read/${notificationId}`, {});
+  }
+
+  markAllNotificationsAsRead(userId: string): Observable<any> {
+    return this.http.put(`https://localhost:7069/api/FollowUp/Notification/mark-all-read/${userId}`, {});
+  }
+
+  getUnreadCount(userId: string): Observable<any> {
+    return this.http.get(`https://localhost:7069/api/FollowUp/Notification/unread-count/${userId}`);
+  }
+
+   getNotifications(userId: string, unreadOnly: boolean = false): Observable<any> {
+    const params = new HttpParams().set('unreadOnly', unreadOnly.toString());
+    return this.http.get(`https://localhost:7069/api/FollowUp/Notification/user/${userId}`, { params });
   }
  
 }

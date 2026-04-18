@@ -1,0 +1,36 @@
+<div class="notification-center">
+  <div class="notification-trigger" (click)="showDropdown = !showDropdown">
+    <i class="fas fa-bell"></i>
+    <span class="badge" *ngIf="unreadCount > 0">{{unreadCount}}</span>
+  </div>
+
+  <div class="notification-dropdown" *ngIf="showDropdown">
+    <div class="dropdown-header">
+      <h6>Notifications</h6>
+      <button class="btn btn-link btn-sm" (click)="markAllAsRead()">
+        Mark all as read
+      </button>
+    </div>
+    
+    <div class="dropdown-body">
+      <div *ngIf="notifications.length === 0" class="empty-notifications">
+        <i class="fas fa-bell-slash"></i>
+        <p>No notifications</p>
+      </div>
+      
+      <div *ngFor="let notification of notifications" 
+           class="notification-item"
+           [class.unread]="!notification.isRead"
+           (click)="markAsRead(notification.id)">
+        <div class="notification-icon" [class]="getNotificationClass(notification.type)">
+          <i class="fas" [class]="getNotificationIcon(notification.type)"></i>
+        </div>
+        <div class="notification-content">
+          <div class="title">{{notification.title}}</div>
+          <div class="message">{{notification.message}}</div>
+          <div class="time">{{notification.createdAt | timeAgo}}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

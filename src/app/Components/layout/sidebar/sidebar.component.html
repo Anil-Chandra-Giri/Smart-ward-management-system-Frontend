@@ -15,10 +15,11 @@
   <a *ngIf="isStaff" href="/ward/createPoll">🗳️ Create Poll</a>
   <a *ngIf="isStaff" href="/ward/appointments">📅 Appointments</a>
   <a *ngIf="isStaff" href="/weekly-schedule">🗑️ Waste Collection Schedule</a>
-  <a *ngIf="isStaff" href="/volunteers">🤝 Volunteers</a>
-  <a *ngIf="isStaff" href="/resources">📦 Available Resources</a>
-  <a *ngIf="isStaff" href="/disaster-events/new">🚨 Add Disaster Event</a>
-  <a *ngIf="isStaff" href="/disaster-events">🌍 View Disaster Events</a>
+  <a *ngIf="isStaff" href="/ward/volunteers">🤝 Volunteers</a>
+  <a *ngIf="isStaff" href="/ward/resources">📦 Available Resources</a>
+  <a *ngIf="isStaff" href="/ward/disaster-events/new">🚨 Add Disaster Event</a>
+  <a *ngIf="isStaff" href="/ward/disaster-events">🌍 View Disaster Events</a>
+  <a *ngIf="isStaff" href="/ward/escalation-dashboard">⚠️ Escalation Dashboard</a>
 
   <!-- Citizen-specific menu -->
   <a *ngIf="!isStaff" class="active" href="/citizen/dashboard">📊 Dashboard</a>
