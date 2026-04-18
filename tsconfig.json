@@ -1,11 +1,13 @@
-/* To learn more about Typescript configuration file: https://www.typescriptlang.org/docs/handbook/tsconfig-json.html. */
-/* To learn more about Angular compiler options: https://angular.dev/reference/configs/angular-compiler-options. */
 {
   "compileOnSave": false,
   "compilerOptions": {
     "ignoreDeprecations": "5.0",
     "outDir": "./dist/out-tsc",
+<<<<<<< HEAD
     "rootDir": "./src",
+=======
+    "rootDir": "./src",               // <-- ADD THIS LINE to fix the rootDir warning
+>>>>>>> origin/Anil
     "strict": true,
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
@@ -16,7 +18,7 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",    // <-- CHANGE THIS from "node" to "bundler"
     "importHelpers": true,
     "target": "ES2022",
     "module": "ES2022"

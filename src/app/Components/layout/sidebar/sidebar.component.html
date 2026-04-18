@@ -3,41 +3,168 @@
   <div class="logo">
     <h2>Smart Ward</h2>
     <p>Management System</p>
+    <div class="user-info" *ngIf="isBrowser && (isAdmin || isStaff || isCitizen)">
+      <span class="user-name">{{ userName }}</span>
+      <span class="user-role">{{ userRole }}</span>
+    </div>
   </div>
 
   <!-- Navigation Menu -->
   <nav class="nav-menu">
-  <!-- Staff-specific menu -->
-  <a *ngIf="isStaff" class="active" href="/ward/dashboard">📊 Dashboard</a>
-  <a *ngIf="isStaff" href="/ward/notices">📢 Notices</a>
-  <a *ngIf="isStaff" href="/ward/service-request">🛠️ Service Requests</a>
-  <a *ngIf="isStaff" href="/ward/complaints">⚠️ Complaints</a>
-  <a *ngIf="isStaff" href="/ward/createPoll">🗳️ Create Poll</a>
-  <a *ngIf="isStaff" href="/ward/appointments">📅 Appointments</a>
-  <a *ngIf="isStaff" href="/weekly-schedule">🗑️ Waste Collection Schedule</a>
-  <a *ngIf="isStaff" href="/ward/volunteers">🤝 Volunteers</a>
-  <a *ngIf="isStaff" href="/ward/resources">📦 Available Resources</a>
-  <a *ngIf="isStaff" href="/ward/disaster-events/new">🚨 Add Disaster Event</a>
-  <a *ngIf="isStaff" href="/ward/disaster-events">🌍 View Disaster Events</a>
-  <a *ngIf="isStaff" href="/ward/escalation-dashboard">⚠️ Escalation Dashboard</a>
+    <!-- Staff-specific menu -->
+    <ng-container *ngIf="isStaff">
+      <a [class.active]="isActive('/ward/dashboard')" href="/ward/dashboard">
+        <i class="icon">📊</i>
+        <span>Dashboard</span>
+      </a>
+      <a [class.active]="isActive('/ward/notices')" href="/ward/notices">
+        <i class="icon">📢</i>
+        <span>Notices</span>
+      </a>
+      <a [class.active]="isActive('/ward/service-request')" href="/ward/service-request">
+        <i class="icon">🛠️</i>
+        <span>Service Requests</span>
+      </a>
+      <a [class.active]="isActive('/ward/complaints')" href="/ward/complaints">
+        <i class="icon">⚠️</i>
+        <span>Complaints</span>
+      </a>
+      <a [class.active]="isActive('/ward/createPoll')" href="/ward/createPoll">
+        <i class="icon">🗳️</i>
+        <span>Create Poll</span>
+      </a>
+      <a [class.active]="isActive('/ward/appointments')" href="/ward/appointments">
+        <i class="icon">📅</i>
+        <span>Appointments</span>
+      </a>
+      <a [class.active]="isActive('/weekly-schedule')" href="/weekly-schedule">
+        <i class="icon">🗑️</i>
+        <span>Waste Collection Schedule</span>
+      </a>
+      <a [class.active]="isActive('/volunteers')" href="/volunteers">
+        <i class="icon">🤝</i>
+        <span>Volunteers</span>
+      </a>
+      <a [class.active]="isActive('/resources')" href="/resources">
+        <i class="icon">📦</i>
+        <span>Available Resources</span>
+      </a>
+      <a [class.active]="isActive('/disaster-events/new')" href="/disaster-events/new">
+        <i class="icon">🚨</i>
+        <span>Add Disaster Event</span>
+      </a>
+      <a [class.active]="isActive('/disaster-events')" href="/disaster-events">
+        <i class="icon">🌍</i>
+        <span>View Disaster Events</span>
+      </a>
+    </ng-container>
 
-  <!-- Citizen-specific menu -->
-  <a *ngIf="!isStaff" class="active" href="/citizen/dashboard">📊 Dashboard</a>
-  <a *ngIf="!isStaff" href="/citizen/notices">📢 Notices</a>
-  <a *ngIf="!isStaff" href="/citizen/request-service">🛠️ Request Service</a>
-  <a *ngIf="!isStaff" href="/citizen/submit-complaint">⚠️ Submit Complaint</a>
-  <a *ngIf="!isStaff" href="/citizen/book-appointment">📅 Book Appointment</a>
-  <a *ngIf="!isStaff" href="/citizen/polls">🗳️ Vote Poll</a>
-  <a *ngIf="!isStaff" href="/volunteers/new">🙋 Register as Volunteer</a>
-  <a *ngIf="!isStaff" href="/volunteers">🤝 Volunteers</a>
-  <a *ngIf="!isStaff" href="/weekly-schedule">🗑️ Waste Collection Schedule</a>
-  <a *ngIf="!isStaff" href="/resources">📦 Available Resources</a>
-  <a *ngIf="!isStaff" href="/disaster-events/new">🚨 Report Disaster Event</a>
-  <a *ngIf="!isStaff" href="/disaster-events">🌍 View Disaster Events</a>
-</nav>
+    <!-- Citizen-specific menu -->
+    <ng-container *ngIf="isCitizen">
+      <a [class.active]="isActive('/citizen/dashboard')" href="/citizen/dashboard">
+        <i class="icon">📊</i>
+        <span>Dashboard</span>
+      </a>
+      <a [class.active]="isActive('/citizen/notices')" href="/citizen/notices">
+        <i class="icon">📢</i>
+        <span>Notices</span>
+      </a>
+      <a [class.active]="isActive('/citizen/request-service')" href="/citizen/request-service">
+        <i class="icon">🛠️</i>
+        <span>Request Service</span>
+      </a>
+      <a [class.active]="isActive('/citizen/submit-complaint')" href="/citizen/submit-complaint">
+        <i class="icon">⚠️</i>
+        <span>Submit Complaint</span>
+      </a>
+      <a [class.active]="isActive('/citizen/book-appointment')" href="/citizen/book-appointment">
+        <i class="icon">📅</i>
+        <span>Book Appointment</span>
+      </a>
+      <a [class.active]="isActive('/citizen/polls')" href="/citizen/polls">
+        <i class="icon">🗳️</i>
+        <span>Vote Poll</span>
+      </a>
+      <a [class.active]="isActive('/volunteers/new')" href="/volunteers/new">
+        <i class="icon">🙋</i>
+        <span>Register as Volunteer</span>
+      </a>
+      <a [class.active]="isActive('/volunteers')" href="/volunteers">
+        <i class="icon">🤝</i>
+        <span>Volunteers</span>
+      </a>
+      <a [class.active]="isActive('/weekly-schedule')" href="/weekly-schedule">
+        <i class="icon">🗑️</i>
+        <span>Waste Collection Schedule</span>
+      </a>
+      <a [class.active]="isActive('/resources')" href="/resources">
+        <i class="icon">📦</i>
+        <span>Available Resources</span>
+      </a>
+      <a [class.active]="isActive('/disaster-events/new')" href="/disaster-events/new">
+        <i class="icon">🚨</i>
+        <span>Report Disaster Event</span>
+      </a>
+      <a [class.active]="isActive('/disaster-events')" href="/disaster-events">
+        <i class="icon">🌍</i>
+        <span>View Disaster Events</span>
+      </a>
+    </ng-container>
+
+    <!-- Admin-specific menu -->
+    <ng-container *ngIf="isAdmin">
+      <a [class.active]="isActive('/Admin/dashboard')" href="/Admin/dashboard">
+        <i class="icon">📊</i>
+        <span>Dashboard</span>
+      </a>
+      <a [class.active]="isActive('/Admin/citizen-management')" href="/Admin/citizen-management">
+        <i class="icon">👥</i>
+        <span>Manage Citizens</span>
+      </a>
+      <a [class.active]="isActive('/Admin/staff-management')" href="/Admin/staff-management">
+        <i class="icon">🧑‍💼</i>
+        <span>Manage Staff</span>
+      </a>
+      <a [class.active]="isActive('/Admin/service-management')" href="/Admin/service-management">
+        <i class="icon">🛠️</i>
+        <span>Manage Services</span>
+      </a>
+      <a [class.active]="isActive('/Admin/complaint-management')" href="/Admin/complaint-management">
+        <i class="icon">⚠️</i>
+        <span>Manage Complaints</span>
+      </a>
+      <a [class.active]="isActive('/Admin/appointment-management')" href="/Admin/appointment-management">
+        <i class="icon">📅</i>
+        <span>Manage Appointments</span>
+      </a>
+      <a [class.active]="isActive('/Admin/notice-management')" href="/Admin/notice-management">
+        <i class="icon">📢</i>
+        <span>Manage Notices</span>
+      </a>
+      <a [class.active]="isActive('/Admin/poll-management')" href="/Admin/poll-management">
+        <i class="icon">📊</i>
+        <span>Manage Polls</span>
+      </a>
+      <a [class.active]="isActive('/Admin/reports')" href="/Admin/reports">
+        <i class="icon">📈</i>
+        <span>Reports & Analytics</span>
+      </a>
+      <a [class.active]="isActive('/Admin/audit-and-log')" href="/Admin/audit-and-logs">
+        <i class="icon">🔒</i>
+        <span>Audit & Logs</span>
+      </a>
+      <a [class.active]="isActive('/Admin/system-settings')" href="/Admin/system-settings">
+        <i class="icon">⚙️</i>
+        <span>System Settings</span>
+      </a>
+    </ng-container>
+  </nav>
 
   <!-- Logout Button -->
-  <div class="logout">
-    <button (click)="logout()">Logout</button>
+  <div class="logout" *ngIf="isBrowser && (isAdmin || isStaff || isCitizen)">
+    <button (click)="logout()" class="logout-btn">
+      <i class="icon">🚪</i>
+      <span>Logout</span>
+    </button>
   </div>
 </aside>

@@ -1,3 +1,4 @@
+<!-- Complaints Grid -->
 <div *ngIf="isBrowser" class="mt-4">
   <ag-grid-angular
     class="ag-theme-alpine"
@@ -5,8 +6,44 @@
     [rowData]="rowData"
     [columnDefs]="columnDefs"
     [pagination]="true"
-    [rowHeight]="110",
-     [context]="context"
+    [rowHeight]="110"
+    [context]="context"
     [paginationPageSize]="pageSize">
   </ag-grid-angular>
+</div>
+
+<!-- ✅ Map Modal -->
+<div class="modal fade" id="mapModal" tabindex="-1" aria-labelledby="mapModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title" id="mapModalLabel">
+          <i class="bi bi-geo-alt-fill text-success me-2"></i>
+          Navigate to Complaint
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" (click)="clearRoute()"></button>
+      </div>
+
+      <div class="modal-body p-0">
+        <!-- Route info bar shown after route is calculated -->
+        <div *ngIf="routeInfo" class="d-flex align-items-center gap-4 px-3 py-2 bg-light border-bottom">
+          <span><i class="bi bi-signpost-2-fill text-primary me-1"></i> <strong>{{ routeInfo.distance }} km</strong></span>
+          <span><i class="bi bi-clock-fill text-warning me-1"></i> <strong>{{ routeInfo.time }}</strong></span>
+          <span class="badge bg-success" *ngIf="routeInfo.isRoadRoute">🛣️ Road Route</span>
+          <span class="badge bg-warning text-dark" *ngIf="!routeInfo.isRoadRoute">⚠️ Straight-line (road unavailable)</span>
+        </div>
+
+        <!-- ✅ This is the div Leaflet will mount into -->
+        <div #mapContainer id="mapContainer" style="height: 500px; width: 100%;"></div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal" (click)="clearRoute()">
+          <i class="bi bi-x-circle me-1"></i> Close
+        </button>
+      </div>
+
+    </div>
+  </div>
 </div>

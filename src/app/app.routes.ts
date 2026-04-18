@@ -28,16 +28,44 @@ import { RealtimeUpdatesComponent } from './Components/realtime-updates/realtime
 import { ResourceListComponent } from './Components/resource-list/resource-list.component';
 import { VolunteerListComponent } from './Components/layout/sidebar/Staff/volunteer-list/volunteer-list.component';
 import { ResourceFormComponent } from './Components/resource-form/resource-form.component';
-import { VolunteerFormComponent } from './Components/layout/sidebar/Staff/volunteer-form/volunteer-form.component';
-import { OfficerDashboardComponent } from './Components/officer-dashboard/officer-dashboard.component';
+import { ServiceManagementComponent } from './Components/layout/sidebar/admin/service-management/service-management.component';
+import { ComplaintManagementComponent } from './Components/layout/sidebar/admin/complaint-management/complaint-management.component';
+import { NoticeManagementComponent } from './Components/layout/sidebar/admin/notice-management/notice-management.component';
+import { AuditAndLogsComponent } from './Components/layout/sidebar/admin/audit-and-logs/audit-and-logs.component';
+import { AppointmentManagementComponent } from './Components/layout/sidebar/admin/appointment-management/appointment-management.component';
+import { SystemSettingsComponent } from './Components/layout/sidebar/admin/system-settings/system-settings.component';
+import { StaffManagementComponent } from './Components/layout/sidebar/admin/staff-management/staff-management.component';
+import { CitizenManagementComponent } from './Components/layout/sidebar/admin/citizen-management/citizen-management.component';
+import { PollManagementComponent } from './Components/layout/sidebar/admin/poll-management/poll-management.component';
+import { ReportsComponent } from './Components/layout/sidebar/admin/reports/reports.component';
 import { AdminDashboardComponent } from './Components/admin-dashboard/admin-dashboard.component';
-import { EscalationDashboardComponent } from './Components/layout/sidebar/Staff/escalation-dashboard/escalation-dashboard.component';
-import { DisasterEventListComponent } from './Components/layout/sidebar/Staff/disaster-event-list/disaster-event-list.component';
 import { DisasterEventFormComponent } from './Components/layout/sidebar/Staff/disaster-event-form/disaster-event-form.component';
+import { DisasterEventListComponent } from './Components/layout/sidebar/Staff/disaster-event-list/disaster-event-list.component';
+import { EscalationDashboardComponent } from './Components/layout/sidebar/Staff/escalation-dashboard/escalation-dashboard.component';
+import { OfficerDashboardComponent } from './Components/officer-dashboard/officer-dashboard.component';
+import { VolunteerFormComponent } from './Components/layout/sidebar/Staff/volunteer-form/volunteer-form.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'login', component: LoginComponent},
+    {
+    path: 'Admin',
+    component: LayoutComponent,
+    children: [
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: 'dashboard', component: DashboardComponent },
+      { path: 'service-management', component: ServiceManagementComponent },
+      { path: 'complaint-management', component: ComplaintManagementComponent },
+      { path: 'notice-management', component: NoticeManagementComponent},
+      {path:  'audit-and-logs',component:AuditAndLogsComponent},
+      { path: 'appointment-management', component: AppointmentManagementComponent},
+      { path: 'system-settings', component: SystemSettingsComponent },
+      {path:  'staff-management',component:StaffManagementComponent},
+      { path: 'citizen-management', component: CitizenManagementComponent },
+      { path: 'poll-management', component: PollManagementComponent },
+      { path: 'reports', component: ReportsComponent },
+    ],
+  },
   {
     path: 'ward',
     component: LayoutComponent,

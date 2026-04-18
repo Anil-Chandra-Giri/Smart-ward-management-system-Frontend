@@ -7,7 +7,6 @@ import { Poll } from '../Models/Poll.Model';
 import { PollCategory } from '../Models/poll-category';
 import { NoticeCategory } from '../Models/Category';
 import { Resource as ResourceModel, CreateResource, UpdateResource } from '../Models/resource.model';
-import { Notice } from '../Models/notice';
 import { WeeklySchedule, WasteCollectionRoute, CreateRoute, RouteStatusUpdate, Vehicle, Driver, RealtimeUpdate } from '../Models/WasteCollectionRoute';
 import { DisasterEvent, CreateDisasterEvent, UpdateDisasterEvent } from '../Models/DisasterEvent.model';
 // import { CreateResource, UpdateResource } from '../Models/resource.model';
