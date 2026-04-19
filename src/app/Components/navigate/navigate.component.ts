@@ -1,4 +1,4 @@
-// navigate.component.ts - Updated with multiple routing services
+// navigate.component.ts - Updated with proper distance measurement
 import { Component, OnInit, OnDestroy, ElementRef, ViewChild, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -48,24 +48,12 @@ import { LeafletService } from '../../Services/leaflet.service';
         <div class="destination-info">
           <i class="bi bi-geo-alt-fill text-danger"></i>
           <span>{{ destinationAddress }}</span>
-          <span class="badge" [ngClass]="{
-            'bg-success': routeStatus === 'success',
-            'bg-warning': routeStatus === 'pending',
-            'bg-danger': routeStatus === 'failed'
-          }">{{ routeStatus }}</span>
-        </div>
-        
-        <!-- Routing service info -->
-        <div class="routing-info small" *ngIf="routingService">
-          <i class="bi bi-info-circle"></i>
-          Using: {{ routingService }}
         </div>
         
         <!-- Debug info - remove in production -->
         <div class="debug-info small text-muted mt-2" *ngIf="debugMode">
           <div>Route Status: {{ routeStatus }}</div>
           <div>Raw Distance: {{ rawDistance }} km</div>
-          <div>Routing Service: {{ routingService || 'none' }}</div>
           <div>Coordinates: {{ officerPosition?.lat?.toFixed(4) }}, {{ officerPosition?.lng?.toFixed(4) }}</div>
         </div>
       </div>
@@ -82,7 +70,7 @@ import { LeafletService } from '../../Services/leaflet.service';
       <!-- Fallback message if no route -->
       <div class="fallback-message" *ngIf="routeStatus === 'failed'">
         <i class="bi bi-exclamation-triangle"></i>
-        Using OpenRouteService for better routing. Please wait...
+        Using straight-line distance. Live navigation may be limited.
       </div>
     </div>
   `,
@@ -142,7 +130,6 @@ import { LeafletService } from '../../Services/leaflet.service';
     .bg-warning { background: #ffc107; }
     .bg-info { background: #17a2b8; }
     .bg-success { background: #28a745; }
-    .bg-danger { background: #dc3545; }
 
     .navigation-panel {
       background: white;
@@ -204,15 +191,6 @@ import { LeafletService } from '../../Services/leaflet.service';
       border-top: 1px solid #dee2e6;
       font-size: 0.9rem;
       color: #495057;
-    }
-
-    .routing-info {
-      background: #e7f3ff;
-      color: #0066cc;
-      padding: 0.25rem 0.5rem;
-      border-radius: 4px;
-      margin-top: 0.5rem;
-      font-size: 0.8rem;
     }
 
     .map-container {
@@ -299,13 +277,9 @@ export class NavigateComponent implements OnInit, OnDestroy {
   mapInitialized: boolean = false;
   routeStatus: string = 'pending'; // 'pending', 'success', 'failed'
   officerPosition: {lat: number, lng: number} | null = null;
-  routingService: string = '';
   
   // Debug flag - set to false in production
   debugMode: boolean = true;
-  
-  // OpenRouteService API key - get one for free from openrouteservice.org
-  private ORS_API_KEY = 'your-api-key-here'; // Replace with actual API key
 
   constructor(
     private route: ActivatedRoute,
@@ -433,8 +407,8 @@ export class NavigateComponent implements OnInit, OnDestroy {
     // Update ETA based on straight-line distance
     this.calculateETA(straightDistance);
     
-    // Try to get actual route using multiple services
-    this.getRouteWithFallback(position);
+    // Try to get actual route
+    this.getRoute(position);
   }
 
   getRoute(origin: {lat: number, lng: number}) {

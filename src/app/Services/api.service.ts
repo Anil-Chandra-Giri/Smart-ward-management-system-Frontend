@@ -424,5 +424,30 @@ deleteNotice(id: string): Observable<any> {
     const params = new HttpParams().set('unreadOnly', unreadOnly.toString());
     return this.http.get(`https://localhost:7069/api/FollowUp/Notification/user/${userId}`, { params });
   }
+  getAllOverdueTasks(): Observable<any> {
+    return this.http.get(`https://localhost:7069/api/FollowUp/admin/all-overdue-tasks`);
+}
+trackComplaintStatus(complaintId: string): Observable<any> {
+    return this.http.get(`https://localhost:7069/api/FollowUp/citizen/track/${complaintId}`);
+}
+getStaffAssignments(staffId: string): Observable<any> {
+    return this.http.get(`https://localhost:7069/api/FollowUp/staff-assignments/${staffId}`);
+}
+
+  getAllCitizens()
+{
+  return this.http.get<RealtimeUpdate[]>(`https://localhost:7069/api/Citizens`);
+}
+
+
+getAllPolls()
+{
+  return this.http.get<RealtimeUpdate[]>(`https://localhost:7069/api/Polls`);
+}
+
+getAllStaff()
+{
+  return this.http.get<RealtimeUpdate[]>(`https://localhost:7069/api/Staff`);
+}
  
 }

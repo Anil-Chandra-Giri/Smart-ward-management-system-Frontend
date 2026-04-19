@@ -1,1 +1,79 @@
-<p>poll-management works!</p>
+<div class="poll-form">
+
+<h2>Create Poll</h2>
+
+<input type="text"
+placeholder="Poll Title"
+[(ngModel)]="title">
+
+<textarea
+placeholder="Description"
+[(ngModel)]="description">
+</textarea>
+
+<!-- CATEGORY DROPDOWN -->
+
+<label>Poll Category</label>
+
+<select [(ngModel)]="categoryId">
+
+<option *ngFor="let cat of categories"
+[value]="cat.id">
+
+{{cat.name}}
+
+</option>
+
+</select>
+
+<button class="add-category"
+(click)="showCategoryInput=true">
+
++ Add Category
+
+</button>
+
+<!-- ADD CATEGORY -->
+
+<div *ngIf="showCategoryInput"
+class="category-box">
+
+<input
+type="text"
+placeholder="New Category"
+[(ngModel)]="newCategoryName">
+
+<button
+(click)="createCategory()">
+
+Save
+
+</button>
+
+</div>
+
+<!-- OPTIONS -->
+
+<h3>Options</h3>
+
+<div *ngFor="let option of options; let i=index">
+
+<input
+type="text"
+[(ngModel)]="options[i]"
+placeholder="Option">
+
+</div>
+
+<button (click)="addOption()">
+Add Option
+</button>
+
+<button class="create-btn"
+(click)="createPoll()">
+
+Create Poll
+
+</button>
+
+</div>

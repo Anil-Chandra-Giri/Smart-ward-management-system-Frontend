@@ -1,1 +1,98 @@
-<p>notice-management works!</p>
+<div class="container mt-4">
+  <h3 class="page-title">Ward Notice Management</h3>
+
+  <button class="btn btn-primary mb-3" (click)="openNewNoticeModal()">
+    ➕ Add Notice
+  </button>
+
+  <!-- Modal -->
+  <div class="modal fade" id="noticeModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">{{ isEditMode ? 'Edit Notice' : 'Post Ward Notice' }}</h5>
+          <button type="button" class="btn-close" (click)="closeModal()" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-12">
+              <label class="form-label">Title <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" [(ngModel)]="title" required>
+            </div>
+
+            <div class="col-md-12">
+              <label class="form-label">Description <span class="text-danger">*</span></label>
+              <textarea class="form-control" rows="3" [(ngModel)]="description" required></textarea>
+            </div>
+
+            <div class="col-md-8">
+              <label class="form-label">Category <span class="text-danger">*</span></label>
+              <select class="form-select" [(ngModel)]="categoryId" required>
+                <option value="0">Select Category</option>
+                <option *ngFor="let c of categories" [value]="c.id">
+                  {{c.name}}
+                </option>
+              </select>
+            </div>
+
+            <div class="col-md-4 d-flex align-items-end">
+              <button class="btn btn-success w-100" type="button" (click)="showCategoryInput=true">
+                + Add Category
+              </button>
+            </div>
+
+            <div *ngIf="showCategoryInput" class="col-md-12">
+              <div class="input-group">
+                <input type="text" class="form-control" placeholder="New Category" [(ngModel)]="newCategoryName">
+                <button class="btn btn-primary" type="button" (click)="addCategory()">Save</button>
+                <button class="btn btn-secondary" type="button" (click)="showCategoryInput=false">Cancel</button>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Expiry Date</label>
+              <input type="date" class="form-control" [(ngModel)]="expiryDate">
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Attachment</label>
+              <input type="file" class="form-control" (change)="onFileChange($event)">
+              <small *ngIf="isEditMode && existingFileName" class="text-muted">
+                Current file: {{ existingFileName }}
+              </small>
+            </div>
+
+            <div class="col-md-12">
+              <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="urgentCheck" [(ngModel)]="isUrgent">
+                <label class="form-check-label" for="urgentCheck">
+                  Mark as Urgent
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-secondary" type="button" (click)="closeModal()">
+            Cancel
+          </button>
+          <button class="btn btn-primary" type="button" (click)="submitNotice()" 
+                  [disabled]="!title || !description || !categoryId">
+            {{ isEditMode ? 'Update Notice' : 'Post Notice' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AG Grid -->
+  <ag-grid-angular
+    class="ag-theme-alpine"
+    [rowData]="rowData"
+    [columnDefs]="columnDefs"
+    [defaultColDef]="{ sortable: true, filter: true, resizable: true }"
+    style="width: 100%; height: 600px;">
+  </ag-grid-angular>
+</div>

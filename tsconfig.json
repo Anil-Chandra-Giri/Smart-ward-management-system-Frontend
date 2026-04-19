@@ -3,11 +3,7 @@
   "compilerOptions": {
     "ignoreDeprecations": "5.0",
     "outDir": "./dist/out-tsc",
-<<<<<<< HEAD
     "rootDir": "./src",
-=======
-    "rootDir": "./src",               // <-- ADD THIS LINE to fix the rootDir warning
->>>>>>> origin/Anil
     "strict": true,
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,

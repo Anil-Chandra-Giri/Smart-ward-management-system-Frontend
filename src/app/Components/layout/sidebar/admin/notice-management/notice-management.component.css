@@ -1,0 +1,64 @@
+/* Add to your staff-notices.component.css */
+.page-title {
+  color: #333;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+.btn-primary {
+  background-color: #0d6efd;
+  border: none;
+  padding: 8px 20px;
+  font-weight: 500;
+}
+
+.btn-primary:hover {
+  background-color: #0b5ed7;
+}
+
+.modal-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.modal-title {
+  color: #333;
+  font-weight: 600;
+}
+
+.form-label {
+  font-weight: 500;
+  color: #495057;
+  margin-bottom: 5px;
+}
+
+.text-danger {
+  color: #dc3545;
+}
+
+.badge {
+  padding: 5px 10px;
+  font-size: 12px;
+}
+
+.badge.bg-danger {
+  background-color: #dc3545;
+  color: white;
+}
+
+.badge.bg-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+/* AG Grid custom styles */
+::ng-deep .ag-theme-alpine {
+  --ag-header-height: 50px;
+  --ag-header-foreground-color: #333;
+  --ag-header-background-color: #f8f9fa;
+  --ag-font-size: 14px;
+}
+
+::ng-deep .ag-theme-alpine .ag-header-cell {
+  font-weight: 600;
+}

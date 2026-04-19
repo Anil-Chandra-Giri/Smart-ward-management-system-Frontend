@@ -9,18 +9,19 @@ import { BehaviorSubject } from 'rxjs';
   providedIn: 'root'
 })
 export class AuthService {
+  private isBrowser: boolean;
   jwtPayload: JwtPayload = new JwtPayload();
   private userProfileSubject = new BehaviorSubject<any>(null);
   userProfile$ = this.userProfileSubject.asObservable();
   constructor(private route:Router,@Inject(PLATFORM_ID) private platformId: Object ) {
-    
+    this.isBrowser = isPlatformBrowser(this.platformId);
   }
 
   decodeToken(): JwtPayload {
     if (isPlatformBrowser(this.platformId)) {
 
       const token = localStorage.getItem('token');
-
+      console.log("token",token);
       if (token) {
         this.jwtPayload = this.decodeJwt(token);
       }
@@ -28,6 +29,34 @@ export class AuthService {
 
     return this.jwtPayload;
   }
+
+    getCurrentUser(): any {
+    // Only access localStorage in browser environment
+    if (this.isBrowser) {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        try {
+          return JSON.parse(userStr);
+        } catch (e) {
+          console.error('Error parsing user from localStorage:', e);
+        }
+      }
+    }
+    
+    // Fallback to decode from token (also needs browser check)
+    if (this.isBrowser) {
+      const token = localStorage.getItem('token');
+      if (token) {
+        const decoded = this.decodeToken();
+        if (decoded) {
+          return decoded;
+        }
+      }
+    }
+    
+    return null;
+  }
+
   decodeJwt(token: string): any {
     const payload = token.split('.')[1];
     const decodedPayload = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));

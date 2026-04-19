@@ -44,6 +44,7 @@ import { DisasterEventListComponent } from './Components/layout/sidebar/Staff/di
 import { EscalationDashboardComponent } from './Components/layout/sidebar/Staff/escalation-dashboard/escalation-dashboard.component';
 import { OfficerDashboardComponent } from './Components/officer-dashboard/officer-dashboard.component';
 import { VolunteerFormComponent } from './Components/layout/sidebar/Staff/volunteer-form/volunteer-form.component';
+import { EscalationManagementComponent } from './Components/layout/sidebar/admin/escalation-management/escalation-management.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -63,6 +64,7 @@ export const routes: Routes = [
       {path:  'staff-management',component:StaffManagementComponent},
       { path: 'citizen-management', component: CitizenManagementComponent },
       { path: 'poll-management', component: PollManagementComponent },
+      { path: 'escalation-management', component: EscalationManagementComponent,data: { roles: ['Officer', 'SeniorOfficer', 'Admin', 'SuperAdmin'] } },
       { path: 'reports', component: ReportsComponent },
     ],
   },
