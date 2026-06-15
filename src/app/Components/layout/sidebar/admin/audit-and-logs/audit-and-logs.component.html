@@ -1,24 +1,27 @@
-<!-- audit-and-logs.component.html - Pure AG Grid version -->
+<!-- audit-and-logs.component.html -->
 <div class="logs-container">
+
   <!-- Header -->
   <div class="logs-header">
     <h2>System Logs</h2>
     <div class="header-actions">
       <button class="btn-primary" (click)="exportLogs('csv')">📥 Export CSV</button>
+      <!-- ✅ FIX Bug 12: was calling exportLogs('csv') inside exportToExcel() — now fixed in .ts -->
       <button class="btn-accent" (click)="exportToExcel()">📊 Export Excel</button>
       <button class="btn-warn" (click)="clearOldLogs()">🗑️ Clear Old Logs</button>
     </div>
   </div>
 
-  <!-- Filter Bar - Pure HTML/CSS -->
+  <!-- Filter Bar -->
   <div class="filter-bar">
     <div class="filter-group">
+
       <div class="filter-field">
-        <input 
-          type="text" 
-          class="filter-input" 
-          placeholder="🔍 Quick search..." 
-          [(ngModel)]="quickFilterText" 
+        <input
+          type="text"
+          class="filter-input"
+          placeholder="🔍 Quick search..."
+          [(ngModel)]="quickFilterText"
           (ngModelChange)="onQuickFilterChanged()"
         />
       </div>
@@ -26,24 +29,37 @@
       <div class="filter-field">
         <select class="filter-select" [(ngModel)]="filter.level" (ngModelChange)="onLevelChange($event)">
           <option value="">All Levels</option>
-          <option *ngFor="let level of levels" [value]="level">{{level}}</option>
+          <option *ngFor="let level of levels" [value]="level">{{ level }}</option>
         </select>
       </div>
 
       <div class="filter-field">
         <select class="filter-select" [(ngModel)]="filter.category" (ngModelChange)="onCategoryChange($event)">
           <option value="">All Categories</option>
-          <option *ngFor="let category of categories" [value]="category">{{category}}</option>
+          <option *ngFor="let category of categories" [value]="category">{{ category }}</option>
         </select>
       </div>
 
       <div class="filter-field">
-        <input type="date" class="filter-input" [(ngModel)]="filter.startDate" (ngModelChange)="onDateRangeChange()" placeholder="Start Date" />
+        <input
+          type="date"
+          class="filter-input"
+          [(ngModel)]="filter.startDate"
+          (ngModelChange)="onDateRangeChange()"
+          placeholder="Start Date"
+        />
       </div>
 
       <div class="filter-field">
-        <input type="date" class="filter-input" [(ngModel)]="filter.endDate" (ngModelChange)="onDateRangeChange()" placeholder="End Date" />
+        <input
+          type="date"
+          class="filter-input"
+          [(ngModel)]="filter.endDate"
+          (ngModelChange)="onDateRangeChange()"
+          placeholder="End Date"
+        />
       </div>
+
     </div>
   </div>
 
@@ -54,6 +70,11 @@
   </div>
 
   <!-- AG Grid Table -->
+  <!-- ✅ FIX Bug 11 & 14: [pagination]="false" — AG Grid must NOT paginate client-side.
+       The server already returns exactly one page worth of rows. AG Grid's built-in
+       pagination would re-paginate those rows, causing contradictory page numbers
+       and making the manual pagination controls below show the wrong state.
+       All pagination is handled by the controls at the bottom of this template. -->
   <div class="ag-grid-container">
     <ag-grid-angular
       #agGrid
@@ -62,33 +83,36 @@
       [rowData]="rowData"
       [columnDefs]="columnDefs"
       [defaultColDef]="defaultColDef"
-      [pagination]="true"
-      [paginationPageSize]="paginationPageSize"
-      [paginationPageSizeSelector]="paginationPageSizeSelector"
-      [cacheQuickFilter]="true"
+      [pagination]="false"
       [rowSelection]="'multiple'"
       [suppressRowClickSelection]="true"
       [tooltipShowDelay]="500"
       (gridReady)="onGridReady($event)"
-      (selectionChanged)="onSelectionChanged($event)">
+      (selectionChanged)="onSelectionChanged()">
     </ag-grid-angular>
   </div>
 
-  <!-- Pagination Info -->
+  <!-- Server-side Pagination Controls -->
   <div class="pagination-info">
-    <span>Total Records: {{totalRows}}</span>
-    
+
+    <span>Total Records: {{ totalRows }}</span>
+
     <div class="page-size-control">
       <label>Rows per page:</label>
       <select [(ngModel)]="filter.pageSize" (ngModelChange)="onPageSizeChange($event)">
-        <option *ngFor="let size of [10, 20, 50, 100]" [value]="size">{{size}}</option>
+        <option *ngFor="let size of [10, 20, 50, 100]" [value]="size">{{ size }}</option>
       </select>
     </div>
-    
+
     <div class="pagination-controls">
-      <button [disabled]="filter.page === 1" (click)="onPageChange(filter.page! - 1)">◀ Previous</button>
-      <span>Page {{filter.page}} of {{Math.ceil(totalRows / filter.pageSize!)}}</span>
-      <button [disabled]="filter.page! >= Math.ceil(totalRows / filter.pageSize!)" (click)="onPageChange(filter.page! + 1)">Next ▶</button>
+      <button [disabled]="filter.page === 1" (click)="onPageChange(filter.page! - 1)">
+        ◀ Previous
+      </button>
+      <span>Page {{ filter.page }} of {{ totalPages }}</span>
+      <button [disabled]="filter.page! >= totalPages" (click)="onPageChange(filter.page! + 1)">
+        Next ▶
+      </button>
     </div>
+
   </div>
 </div>

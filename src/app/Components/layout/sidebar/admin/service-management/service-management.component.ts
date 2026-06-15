@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AgGridAngular } from 'ag-grid-angular';
 import { ColDef } from 'ag-grid-community';
@@ -36,7 +36,7 @@ const PriorityLevels:any={
 export class ServiceManagementComponent implements OnInit{
 pageSize = 7;
 rowData: any[] = [];
-isBrowser = true;
+isBrowser = false;
 
 selectedService:any = null;
 selectedStatus:number = 1;
@@ -168,9 +168,10 @@ columnDefs:ColDef[]=[
 }
   ]
 
-  constructor(private authService:AuthService, private apiService:ApiService){}
+  constructor(private authService:AuthService, private apiService:ApiService, @Inject(PLATFORM_ID) private platformId: object){}
 
  ngOnInit(): void {
+  if (!this.isBrowser) return;
     this.listRequestedServices();
   }
 

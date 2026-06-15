@@ -1,9 +1,10 @@
-
 <button class="book-btn" (click)="openModal()">
-    📅 Book Appointment
-  </button>
+  📅 Book Appointment
+</button>
+
 <div class="mt-4">
   <ag-grid-angular
+    *ngIf="isBrowserReady"
     class="ag-theme-alpine"
     style="width: 100%; height: 500px;"
     [rowData]="rowData"
@@ -15,9 +16,7 @@
 </div>
 
 <div class="page-container">
-<div class="top-bar">
-  
-  </div>
+  <div class="top-bar"></div>
 
   <!-- Modal Overlay -->
   <div class="modal-overlay" *ngIf="showModal">
@@ -76,8 +75,4 @@
       </form>
     </div>
   </div>
-
-
-
-
 </div>

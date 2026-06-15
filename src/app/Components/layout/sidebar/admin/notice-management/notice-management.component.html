@@ -89,6 +89,7 @@
 
   <!-- AG Grid -->
   <ag-grid-angular
+  *ngIf="isBrowser"
     class="ag-theme-alpine"
     [rowData]="rowData"
     [columnDefs]="columnDefs"

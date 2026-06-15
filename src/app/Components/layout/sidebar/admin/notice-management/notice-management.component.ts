@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
 import { ColDef } from 'ag-grid-community';
 import { NoticeCategory } from '../../../../../Models/Category';
 import { ApiService } from '../../../../../Services/api.service';
@@ -19,6 +19,7 @@ export class NoticeManagementComponent implements OnInit {
   title = ''
   description = ''
   categoryId = 0
+  isBrowser = false
   isUrgent = false
   expiryDate = ''
   file: any
@@ -113,9 +114,10 @@ export class NoticeManagementComponent implements OnInit {
     }
   ];
 
-  constructor(private noticeService: ApiService) { }
+  constructor(private noticeService: ApiService, @Inject(PLATFORM_ID) private platformId: object) { }
 
   ngOnInit(): void {
+    if (!this.isBrowser) return;
     this.getNotices();
     this.loadCategories();
   }

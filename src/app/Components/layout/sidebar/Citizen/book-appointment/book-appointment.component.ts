@@ -1,6 +1,6 @@
-import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ApiService } from '../../../../../Services/api.service';
 import { AuthService } from '../../../../../Services/auth.service';
 import { ColDef } from 'ag-grid-community';
@@ -8,45 +8,48 @@ import { AgGridAngular } from 'ag-grid-angular';
 
 @Component({
   selector: 'app-book-appointment',
-  standalone:true,
-  imports: [CommonModule,ReactiveFormsModule, AgGridAngular],
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, AgGridAngular],
   templateUrl: './book-appointment.component.html',
   styleUrl: './book-appointment.component.css'
 })
-export class BookAppointmentComponent {
+export class BookAppointmentComponent implements OnInit {
+
   appointmentForm!: FormGroup;
   showModal = false;
-  UserId:string='';
-  rowData:any[]=[];
-  pageSize=7;
+  isBrowserReady = false;
+  userId: string = '';
+  rowData: any[] = [];
+  pageSize = 7;
+
   columnDefs: ColDef[] = [
     {
       headerName: 'Citizen Name',
       field: 'citizenName',
       filter: 'agTextColumnFilter',
       sortable: true,
-      minWidth: 180
+      minWidth: 180,
     },
     {
       headerName: 'Contact Number',
       field: 'contactNumber',
       filter: 'agTextColumnFilter',
       sortable: true,
-      minWidth: 150
+      minWidth: 150,
     },
     {
       headerName: 'Service Type',
       field: 'serviceType',
       filter: 'agTextColumnFilter',
       sortable: true,
-      minWidth: 160
+      minWidth: 160,
     },
     {
       headerName: 'Ward No',
       field: 'wardNumber',
       filter: 'agNumberColumnFilter',
       sortable: true,
-      width: 110
+      width: 110,
     },
     {
       headerName: 'Appointment Time',
@@ -54,16 +57,13 @@ export class BookAppointmentComponent {
       filter: 'agDateColumnFilter',
       sortable: true,
       minWidth: 200,
-      valueFormatter: (params) => {
-        if (!params.value) return '';
-        return new Date(params.value).toLocaleString();
-      }
+      valueFormatter: (p) => p.value ? new Date(p.value).toLocaleString() : '',
     },
     {
       headerName: 'Token No',
       field: 'tokenNumber',
       filter: 'agTextColumnFilter',
-      width: 120
+      width: 120,
     },
     {
       headerName: 'Status',
@@ -71,18 +71,12 @@ export class BookAppointmentComponent {
       filter: 'agSetColumnFilter',
       sortable: true,
       width: 130,
-      cellStyle: params => {
-        if (params.value === 'Pending') {
-          return { color: 'orange', fontWeight: 'bold' };
-        }
-        if (params.value === 'Completed') {
-          return { color: 'green', fontWeight: 'bold' };
-        }
-        if (params.value === 'Cancelled') {
-          return { color: 'red', fontWeight: 'bold' };
-        }
-        return null;
-      }
+      cellStyle: (p) => {
+        const colors: Record<string, string> = {
+          Pending: 'orange', Completed: 'green', Cancelled: 'red',
+        };
+        return colors[p.value] ? { color: colors[p.value], fontWeight: 'bold' } : null;
+      },
     },
     {
       headerName: 'Created At',
@@ -90,70 +84,60 @@ export class BookAppointmentComponent {
       filter: 'agDateColumnFilter',
       sortable: true,
       minWidth: 200,
-      valueFormatter: (params) => {
-        if (!params.value) return '';
-        return new Date(params.value).toLocaleString();
-      }
-    }
+      valueFormatter: (p) => p.value ? new Date(p.value).toLocaleString() : '',
+    },
   ];
-  
 
-
-  constructor(private fb: FormBuilder, private apiCallService:ApiService, private authService:AuthService) {
+  constructor(
+    private fb: FormBuilder,
+    private apiCallService: ApiService,
+    private authService: AuthService,
+    @Inject(PLATFORM_ID) private platformId: object,
+  ) {
     this.appointmentForm = this.fb.group({
-      citizenName: ['', Validators.required],
-      contactNumber: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],
-      serviceType: ['', Validators.required],
-      wardNumber: ['', Validators.required],
-      appointmentTime: ['', Validators.required]
+      citizenName:     ['', Validators.required],
+      contactNumber:   ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],
+      serviceType:     ['', Validators.required],
+      wardNumber:      ['', Validators.required],
+      appointmentTime: ['', Validators.required],
     });
   }
 
-  ngOnInit(){
-    this.UserId =     this.authService.decodeToken().UserId;
+  ngOnInit(): void {
+    if (!isPlatformBrowser(this.platformId)) return; // ← skip on SSR
+
+    this.isBrowserReady = true;
+    this.userId = this.authService.decodeToken()?.UserId ?? '';
     this.listMyAppointments();
   }
 
-  openModal() {
-    this.showModal = true;
-  }
+  openModal(): void  { this.showModal = true; }
 
-  closeModal() {
+  closeModal(): void {
     this.showModal = false;
     this.appointmentForm.reset();
   }
 
-  submitForm() {
+  submitForm(): void {
     if (this.appointmentForm.invalid) {
       this.appointmentForm.markAllAsTouched();
       return;
     }
 
-    console.log(this.appointmentForm.value);
-
-    // TODO: Call your API here
-    this.apiCallService.bookAppointment(this.appointmentForm.value).subscribe(res=>{
-      console.log(res);
-    },
-    err=>{
-      console.log(err);
-    }
-  
-  )
+    this.apiCallService.bookAppointment(this.appointmentForm.value).subscribe({
+      next: (res) => { console.log(res); this.listMyAppointments(); },
+      error: (err) => { console.error(err); },
+    });
 
     this.closeModal();
   }
 
-  listMyAppointments(){
-  
-    this.apiCallService.getMyAppointments(this.UserId).subscribe(
-      res=>{
-        this.rowData=res;
-        console.log(res);
-      },
-      err=>{
-        console.log(err);
-      }
-    )
+  listMyAppointments(): void {
+    if (!this.userId) return;
+
+    this.apiCallService.getMyAppointments(this.userId).subscribe({
+      next: (res) => { this.rowData = res; },
+      error: (err) => { console.error(err); },
+    });
   }
 }

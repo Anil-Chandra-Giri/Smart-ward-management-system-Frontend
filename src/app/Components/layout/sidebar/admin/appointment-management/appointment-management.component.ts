@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Inject, PLATFORM_ID } from '@angular/core';
 import { ColDef } from 'ag-grid-community';
 import { ApiService } from '../../../../../Services/api.service';
 import { AuthService } from '../../../../../Services/auth.service';
@@ -14,7 +14,7 @@ import { AgGridAngular } from 'ag-grid-angular';
 export class AppointmentManagementComponent {
   pageSize = 7;
   rowData: any[] = [];
-  isBrowser = true;
+  isBrowser = false;
   
   columnDefs: ColDef[] = [
     {
@@ -94,9 +94,10 @@ export class AppointmentManagementComponent {
     }
   ];
   
-  constructor(private authService:AuthService, private apiService:ApiService){}
+  constructor(private authService:AuthService, private apiService:ApiService, @Inject(PLATFORM_ID) private platformId: object){}
   
   ngOnInit(): void {
+    if (!this.isBrowser) return;
       this.listAllAppointments();
     }
     

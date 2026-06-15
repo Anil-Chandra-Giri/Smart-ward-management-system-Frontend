@@ -1,69 +1,63 @@
-import { Component, OnInit } from '@angular/core'
-import { ApiService } from '../../../../../Services/api.service'
-import { FormsModule } from '@angular/forms'
-import { CommonModule } from '@angular/common'
-import { Vote } from '../../../../../Models/vote.model'
-import { RouterLink } from '@angular/router'
+import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser, CommonModule } from '@angular/common';
+import { ApiService } from '../../../../../Services/api.service';
+import { FormsModule } from '@angular/forms';
+import { Vote } from '../../../../../Models/vote.model';
+import { RouterLink } from '@angular/router';
 
 @Component({
-selector:'app-citizen-poll',
-templateUrl:'./poll-list.component.html',
-styleUrls:['./poll-list.component.css'],
-imports:[FormsModule,CommonModule,RouterLink]
+  selector: 'app-citizen-poll',
+  templateUrl: './poll-list.component.html',
+  styleUrls: ['./poll-list.component.css'],
+  imports: [FormsModule, CommonModule, RouterLink],
 })
-export class PollListComponent implements OnInit{
+export class PollListComponent implements OnInit {
 
-polls:any[]=[]
-showModal=false
-selectedPoll:any
-selectedOption!:string
-errorMessage=''
+  polls: any[] = [];
+  showModal = false;
+  selectedPoll: any;
+  selectedOption!: string;
+  errorMessage = '';
 
-constructor(private api:ApiService){}
+  constructor(
+    private api: ApiService,
+    @Inject(PLATFORM_ID) private platformId: object,
+  ) {}
 
-ngOnInit(){
-this.loadPolls()
-}
+  ngOnInit(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
 
-loadPolls(){
-this.api.getActivePolls().subscribe((res:any)=>{
-this.polls=res;
-console.log(res);
-})
-}
+    // Delay slightly to ensure Angular hydration is complete
+    setTimeout(() => this.loadPolls(), 0);
+  }
 
-openVoteModal(poll:any){
-this.selectedPoll=poll
-this.selectedOption=''
-this.showModal=true
-}
+  loadPolls(): void {
+    this.api.getActivePolls().subscribe({
+      next: (res: any) => { this.polls = res; },
+      error: (err) => { console.error('Error loading polls:', err); },
+    });
+  }
 
-closeModal(){
-this.showModal=false
-}
+  openVoteModal(poll: any): void {
+    this.selectedPoll = poll;
+    this.selectedOption = '';
+    this.showModal = true;
+  }
 
-submitVote(){
+  closeModal(): void { this.showModal = false; }
 
-const vote:Vote={
-pollId:this.selectedPoll.id,
-optionId:this.selectedOption,
-citizenId:'CIT001'
-}
+  submitVote(): void {
+    const vote: Vote = {
+      pollId: this.selectedPoll.id,
+      optionId: this.selectedOption,
+      citizenId: 'CIT001',
+    };
 
-this.api.vote(vote).subscribe({
-next:()=>{
-alert("Vote submitted successfully")
-this.closeModal()
-},
-error:(err)=>{
-alert(err.error?.message)
-}
-})
+    this.api.vote(vote).subscribe({
+      next: () => { alert('Vote submitted successfully'); this.closeModal(); },
+      error: (err) => { alert(err.error?.message); },
+    });
+  }
 
-}
-
-trackByOptionId(index: number, option: any): number {
-  return option.id; // or option.id, or index if no unique id
-}
-
+  trackByOptionId(_index: number, option: any): number { return option.id; }
 }
