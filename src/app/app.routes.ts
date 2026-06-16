@@ -130,6 +130,12 @@ export const routes: Routes = [
       { path: 'notices', component:CitizenNoticesComponent, canActivate: [AuthGuardService] },
       { path: 'book-appointment', component: BookAppointmentComponent, canActivate: [AuthGuardService] },
       { path: 'settings', component: CitizenSettingsComponent, canActivate: [AuthGuardService] },
+      { path: 'volunteers', component: VolunteerListComponent },
+      { path: 'volunteers/new', component: VolunteerFormComponent },
+      { path: 'weekly-schedule', component: WeeklyScheduleComponent },
+      { path: 'resources', component: ResourceListComponent },
+      { path: 'disaster-events', component: DisasterEventListComponent },
+      { path: 'disaster-events/new', component: DisasterEventFormComponent }
     ],
   },
   { path: 'registerUser', component: UserRegisterComponent, pathMatch: 'full' },

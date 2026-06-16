@@ -14,15 +14,21 @@ export class LocalStorageService {
       console.error('Error saving to local storage', error);
     }
   }
-  getItem<T>(key: string): T | null {
+ getItem<T>(key: string): T | null {
+  try {
+    const value = localStorage.getItem(key);
+    if (value === null) return null;
     try {
-      const value = localStorage.getItem(key);
-      return value ? JSON.parse(value) : null;
-    } catch (error) {
-      console.error('Error reading from local storage', error);
-      return null;
+      return JSON.parse(value) as T;
+    } catch {
+      // Value is a plain string (not JSON-serialised) — return as-is
+      return value as unknown as T;
     }
+  } catch (error) {
+    console.error('Error reading from local storage', error);
+    return null;
   }
+}
   removeItem(key: string): void {
     localStorage.removeItem(key);
   }
