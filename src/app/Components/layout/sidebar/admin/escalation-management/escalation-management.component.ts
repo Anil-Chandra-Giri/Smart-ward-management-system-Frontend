@@ -56,6 +56,19 @@ const NOTIFICATION_ICONS: Record<number, string> = {
     6: 'fa-arrow-up',
 };
 
+// Normalizes whatever casing the backend sends ('staff', 'Staff', 'STAFF')
+// into the canonical PascalCase form the template and loaders expect.
+const ROLE_MAP: Record<string, string> = {
+    staff: 'Staff',
+    admin: 'Admin',
+    citizen: 'Citizen',
+};
+
+function normalizeRole(role: string | undefined | null): string {
+    if (!role) return 'Citizen';
+    return ROLE_MAP[role.toLowerCase()] ?? 'Citizen';
+}
+
 // ============ COMPONENT ============
 
 @Component({
@@ -89,6 +102,16 @@ export class EscalationManagementComponent implements OnInit, OnDestroy {
     activeTab: string = 'overview';
     message: { type: string; text: string } | null = null;
 
+    // ---- Escalation modal state ----
+    showEscalationModal: boolean = false;
+    escalationReason: string = '';
+    private escalationTarget: any = null;
+
+    // ---- Reassign modal state ----
+    showReassignModal: boolean = false;
+    reassignOfficerId: string = '';
+    private reassignTarget: any = null;
+
     // ---- Private ----
     private originalAssignments: Assignment[] = [];
     private destroy$ = new Subject<void>();
@@ -112,6 +135,12 @@ export class EscalationManagementComponent implements OnInit, OnDestroy {
 
         if (!this.resolveUser()) return;
 
+        // Set a sensible default active tab per role so the dashboard
+        // doesn't render an empty 'overview' that nothing matches.
+        this.activeTab = this.userRole === 'Admin' ? 'escalated'
+            : this.userRole === 'Citizen' ? 'complaints'
+            : 'overview';
+
         this.loadDashboardData();
         this.loadNotifications();
 
@@ -131,7 +160,7 @@ export class EscalationManagementComponent implements OnInit, OnDestroy {
      * Returns false and redirects if no valid session is found.
      */
     private resolveUser(): boolean {
-        const user = this.authService.getCurrentUser?.() ?? this.authService.decodeToken?.();
+        const user = this.authService.getCurrentUser() ?? this.authService.decodeToken();
 
         if (!user || !user.UserId) {
             this.router.navigate(['/login']);
@@ -139,7 +168,10 @@ export class EscalationManagementComponent implements OnInit, OnDestroy {
         }
 
         this.currentUser = user;
-        this.userRole = user.Role || user.role || 'Citizen';
+        // Backend sends Role as lowercase ('staff'), normalize to PascalCase
+        // ('Staff') so it matches the template's *ngIf checks and the
+        // loaders/routes lookup tables below.
+        this.userRole = normalizeRole(user.Role ?? user.role);
         this.userId = user.UserId || user.userId || '';
 
         if (!this.userId) {
@@ -160,11 +192,14 @@ export class EscalationManagementComponent implements OnInit, OnDestroy {
             .pipe(takeUntil(this.destroy$))
             .subscribe({
                 next: (response) => {
-                    if (response.success) {
-                        this.dashboardStats = response.data;
-                        this.loadRoleSpecificData();
-                    } else {
+                    // Backend may or may not wrap the payload in {success, data}.
+                    // Handle both shapes so a missing wrapper doesn't silently
+                    // skip loading everything.
+                    if (response && response.success === false) {
                         this.showError(response.message || 'Failed to load dashboard data');
+                    } else {
+                        this.dashboardStats = response?.data ?? response ?? {};
+                        this.loadRoleSpecificData();
                     }
                     this.loading = false;
                 },
@@ -185,15 +220,22 @@ export class EscalationManagementComponent implements OnInit, OnDestroy {
         loaders[this.userRole]?.();
     }
 
+    private unwrap<T>(res: any, fallback: T): T {
+        // Same defensive unwrap as loadDashboardData: accept either
+        // {success, data} or a raw array/object body.
+        if (res && typeof res === 'object' && 'success' in res) {
+            return res.success ? (res.data ?? fallback) : fallback;
+        }
+        return res ?? fallback;
+    }
+
     private loadStaffData(): void {
         this.apiService.getStaffAssignments(this.userId)
             .pipe(takeUntil(this.destroy$))
             .subscribe({
                 next: (res) => {
-                    if (res.success) {
-                        this.assignments = res.data ?? [];
-                        this.originalAssignments = [...this.assignments];
-                    }
+                    this.assignments = this.unwrap(res, []);
+                    this.originalAssignments = [...this.assignments];
                 },
                 error: (err) => console.error('Error loading assignments:', err),
             });
@@ -203,14 +245,14 @@ export class EscalationManagementComponent implements OnInit, OnDestroy {
         this.apiService.getEscalatedTasks(this.userId)
             .pipe(takeUntil(this.destroy$))
             .subscribe({
-                next: (res) => { if (res.success) this.escalatedTasks = res.data ?? []; },
+                next: (res) => { this.escalatedTasks = this.unwrap(res, []); },
                 error: (err) => console.error('Error loading escalated tasks:', err),
             });
 
         this.apiService.getAllOverdueTasks()
             .pipe(takeUntil(this.destroy$))
             .subscribe({
-                next: (res) => { if (res.success) this.allOverdueTasks = res.data ?? []; },
+                next: (res) => { this.allOverdueTasks = this.unwrap(res, []); },
                 error: (err) => console.error('Error loading overdue tasks:', err),
             });
     }
@@ -219,14 +261,14 @@ export class EscalationManagementComponent implements OnInit, OnDestroy {
         this.apiService.getComplaints(this.userId)
             .pipe(takeUntil(this.destroy$))
             .subscribe({
-                next: (res) => { if (res.success) this.myComplaints = res.data ?? []; },
+                next: (res) => { this.myComplaints = this.unwrap(res, []); },
                 error: (err) => console.error('Error loading complaints:', err),
             });
 
         this.apiService.getAllService(this.userId)
             .pipe(takeUntil(this.destroy$))
             .subscribe({
-                next: (res) => { if (res.success) this.myServiceRequests = res.data ?? []; },
+                next: (res) => { this.myServiceRequests = this.unwrap(res, []); },
                 error: (err) => console.error('Error loading service requests:', err),
             });
     }
@@ -237,14 +279,14 @@ export class EscalationManagementComponent implements OnInit, OnDestroy {
         this.apiService.getNotifications(this.userId)
             .pipe(takeUntil(this.destroy$))
             .subscribe({
-                next: (res) => { if (res.success) this.notifications = res.data ?? []; },
+                next: (res) => { this.notifications = this.unwrap(res, []); },
                 error: (err) => console.error('Error loading notifications:', err),
             });
 
         this.apiService.getUnreadCount(this.userId)
             .pipe(takeUntil(this.destroy$))
             .subscribe({
-                next: (res) => { if (res.success) this.unreadCount = res.data ?? 0; },
+                next: (res) => { this.unreadCount = this.unwrap(res, 0); },
                 error: (err) => console.error('Error loading unread count:', err),
             });
     }
@@ -299,7 +341,7 @@ export class EscalationManagementComponent implements OnInit, OnDestroy {
             .pipe(takeUntil(this.destroy$))
             .subscribe({
                 next: (res) => {
-                    if (res.success) {
+                    if (res.success !== false) {
                         this.showSuccess('Reminder sent successfully');
                         this.loadDashboardData();
                     } else {
@@ -313,40 +355,103 @@ export class EscalationManagementComponent implements OnInit, OnDestroy {
             });
     }
 
-    escalateTask(task: any, reason: string = ''): void {
+    // ============ ESCALATION MODAL ============
+
+    openEscalationModal(task: any): void {
         if (!task?.id) {
             this.showError('Invalid task data');
             return;
         }
+        this.escalationTarget = task;
+        this.escalationReason = 'Task overdue and no response from assigned officer';
+        this.showEscalationModal = true;
+    }
 
-        const escalationReason = reason || prompt(
-            'Please provide a reason for escalation:',
-            'Task overdue and no response from assigned officer'
-        );
+    cancelEscalation(): void {
+        this.showEscalationModal = false;
+        this.escalationReason = '';
+        this.escalationTarget = null;
+    }
 
-        if (!escalationReason) {
-            this.showInfo('Escalation cancelled');
-            return;
-        }
+    confirmEscalation(): void {
+        const reason = this.escalationReason?.trim();
+        if (!reason || !this.escalationTarget?.id) return;
 
-        if (!confirm(`Are you sure you want to escalate this task?\n\nReason: ${escalationReason}`)) return;
+        const task = this.escalationTarget;
 
-        this.apiService.escalateTask(task.id, escalationReason)
+        // NOTE: apiService.escalateTask currently does
+        //   JSON.stringify(reason) as the raw body.
+        // That sends a bare quoted string ("reason text") instead of an
+        // object. If the backend expects a DTO like { reason: string },
+        // update ApiService.escalateTask to send { reason } instead.
+        this.apiService.escalateTask(task.id, reason)
             .pipe(takeUntil(this.destroy$))
             .subscribe({
                 next: (res) => {
-                    if (res.success) {
+                    if (res?.success !== false) {
                         this.showSuccess('Task escalated successfully');
                         this.loadDashboardData();
                     } else {
-                        this.showError(res.message || 'Failed to escalate task');
+                        this.showError(res?.message || 'Failed to escalate task');
                     }
+                    this.cancelEscalation();
                 },
                 error: (err) => {
                     console.error(err);
                     this.showError('Failed to escalate task');
+                    this.cancelEscalation();
                 },
             });
+    }
+
+    // ============ REASSIGN MODAL ============
+
+    openReassignModal(task: any): void {
+        if (!task?.id) {
+            this.showError('Invalid task data');
+            return;
+        }
+        this.reassignTarget = task;
+        this.reassignOfficerId = '';
+        this.showReassignModal = true;
+    }
+
+    cancelReassign(): void {
+        this.showReassignModal = false;
+        this.reassignOfficerId = '';
+        this.reassignTarget = null;
+    }
+
+    confirmReassign(): void {
+        const officerId = this.reassignOfficerId?.trim();
+        if (!officerId || !this.reassignTarget?.id) return;
+
+        const task = this.reassignTarget;
+
+        // NOTE: There is no reassign endpoint in ApiService yet.
+        // Add one (e.g. POST /api/FollowUp/reassign/{taskId}) and call it
+        // here, for example:
+        //
+        // this.apiService.reassignTask(task.id, officerId)
+        //   .pipe(takeUntil(this.destroy$))
+        //   .subscribe({
+        //     next: (res) => {
+        //       if (res?.success !== false) {
+        //         this.showSuccess(`Task reassigned to officer ${officerId}`);
+        //         this.loadDashboardData();
+        //       } else {
+        //         this.showError(res?.message || 'Failed to reassign task');
+        //       }
+        //       this.cancelReassign();
+        //     },
+        //     error: (err) => {
+        //       console.error(err);
+        //       this.showError('Failed to reassign task');
+        //       this.cancelReassign();
+        //     },
+        //   });
+        this.showInfo(`Task will be reassigned to officer: ${officerId} (backend endpoint not yet implemented)`);
+        this.cancelReassign();
     }
 
     markNotificationAsRead(notificationId: string): void {
@@ -356,7 +461,7 @@ export class EscalationManagementComponent implements OnInit, OnDestroy {
             .pipe(takeUntil(this.destroy$))
             .subscribe({
                 next: (res) => {
-                    if (res.success) {
+                    if (res.success !== false) {
                         const n = this.notifications.find(n => n.id === notificationId);
                         if (n) n.isRead = true;
                         this.unreadCount = Math.max(0, this.unreadCount - 1);
@@ -373,7 +478,7 @@ export class EscalationManagementComponent implements OnInit, OnDestroy {
             .pipe(takeUntil(this.destroy$))
             .subscribe({
                 next: (res) => {
-                    if (res.success) {
+                    if (res.success !== false) {
                         this.notifications.forEach(n => (n.isRead = true));
                         this.unreadCount = 0;
                         this.showSuccess('All notifications marked as read');
@@ -397,13 +502,17 @@ export class EscalationManagementComponent implements OnInit, OnDestroy {
     }
 
     trackComplaint(complaintId: string): void {
-        this.apiService.getComplaints(complaintId)
+        // FIX: was calling getComplaints(complaintId) which expects a userId,
+        // not a complaintId. The correct endpoint is trackComplaintStatus.
+        this.apiService.trackComplaintStatus(complaintId)
             .pipe(takeUntil(this.destroy$))
             .subscribe({
                 next: (res) => {
-                    if (res.success) {
-                        const s = res.data;
+                    const s = this.unwrap<any>(res, null);
+                    if (s) {
                         alert(`Status: ${s.status}\nAssigned Date: ${s.assignedDate}\nEstimated Resolution: ${s.estimatedResolution}`);
+                    } else {
+                        this.showError('No tracking information found');
                     }
                 },
                 error: (err) => {
@@ -413,19 +522,32 @@ export class EscalationManagementComponent implements OnInit, OnDestroy {
             });
     }
 
-    reassignTask(task: any): void {
-        const newOfficerId = prompt('Enter the new officer ID to reassign this task:')?.trim();
-        if (newOfficerId) {
-            // TODO: call API to reassign
-            this.showInfo(`Task will be reassigned to officer: ${newOfficerId}`);
-        }
-    }
-
     markAsResolved(task: any): void {
         if (!confirm('Are you sure you want to mark this task as resolved?')) return;
-        // TODO: call API to resolve task
-        this.showSuccess('Task marked as resolved');
-        this.loadDashboardData();
+
+        // NOTE: There is no "resolve escalated task" endpoint in ApiService yet.
+        // The closest existing method is updateComplaintStatus/updateServiceStatus,
+        // but those operate on Complaints/ServiceRequests, not escalated tasks
+        // directly. Add a dedicated endpoint (e.g. PUT /api/FollowUp/resolve/{taskId})
+        // and call it here, for example:
+        //
+        // this.apiService.resolveEscalatedTask(task.id)
+        //   .pipe(takeUntil(this.destroy$))
+        //   .subscribe({
+        //     next: (res) => {
+        //       if (res.success !== false) {
+        //         this.showSuccess('Task marked as resolved');
+        //         this.loadDashboardData();
+        //       } else {
+        //         this.showError(res.message || 'Failed to resolve task');
+        //       }
+        //     },
+        //     error: (err) => {
+        //       console.error(err);
+        //       this.showError('Failed to resolve task');
+        //     },
+        //   });
+        this.showInfo('Resolve action not yet wired to backend');
     }
 
     // ============ HELPER / DISPLAY ============

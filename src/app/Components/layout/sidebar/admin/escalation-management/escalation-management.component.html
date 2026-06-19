@@ -1,32 +1,84 @@
 <div class="escalation-dashboard">
+
     <!-- Message Toast -->
     <div class="message-container" *ngIf="message">
         <div class="alert" [class]="'alert-' + message.type" role="alert">
             <div class="message-content">
-                <i class="fas" [class.fa-check-circle]="message.type === 'success'"
-                           [class.fa-exclamation-circle]="message.type === 'error'"
-                           [class.fa-exclamation-triangle]="message.type === 'warning'"
-                           [class.fa-info-circle]="message.type === 'info'"></i>
+                <i class="fas"
+                   [class.fa-check-circle]="message.type === 'success'"
+                   [class.fa-exclamation-circle]="message.type === 'error'"
+                   [class.fa-exclamation-triangle]="message.type === 'warning'"
+                   [class.fa-info-circle]="message.type === 'info'"></i>
                 <span>{{message.text}}</span>
             </div>
             <button type="button" class="close" (click)="clearMessage()">×</button>
         </div>
     </div>
 
-    <!-- Header -->
+    <!-- ===================== ESCALATION MODAL (replaces prompt/confirm) ===================== -->
+    <div class="modal-overlay" *ngIf="showEscalationModal" (click)="cancelEscalation()">
+        <div class="modal-box" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h5><i class="fas fa-arrow-up text-danger"></i> Escalate Task</h5>
+                <button class="close" (click)="cancelEscalation()">×</button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-2">Please provide a reason for escalation:</p>
+                <textarea class="form-control"
+                          rows="4"
+                          placeholder="e.g. Task overdue and no response from assigned officer"
+                          [(ngModel)]="escalationReason">
+                </textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" (click)="cancelEscalation()">Cancel</button>
+                <button class="btn btn-danger" (click)="confirmEscalation()" [disabled]="!escalationReason.trim()">
+                    <i class="fas fa-arrow-up"></i> Confirm Escalation
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== REASSIGN MODAL ===================== -->
+    <div class="modal-overlay" *ngIf="showReassignModal" (click)="cancelReassign()">
+        <div class="modal-box" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h5><i class="fas fa-user-plus text-primary"></i> Reassign Task</h5>
+                <button class="close" (click)="cancelReassign()">×</button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-2">Enter the Officer ID to reassign this task to:</p>
+                <input type="text"
+                       class="form-control"
+                       placeholder="Officer ID"
+                       [(ngModel)]="reassignOfficerId" />
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" (click)="cancelReassign()">Cancel</button>
+                <button class="btn btn-primary" (click)="confirmReassign()" [disabled]="!reassignOfficerId.trim()">
+                    <i class="fas fa-user-plus"></i> Reassign
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== HEADER ===================== -->
     <div class="dashboard-header">
         <div class="header-title">
             <h2>
                 <i class="fas fa-chart-line"></i>
                 Escalation Dashboard
             </h2>
-            <p class="text-muted">Welcome back, {{currentUser?.fullName || currentUser?.email}}</p>
+            <p class="text-muted">
+                Welcome back, {{currentUser?.fullName || currentUser?.FullName || currentUser?.email || currentUser?.Email || 'User'}}
+            </p>
         </div>
         <div class="header-actions">
             <span class="role-badge" [class]="'role-' + userRole.toLowerCase()">
-                <i class="fas" [class.fa-user-tie]="userRole === 'Admin'"
-                           [class.fa-user-cog]="userRole === 'Staff'"
-                           [class.fa-user]="userRole === 'Citizen'"></i>
+                <i class="fas"
+                   [class.fa-user-tie]="userRole === 'Admin'"
+                   [class.fa-user-cog]="userRole === 'Staff'"
+                   [class.fa-user]="userRole === 'Citizen'"></i>
                 {{userRole}}
             </span>
             <button class="btn btn-outline-primary" (click)="refreshData()">
@@ -39,7 +91,7 @@
         </div>
     </div>
 
-    <!-- Notifications Dropdown -->
+    <!-- ===================== NOTIFICATIONS DROPDOWN ===================== -->
     <div class="notifications-dropdown" *ngIf="showNotifications">
         <div class="dropdown-header">
             <h6>Notifications</h6>
@@ -52,12 +104,13 @@
                 <i class="fas fa-bell-slash fa-2x text-muted"></i>
                 <p class="text-muted mt-2">No notifications</p>
             </div>
-            <div *ngFor="let notification of notifications" 
-                 class="notification-item" 
+            <div *ngFor="let notification of notifications"
+                 class="notification-item"
                  [class.unread]="!notification.isRead"
                  (click)="markNotificationAsRead(notification.id)">
-                <div class="notification-icon" [class]="getNotificationClass(notification.type)">
-                    <i class="fas" [class]="getNotificationIcon(notification.type)"></i>
+                <div class="notification-icon" [ngClass]="'notif-' + getNotificationClass(notification.type)">
+                    <!-- FIX #5: was [class]="..." — ngClass is correct for dynamic single class -->
+                    <i class="fas" [ngClass]="getNotificationIcon(notification.type)"></i>
                 </div>
                 <div class="notification-content">
                     <div class="notification-title">{{notification.title}}</div>
@@ -68,61 +121,48 @@
         </div>
     </div>
 
-    <!-- STAFF DASHBOARD -->
+    <!-- ===================== STAFF DASHBOARD ===================== -->
     <ng-container *ngIf="userRole === 'Staff'">
-        <!-- Stats Cards -->
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-icon bg-primary">
-                    <i class="fas fa-tasks"></i>
-                </div>
-                <div class="stat-info">
-                    <h3>{{dashboardStats.totalTasks || 0}}</h3>
-                    <p>Total Tasks</p>
-                </div>
+                <div class="stat-icon bg-primary"><i class="fas fa-tasks"></i></div>
+                <div class="stat-info"><h3>{{dashboardStats.totalTasks || 0}}</h3><p>Total Tasks</p></div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon bg-danger">
-                    <i class="fas fa-exclamation-triangle"></i>
-                </div>
-                <div class="stat-info">
-                    <h3 class="text-danger">{{dashboardStats.overdueTasks || 0}}</h3>
-                    <p>Overdue Tasks</p>
-                </div>
+                <div class="stat-icon bg-danger"><i class="fas fa-exclamation-triangle"></i></div>
+                <div class="stat-info"><h3 class="text-danger">{{dashboardStats.overdueTasks || 0}}</h3><p>Overdue Tasks</p></div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon bg-warning">
-                    <i class="fas fa-arrow-up"></i>
-                </div>
-                <div class="stat-info">
-                    <h3>{{dashboardStats.escalatedToMe || 0}}</h3>
-                    <p>Escalated to Me</p>
-                </div>
+                <div class="stat-icon bg-warning"><i class="fas fa-arrow-up"></i></div>
+                <div class="stat-info"><h3>{{dashboardStats.escalatedToMe || 0}}</h3><p>Escalated to Me</p></div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon bg-success">
-                    <i class="fas fa-clock"></i>
-                </div>
-                <div class="stat-info">
-                    <h3>{{dashboardStats.pendingTasks || 0}}</h3>
-                    <p>Pending Tasks</p>
-                </div>
+                <div class="stat-icon bg-success"><i class="fas fa-clock"></i></div>
+                <div class="stat-info"><h3>{{dashboardStats.pendingTasks || 0}}</h3><p>Pending Tasks</p></div>
             </div>
         </div>
 
-        <!-- Assignments Table -->
         <div class="dashboard-section">
             <div class="section-header">
                 <h4>My Assignments</h4>
                 <div class="section-filters">
                     <div class="btn-group">
-                        <button class="btn btn-sm" [class.btn-primary]="selectedFilter === 'all'" 
+                        <!-- FIX #6: added btn-outline-* fallback so buttons always have a border style -->
+                        <button class="btn btn-sm"
+                                [class.btn-primary]="selectedFilter === 'all'"
+                                [class.btn-outline-primary]="selectedFilter !== 'all'"
                                 (click)="selectedFilter='all'; filterAssignments()">All</button>
-                        <button class="btn btn-sm" [class.btn-danger]="selectedFilter === 'overdue'" 
+                        <button class="btn btn-sm"
+                                [class.btn-danger]="selectedFilter === 'overdue'"
+                                [class.btn-outline-danger]="selectedFilter !== 'overdue'"
                                 (click)="selectedFilter='overdue'; filterAssignments()">Overdue</button>
-                        <button class="btn btn-sm" [class.btn-warning]="selectedFilter === 'escalated'" 
+                        <button class="btn btn-sm"
+                                [class.btn-warning]="selectedFilter === 'escalated'"
+                                [class.btn-outline-warning]="selectedFilter !== 'escalated'"
                                 (click)="selectedFilter='escalated'; filterAssignments()">Escalated</button>
-                        <button class="btn btn-sm" [class.btn-success]="selectedFilter === 'pending'" 
+                        <button class="btn btn-sm"
+                                [class.btn-success]="selectedFilter === 'pending'"
+                                [class.btn-outline-success]="selectedFilter !== 'pending'"
                                 (click)="selectedFilter='pending'; filterAssignments()">Pending</button>
                     </div>
                     <div class="search-box">
@@ -135,91 +175,270 @@
             <div class="assignments-table" *ngIf="!loading">
                 <table class="table">
                     <thead>
-                        <tr><th>Reference</th><th>Title</th><th>Ward</th><th>Priority</th><th>Status</th><th>Days</th><th>Actions</th></tr>
+                        <tr>
+                            <th>Reference</th><th>Title</th><th>Ward</th>
+                            <th>Priority</th><th>Status</th><th>Days</th><th>Actions</th>
+                        </tr>
                     </thead>
                     <tbody>
                         <tr *ngFor="let assignment of assignments" [class.overdue-row]="assignment.isOverdue">
                             <td><strong>{{assignment.referenceNumber}}</strong></td>
-                            <td>{{assignment.title}}<br><small>{{assignment.description | slice:0:50}}</small></td>
+                            <td>
+                                {{assignment.title}}
+                                <br><small class="text-muted">{{assignment.description | slice:0:50}}</small>
+                            </td>
                             <td>Ward {{assignment.wardNumber}}</td>
-                            <td><span class="badge" [class]="'bg-' + getPriorityClass(assignment.priority)">{{assignment.priority}}</span></td>
-                            <td><span class="badge" [class]="'bg-' + getStatusClass(assignment.status)">{{assignment.status}}</span></td>
-                            <td><span [class.text-danger]="assignment.isOverdue">{{assignment.daysOverdue}}d</span></td>
+                            <td>
+                                <span class="badge" [ngClass]="'bg-' + getPriorityClass(assignment.priority)">
+                                    {{assignment.priority}}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge" [ngClass]="'bg-' + getStatusClass(assignment.status)">
+                                    {{assignment.status}}
+                                </span>
+                            </td>
+                            <td>
+                                <span [class.text-danger]="assignment.isOverdue">
+                                    {{assignment.daysOverdue}}d
+                                </span>
+                            </td>
                             <td class="action-buttons">
-                                <button class="btn btn-sm btn-info" (click)="viewDetails(assignment)"><i class="fas fa-eye"></i></button>
-                                <button class="btn btn-sm btn-warning" (click)="sendReminder(assignment)" *ngIf="assignment.isOverdue"><i class="fas fa-bell"></i></button>
-                                <button class="btn btn-sm btn-danger" (click)="escalateTask(assignment)" *ngIf="assignment.daysOverdue > 7"><i class="fas fa-arrow-up"></i></button>
+                                <button class="btn btn-sm btn-info" (click)="viewDetails(assignment)" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-warning"
+                                        (click)="sendReminder(assignment)"
+                                        *ngIf="assignment.isOverdue"
+                                        title="Send Reminder">
+                                    <i class="fas fa-bell"></i>
+                                </button>
+                                <!-- FIX #4: openEscalationModal() instead of escalateTask() -->
+                                <button class="btn btn-sm btn-danger"
+                                        (click)="openEscalationModal(assignment)"
+                                        *ngIf="assignment.daysOverdue > 7"
+                                        title="Escalate">
+                                    <i class="fas fa-arrow-up"></i>
+                                </button>
                             </td>
                         </tr>
-                        <tr *ngIf="assignments.length === 0"><td colspan="7" class="text-center">No assignments found</td></tr>
+                        <tr *ngIf="assignments.length === 0">
+                            <td colspan="7" class="text-center text-muted py-4">
+                                <i class="fas fa-inbox fa-2x mb-2 d-block"></i>No assignments found
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
         </div>
     </ng-container>
 
-    <!-- ADMIN DASHBOARD -->
+    <!-- ===================== ADMIN DASHBOARD ===================== -->
     <ng-container *ngIf="userRole === 'Admin'">
         <div class="stats-grid">
-            <div class="stat-card"><div class="stat-icon bg-danger"><i class="fas fa-arrow-up"></i></div><div class="stat-info"><h3>{{dashboardStats.totalEscalated || 0}}</h3><p>Total Escalated</p></div></div>
-            <div class="stat-card"><div class="stat-icon bg-warning"><i class="fas fa-fire"></i></div><div class="stat-info"><h3>{{dashboardStats.criticalTasks || 0}}</h3><p>Critical Tasks</p></div></div>
-            <div class="stat-card"><div class="stat-icon bg-info"><i class="fas fa-eye"></i></div><div class="stat-info"><h3>{{dashboardStats.pendingReview || 0}}</h3><p>Pending Review</p></div></div>
-            <div class="stat-card"><div class="stat-icon bg-success"><i class="fas fa-check-circle"></i></div><div class="stat-info"><h3>{{dashboardStats.resolvedComplaints || 0}}</h3><p>Resolved</p></div></div>
+            <div class="stat-card">
+                <div class="stat-icon bg-danger"><i class="fas fa-arrow-up"></i></div>
+                <div class="stat-info"><h3>{{dashboardStats.totalEscalated || 0}}</h3><p>Total Escalated</p></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon bg-warning"><i class="fas fa-fire"></i></div>
+                <div class="stat-info"><h3>{{dashboardStats.criticalTasks || 0}}</h3><p>Critical Tasks</p></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon bg-info"><i class="fas fa-eye"></i></div>
+                <div class="stat-info"><h3>{{dashboardStats.pendingReview || 0}}</h3><p>Pending Review</p></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon bg-success"><i class="fas fa-check-circle"></i></div>
+                <div class="stat-info"><h3>{{dashboardStats.resolvedComplaints || 0}}</h3><p>Resolved</p></div>
+            </div>
         </div>
 
-        <!-- Tabs -->
         <div class="tabs">
-            <button class="tab" [class.active]="activeTab === 'escalated'" (click)="setActiveTab('escalated')">Escalated Tasks</button>
-            <button class="tab" [class.active]="activeTab === 'overdue'" (click)="setActiveTab('overdue')">All Overdue</button>
+            <button class="tab" [class.active]="activeTab === 'escalated'" (click)="setActiveTab('escalated')">
+                Escalated Tasks
+                <span class="tab-count" *ngIf="escalatedTasks.length > 0">{{escalatedTasks.length}}</span>
+            </button>
+            <button class="tab" [class.active]="activeTab === 'overdue'" (click)="setActiveTab('overdue')">
+                All Overdue
+                <span class="tab-count" *ngIf="allOverdueTasks.length > 0">{{allOverdueTasks.length}}</span>
+            </button>
         </div>
 
         <!-- Escalated Tasks -->
         <div class="escalated-tasks-grid" *ngIf="activeTab === 'escalated' && !loading">
-            <div class="task-card" *ngFor="let task of escalatedTasks" [class.critical]="task.daysPending > 10" [class.highlighted]="task.isHighlighted">
-                <div class="task-header"><div class="task-badges"><span class="badge" [class]="'bg-' + getEscalationLevelClass(task.escalationLevel)">{{getEscalationLevelText(task.escalationLevel)}}</span><span class="badge" [class]="'bg-' + getPriorityClass(task.priority)">{{task.priority}}</span></div><div class="task-days"><i class="fas fa-clock"></i> {{task.daysPending}} days</div></div>
-                <div class="task-body"><h5>{{task.title}}</h5><p>{{task.description | slice:0:100}}...</p><div class="task-meta"><span><i class="fas fa-user"></i> From: {{task.originalOfficerName}}</span><span><i class="fas fa-map-marker-alt"></i> Ward {{task.wardNumber}}</span></div></div>
-                <div class="task-footer"><button class="btn btn-sm btn-info" (click)="viewDetails(task)"><i class="fas fa-eye"></i> View</button><button class="btn btn-sm btn-primary" (click)="reassignTask(task)"><i class="fas fa-user-plus"></i> Reassign</button><button class="btn btn-sm btn-success" (click)="markAsResolved(task)"><i class="fas fa-check"></i> Resolve</button></div>
+            <div class="task-card"
+                 *ngFor="let task of escalatedTasks"
+                 [class.critical]="task.daysPending > 10"
+                 [class.highlighted]="task.isHighlighted">
+                <div class="task-header">
+                    <div class="task-badges">
+                        <span class="badge" [ngClass]="'bg-' + getEscalationLevelClass(task.escalationLevel)">
+                            {{getEscalationLevelText(task.escalationLevel)}}
+                        </span>
+                        <span class="badge ms-1" [ngClass]="'bg-' + getPriorityClass(task.priority)">
+                            {{task.priority}}
+                        </span>
+                    </div>
+                    <div class="task-days">
+                        <i class="fas fa-clock"></i> {{task.daysPending}} days
+                    </div>
+                </div>
+                <div class="task-body">
+                    <h5>{{task.title}}</h5>
+                    <p class="text-muted">{{task.description | slice:0:100}}...</p>
+                    <div class="task-meta">
+                        <span><i class="fas fa-user"></i> From: {{task.originalOfficerName}}</span>
+                        <span><i class="fas fa-map-marker-alt"></i> Ward {{task.wardNumber}}</span>
+                    </div>
+                </div>
+                <div class="task-footer">
+                    <button class="btn btn-sm btn-info" (click)="viewDetails(task)">
+                        <i class="fas fa-eye"></i> View
+                    </button>
+                    <!-- FIX #3: openReassignModal() instead of reassignTask() stub -->
+                    <button class="btn btn-sm btn-primary" (click)="openReassignModal(task)">
+                        <i class="fas fa-user-plus"></i> Reassign
+                    </button>
+                    <button class="btn btn-sm btn-success" (click)="markAsResolved(task)">
+                        <i class="fas fa-check"></i> Resolve
+                    </button>
+                </div>
             </div>
-            <div *ngIf="escalatedTasks.length === 0" class="empty-state"><i class="fas fa-check-double fa-3x text-success"></i><h5>No escalated tasks</h5></div>
+            <div *ngIf="escalatedTasks.length === 0" class="empty-state">
+                <i class="fas fa-check-double fa-3x text-success"></i>
+                <h5>No escalated tasks</h5>
+            </div>
         </div>
 
         <!-- All Overdue Tasks -->
         <div class="assignments-table" *ngIf="activeTab === 'overdue' && !loading">
-            <table class="table"><thead><tr><th>Reference</th><th>Title</th><th>Officer</th><th>Ward</th><th>Days</th><th>Actions</th></tr></thead>
-                <tbody><tr *ngFor="let task of allOverdueTasks"><td><strong>{{task.referenceNumber}}</strong></td><td>{{task.title}}</td><td>{{task.assignedToOfficerId}}</td><td>Ward {{task.wardNumber}}</td><td class="text-danger">{{task.daysOverdue}} days</td><td><button class="btn btn-sm btn-warning" (click)="escalateTask(task)">Escalate</button></td></tr>
-                <tr *ngIf="allOverdueTasks.length === 0"><td colspan="6" class="text-center">No overdue tasks</td></tr></tbody>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Reference</th><th>Title</th><th>Officer</th>
+                        <th>Ward</th><th>Days Overdue</th><th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let task of allOverdueTasks">
+                        <td><strong>{{task.referenceNumber}}</strong></td>
+                        <td>{{task.title}}</td>
+                        <td>{{task.assignedToOfficerName || task.assignedToOfficerId}}</td>
+                        <td>Ward {{task.wardNumber}}</td>
+                        <td class="text-danger"><strong>{{task.daysOverdue}}</strong> days</td>
+                        <td>
+                            <!-- FIX #4: modal instead of prompt -->
+                            <button class="btn btn-sm btn-warning" (click)="openEscalationModal(task)">
+                                <i class="fas fa-arrow-up"></i> Escalate
+                            </button>
+                        </td>
+                    </tr>
+                    <tr *ngIf="allOverdueTasks.length === 0">
+                        <td colspan="6" class="text-center text-muted py-4">No overdue tasks</td>
+                    </tr>
+                </tbody>
             </table>
         </div>
     </ng-container>
 
-    <!-- CITIZEN DASHBOARD -->
+    <!-- ===================== CITIZEN DASHBOARD ===================== -->
     <ng-container *ngIf="userRole === 'Citizen'">
         <div class="stats-grid">
-            <div class="stat-card"><div class="stat-icon bg-primary"><i class="fas fa-file-alt"></i></div><div class="stat-info"><h3>{{dashboardStats.totalComplaints || 0}}</h3><p>Total Complaints</p></div></div>
-            <div class="stat-card"><div class="stat-icon bg-warning"><i class="fas fa-clock"></i></div><div class="stat-info"><h3>{{dashboardStats.pendingComplaints || 0}}</h3><p>Pending</p></div></div>
-            <div class="stat-card"><div class="stat-icon bg-success"><i class="fas fa-check-circle"></i></div><div class="stat-info"><h3>{{dashboardStats.resolvedComplaints || 0}}</h3><p>Resolved</p></div></div>
-            <div class="stat-card"><div class="stat-icon bg-danger"><i class="fas fa-arrow-up"></i></div><div class="stat-info"><h3>{{dashboardStats.escalatedComplaints || 0}}</h3><p>Escalated</p></div></div>
+            <div class="stat-card">
+                <div class="stat-icon bg-primary"><i class="fas fa-file-alt"></i></div>
+                <div class="stat-info"><h3>{{dashboardStats.totalComplaints || 0}}</h3><p>Total Complaints</p></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon bg-warning"><i class="fas fa-clock"></i></div>
+                <div class="stat-info"><h3>{{dashboardStats.pendingComplaints || 0}}</h3><p>Pending</p></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon bg-success"><i class="fas fa-check-circle"></i></div>
+                <div class="stat-info"><h3>{{dashboardStats.resolvedComplaints || 0}}</h3><p>Resolved</p></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon bg-danger"><i class="fas fa-arrow-up"></i></div>
+                <div class="stat-info"><h3>{{dashboardStats.escalatedComplaints || 0}}</h3><p>Escalated</p></div>
+            </div>
         </div>
 
-        <div class="tabs"><button class="tab" [class.active]="activeTab === 'complaints'" (click)="setActiveTab('complaints')">My Complaints</button><button class="tab" [class.active]="activeTab === 'services'" (click)="setActiveTab('services')">Service Requests</button></div>
+        <div class="tabs">
+            <button class="tab" [class.active]="activeTab === 'complaints'" (click)="setActiveTab('complaints')">
+                My Complaints
+            </button>
+            <button class="tab" [class.active]="activeTab === 'services'" (click)="setActiveTab('services')">
+                Service Requests
+            </button>
+        </div>
 
         <!-- Complaints -->
         <div class="assignments-table" *ngIf="activeTab === 'complaints' && !loading">
-            <table class="table"><thead><tr><th>Category</th><th>Details</th><th>Status</th><th>Priority</th><th>Date</th><th>Actions</th></tr></thead>
-                <tbody><tr *ngFor="let complaint of myComplaints"><td>{{complaint.category}}</td><td>{{complaint.details | slice:0:50}}</td><td><span class="badge" [class]="'bg-' + getStatusClass(complaint.status)">{{complaint.status}}</span><span *ngIf="complaint.isEscalated" class="badge bg-danger ms-1">Escalated</span></td><td><span class="badge" [class]="'bg-' + getPriorityClass(complaint.priority)">{{complaint.priority}}</span></td><td>{{complaint.createdAt | date}}</td><td><button class="btn btn-sm btn-info" (click)="trackComplaint(complaint.id)">Track</button></td></tr>
-                <tr *ngIf="myComplaints.length === 0"><td colspan="6" class="text-center">No complaints found</td></tr></tbody>
+            <table class="table">
+                <thead>
+                    <tr><th>Category</th><th>Details</th><th>Status</th><th>Priority</th><th>Date</th><th>Actions</th></tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let complaint of myComplaints">
+                        <td>{{complaint.category}}</td>
+                        <td>{{complaint.details | slice:0:50}}</td>
+                        <td>
+                            <span class="badge" [ngClass]="'bg-' + getStatusClass(complaint.status)">
+                                {{complaint.status}}
+                            </span>
+                            <span *ngIf="complaint.isEscalated" class="badge bg-danger ms-1">Escalated</span>
+                        </td>
+                        <td>
+                            <span class="badge" [ngClass]="'bg-' + getPriorityClass(complaint.priority)">
+                                {{complaint.priority}}
+                            </span>
+                        </td>
+                        <td>{{complaint.createdAt | date}}</td>
+                        <td>
+                            <!-- FIX #1: trackComplaint now calls trackComplaintStatus() correctly -->
+                            <button class="btn btn-sm btn-info" (click)="trackComplaint(complaint.id)">
+                                <i class="fas fa-search"></i> Track
+                            </button>
+                        </td>
+                    </tr>
+                    <tr *ngIf="myComplaints.length === 0">
+                        <td colspan="6" class="text-center text-muted py-4">No complaints found</td>
+                    </tr>
+                </tbody>
             </table>
         </div>
 
         <!-- Service Requests -->
         <div class="assignments-table" *ngIf="activeTab === 'services' && !loading">
-            <table class="table"><thead><tr><th>Application #</th><th>Service Type</th><th>Purpose</th><th>Status</th><th>Date</th></tr></thead>
-                <tbody><tr *ngFor="let service of myServiceRequests"><td>{{service.applicationNumber}}</td><td>{{service.serviceType}}</td><td>{{service.purpose | slice:0:50}}</td><td><span class="badge" [class]="'bg-' + getStatusClass(service.status)">{{service.status}}</span></td><td>{{service.createdAt | date}}</td></tr>
-                <tr *ngIf="myServiceRequests.length === 0"><td colspan="5" class="text-center">No service requests found</td></tr></tbody>
+            <table class="table">
+                <thead>
+                    <tr><th>Application #</th><th>Service Type</th><th>Purpose</th><th>Status</th><th>Date</th></tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let service of myServiceRequests">
+                        <td>{{service.applicationNumber}}</td>
+                        <td>{{service.serviceType}}</td>
+                        <td>{{service.purpose | slice:0:50}}</td>
+                        <td>
+                            <span class="badge" [ngClass]="'bg-' + getStatusClass(service.status)">
+                                {{service.status}}
+                            </span>
+                        </td>
+                        <td>{{service.createdAt | date}}</td>
+                    </tr>
+                    <tr *ngIf="myServiceRequests.length === 0">
+                        <td colspan="5" class="text-center text-muted py-4">No service requests found</td>
+                    </tr>
+                </tbody>
             </table>
         </div>
     </ng-container>
 
     <!-- Loading Spinner -->
-    <div class="loading-overlay" *ngIf="loading"><div class="spinner-border text-primary" role="status"></div></div>
+    <div class="loading-overlay" *ngIf="loading">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
 </div>

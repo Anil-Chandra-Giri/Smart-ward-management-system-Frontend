@@ -1,1 +1,239 @@
-<p>staff-management works!</p>
+<section class="manage-staff">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Staff Accounts</p>
+      <h1>Manage Staff</h1>
+      <p class="subtitle">Create and oversee staff and admin accounts across wards.</p>
+    </div>
+    <button class="btn btn-primary" (click)="openAddForm()">+ Assign New Staff Account</button>
+  </header>
+
+  <div class="toolbar">
+    <input
+      type="text"
+      class="search-input"
+      placeholder="Search by name, username, or employee ID"
+      [(ngModel)]="searchTerm"
+      (ngModelChange)="onFilterChange()"
+    />
+    <select [(ngModel)]="roleFilter" (ngModelChange)="onFilterChange()">
+      <option value="">All roles</option>
+      <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
+    </select>
+    <input
+      type="text"
+      class="ward-input"
+      placeholder="Ward no."
+      [(ngModel)]="wardFilter"
+      (ngModelChange)="onFilterChange()"
+    />
+  </div>
+
+  <p class="error-banner" *ngIf="errorMessage">{{ errorMessage }}</p>
+
+  <div class="table-wrap" *ngIf="!loading; else loadingState">
+    <table class="staff-table" *ngIf="staffList.length; else emptyState">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Username</th>
+          <th>Role</th>
+          <th>Designation</th>
+          <th>Ward</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let staff of staffList">
+          <td>
+            <div class="name-cell">
+              <span class="name">{{ staff.fullNameEnglish }}</span>
+              <span class="email">{{ staff.email }}</span>
+            </div>
+          </td>
+          <td>{{ staff.username }}</td>
+          <td><span class="role-tag" [attr.data-role]="staff.role">{{ staff.role }}</span></td>
+          <td>{{ staff.designation || '—' }}</td>
+          <td>{{ staff.wardNumber || '—' }}</td>
+          <td>
+            <span
+              class="status-dot"
+              [class.active]="staff.accountStatus === 'Active'"
+              [class.inactive]="staff.accountStatus !== 'Active'"
+            ></span>
+            {{ staff.accountStatus }}
+          </td>
+          <td class="actions">
+            <button class="link-btn" (click)="openEditForm(staff)">Edit</button>
+            <button class="link-btn" (click)="resetPassword(staff)">Reset password</button>
+            <button class="link-btn" (click)="toggleStatus(staff)">
+              {{ staff.accountStatus === 'Active' ? 'Suspend' : 'Reactivate' }}
+            </button>
+            <button class="link-btn danger" (click)="askDelete(staff.userId)">Remove</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <ng-template #emptyState>
+      <div class="empty-state">
+        <p>No staff accounts match these filters yet.</p>
+        <button class="btn btn-secondary" (click)="openAddForm()">Assign the first staff account</button>
+      </div>
+    </ng-template>
+  </div>
+
+  <ng-template #loadingState>
+    <div class="loading-state">Loading staff accounts…</div>
+  </ng-template>
+</section>
+
+<!-- Add / Edit panel -->
+<div class="overlay" *ngIf="isFormOpen" (click)="closeForm()"></div>
+<aside class="side-panel" *ngIf="isFormOpen">
+  <ng-container *ngIf="!newCredentials">
+    <header>
+      <h2>{{ isEditMode ? 'Edit Staff Account' : 'Assign New Staff Account' }}</h2>
+      <button class="icon-btn" (click)="closeForm()" aria-label="Close">✕</button>
+    </header>
+
+    <form [formGroup]="staffForm" (ngSubmit)="submitForm()" class="staff-form">
+      <label>
+        Username
+        <input type="text" formControlName="username" />
+        <span class="field-error" *ngIf="staffForm.get('username')?.touched && staffForm.get('username')?.invalid">
+          Username must be at least 4 characters.
+        </span>
+      </label>
+
+      <label>
+        Full name (English)
+        <input type="text" formControlName="fullNameEnglish" />
+        <span class="field-error" *ngIf="staffForm.get('fullNameEnglish')?.touched && staffForm.get('fullNameEnglish')?.invalid">
+          Full name is required.
+        </span>
+      </label>
+
+      <label>
+        Full name (Nepali)
+        <input type="text" formControlName="fullNameNepali" />
+      </label>
+
+      <label>
+        Email
+        <input type="email" formControlName="email" />
+        <span class="field-error" *ngIf="staffForm.get('email')?.touched && staffForm.get('email')?.invalid">
+          Enter a valid email address.
+        </span>
+      </label>
+
+      <label>
+        Phone number
+        <input type="tel" formControlName="phoneNumber" />
+        <span class="field-error" *ngIf="staffForm.get('phoneNumber')?.touched && staffForm.get('phoneNumber')?.invalid">
+          Phone number is required.
+        </span>
+      </label>
+
+      <label>
+        Role
+        <select formControlName="role">
+          <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
+        </select>
+      </label>
+
+      <label>
+        Designation
+        <input type="text" formControlName="designation" placeholder="e.g. Ward Secretary" />
+      </label>
+
+      <label>
+        Department
+        <input type="text" formControlName="department" placeholder="e.g. Health, Revenue" />
+      </label>
+
+      <label>
+        Employee ID
+        <input type="text" formControlName="employeeId" />
+      </label>
+
+      <label>
+        Ward number
+        <input type="text" formControlName="wardNumber" placeholder="e.g. 5" />
+        <span class="field-error" *ngIf="staffForm.get('wardNumber')?.touched && staffForm.get('wardNumber')?.invalid">
+          Ward number is required.
+        </span>
+      </label>
+
+      <label>
+        Municipality
+        <input type="text" formControlName="municipality" />
+        <span class="field-error" *ngIf="staffForm.get('municipality')?.touched && staffForm.get('municipality')?.invalid">
+          Municipality is required.
+        </span>
+      </label>
+
+      <label>
+        District
+        <input type="text" formControlName="district" />
+        <span class="field-error" *ngIf="staffForm.get('district')?.touched && staffForm.get('district')?.invalid">
+          District is required.
+        </span>
+      </label>
+
+      <label>
+        Province
+        <input type="text" formControlName="province" />
+        <span class="field-error" *ngIf="staffForm.get('province')?.touched && staffForm.get('province')?.invalid">
+          Province is required.
+        </span>
+      </label>
+
+      <label *ngIf="isEditMode">
+        Account status
+        <select formControlName="accountStatus">
+          <option value="Active">Active</option>
+          <option value="Suspended">Suspended</option>
+        </select>
+      </label>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" (click)="closeForm()">Cancel</button>
+        <button type="submit" class="btn btn-primary">
+          {{ isEditMode ? 'Save changes' : 'Create account' }}
+        </button>
+      </div>
+    </form>
+  </ng-container>
+
+  <ng-container *ngIf="newCredentials">
+    <header>
+      <h2>Account Created</h2>
+    </header>
+    <div class="credentials-box">
+      <p>Share these sign-in details with the staff member directly. They won't be shown again.</p>
+      <dl>
+        <dt>Username</dt>
+        <dd>{{ newCredentials.username }}</dd>
+        <dt>Temporary password</dt>
+        <dd>{{ newCredentials.temporaryPassword }}</dd>
+      </dl>
+      <div class="form-actions">
+        <button class="btn btn-secondary" (click)="copyCredentials()">Copy details</button>
+        <button class="btn btn-primary" (click)="dismissCredentials()">Done</button>
+      </div>
+    </div>
+  </ng-container>
+</aside>
+
+<!-- Delete confirmation -->
+<div class="overlay" *ngIf="confirmDeleteId !== null" (click)="cancelDelete()"></div>
+<div class="confirm-dialog" *ngIf="confirmDeleteId !== null">
+  <h3>Remove this staff account?</h3>
+  <p>They'll lose access immediately. This can't be undone.</p>
+  <div class="form-actions">
+    <button class="btn btn-secondary" (click)="cancelDelete()">Cancel</button>
+    <button class="btn btn-danger" (click)="confirmDelete()">Remove account</button>
+  </div>
+</div>
