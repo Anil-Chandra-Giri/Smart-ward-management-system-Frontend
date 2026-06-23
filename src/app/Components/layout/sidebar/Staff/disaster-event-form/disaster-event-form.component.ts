@@ -1,7 +1,6 @@
 // src/app/components/disaster-event-form/disaster-event-form.component.ts
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { UpdateDisasterEvent, CreateDisasterEvent } from '../../../../../Models/DisasterEvent.model';
 import { ApiService } from '../../../../../Services/api.service';
@@ -10,12 +9,15 @@ import { ApiService } from '../../../../../Services/api.service';
   selector: 'app-disaster-event-form',
   templateUrl: './disaster-event-form.component.html',
   styleUrls: ['./disaster-event-form.component.css'],
-  imports:[ReactiveFormsModule, CommonModule]
+  imports: [ReactiveFormsModule, CommonModule]
 })
 export class DisasterEventFormComponent implements OnInit {
+  @Input() isEditMode = false;
+  @Input() eventId: string | null = null;
+  @Output() closeModal = new EventEmitter<void>();
+  @Output() saved = new EventEmitter<void>();
+
   eventForm: FormGroup;
-  isEditMode = false;
-  eventId: string | null = null;
   loading = false;
   submitting = false;
   error = '';
@@ -28,22 +30,16 @@ export class DisasterEventFormComponent implements OnInit {
   ];
 
   severityLevels = ['Low', 'Medium', 'High', 'Critical'];
-  
   statusOptions = ['Active', 'Inactive', 'Completed'];
 
   constructor(
     private fb: FormBuilder,
-    private disasterEventService: ApiService,
-    private route: ActivatedRoute,
-    private router: Router
+    private disasterEventService: ApiService
   ) {
     this.eventForm = this.createForm();
   }
 
   ngOnInit(): void {
-    this.eventId = this.route.snapshot.paramMap.get('id');
-    this.isEditMode = !!this.eventId && this.route.snapshot.url.toString().includes('edit');
-    
     if (this.isEditMode && this.eventId) {
       this.loadEvent(this.eventId);
     } else {
@@ -146,8 +142,8 @@ export class DisasterEventFormComponent implements OnInit {
           this.successMessage = 'Event updated successfully!';
           this.submitting = false;
           setTimeout(() => {
-            this.router.navigate(['/disaster-events']);
-          }, 2000);
+            this.saved.emit();
+          }, 1500);
         },
         error: (error) => {
           this.error = 'Error updating event';
@@ -174,8 +170,8 @@ export class DisasterEventFormComponent implements OnInit {
           this.successMessage = 'Event created successfully!';
           this.submitting = false;
           setTimeout(() => {
-            this.router.navigate(['/disaster-events']);
-          }, 2000);
+            this.saved.emit();
+          }, 1500);
         },
         error: (error) => {
           this.error = 'Error creating event';
@@ -201,7 +197,7 @@ export class DisasterEventFormComponent implements OnInit {
   }
 
   onCancel(): void {
-    this.router.navigate(['/disaster-events']);
+    this.closeModal.emit();
   }
 
   get today(): string {

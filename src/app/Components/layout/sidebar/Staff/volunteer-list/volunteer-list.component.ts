@@ -3,18 +3,21 @@ import { Component, OnInit } from '@angular/core';
 import { ApiService } from '../../../../../Services/api.service';
 import { Volunteer } from '../../../../../Models/volunteer.model';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { VolunteerFormComponent } from '../volunteer-form/volunteer-form.component';
 
 @Component({
   selector: 'app-volunteer-list',
   templateUrl: './volunteer-list.component.html',
   styleUrls: ['./volunteer-list.component.css'],
-  imports:[CommonModule,RouterLink]
+  imports: [CommonModule, VolunteerFormComponent]
 })
 export class VolunteerListComponent implements OnInit {
   volunteers: Volunteer[] = [];
   loading = false;
   error = '';
+  showModal = false;
+  selectedVolunteerId: string | null = null;
+  isEditMode = false;
 
   constructor(private volunteerService: ApiService) { }
 
@@ -37,6 +40,29 @@ export class VolunteerListComponent implements OnInit {
     });
   }
 
+  openAddModal(): void {
+    this.selectedVolunteerId = null;
+    this.isEditMode = false;
+    this.showModal = true;
+  }
+
+  openEditModal(id: string): void {
+    this.selectedVolunteerId = id;
+    this.isEditMode = true;
+    this.showModal = true;
+  }
+
+  closeModal(): void {
+    this.showModal = false;
+    this.selectedVolunteerId = null;
+    this.isEditMode = false;
+  }
+
+  onVolunteerSaved(): void {
+    this.closeModal();
+    this.loadVolunteers(); // Refresh the list
+  }
+
   deleteVolunteer(id: string): void {
     if (confirm('Are you sure you want to delete this volunteer?')) {
       this.volunteerService.deleteVolunteer(id).subscribe({
@@ -50,7 +76,7 @@ export class VolunteerListComponent implements OnInit {
     }
   }
 
-   getFormattedSkills(skills: string | null | undefined): string {
+  getFormattedSkills(skills: string | null | undefined): string {
     if (!skills) {
       return 'No skills listed';
     }

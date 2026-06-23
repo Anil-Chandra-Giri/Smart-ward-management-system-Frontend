@@ -1,8 +1,16 @@
+<div *ngIf="loading" class="loading-state">
+  Loading polls...
+</div>
+
+<div *ngIf="errorMessage" class="error-banner">
+  ⚠️ {{ errorMessage }}
+</div>
+
 <div class="poll-container">
-    
-    <div class="poll-card" *ngFor="let poll of polls">
-      <p>Start Date: {{poll.startDate | date:'YY-MM-dd'}}</p>
-      <p *ngIf="poll.endDate !== null">End Date: {{poll.endDate}}</p>
+
+  <div class="poll-card" *ngFor="let poll of polls">
+    <p>Start Date: {{poll.startDate | date:'YY-MM-dd'}}</p>
+    <p *ngIf="poll.endDate !== null">End Date: {{poll.endDate}}</p>
 
     <h3>{{poll.title}}</h3>
     <p>{{poll.description}}</p>
@@ -11,10 +19,9 @@
       Vote
     </button>
 
-    <button [routerLink]="['results',poll.id]" class="vote-btn">
+    <button [routerLink]="['results', poll.id]" class="vote-btn">
       View Poll Result
     </button>
-
 
   </div>
 
@@ -30,15 +37,15 @@
     <p>{{selectedPoll?.description}}</p>
 
     <div class="option" *ngFor="let option of selectedPoll?.options; trackBy: trackByOptionId">
-  <label>
-    <input
-      type="radio"
-      name="voteOption"
-      [value]="option.id"
-      [(ngModel)]="selectedOption">
-    {{option.optionText}}
-  </label>
-</div>
+      <label>
+        <input
+          type="radio"
+          name="voteOption"
+          [value]="option.id"
+          [(ngModel)]="selectedOption">
+        {{option.optionText}}
+      </label>
+    </div>
 
     <div class="modal-buttons">
 

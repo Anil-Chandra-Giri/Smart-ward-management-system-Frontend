@@ -1,18 +1,112 @@
-/* Ensure the modal body is the scrollable element */
-.modal-body {
-    max-height: calc(100vh - 200px); /* Adjust height based on header/footer */
-    overflow-y: auto !important;
-    overflow-x: hidden;
+/* Custom CSS - minimal styling */
+
+.modal-header {
+  border-radius: 8px 8px 0 0;
 }
 
-/* Prevent Leaflet from intercepting the scroll wheel if mouse is over map */
-#map {
-    z-index: 1;
-    /* This allows the user to scroll "through" the map to the rest of the form */
-    touch-action: pan-y !important; 
+.map-wrapper {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
 }
 
-/* Fix for Bootstrap 5 scrollable modal conflict */
-.modal-dialog-scrollable .modal-content {
-    max-height: 95vh;
+/* Button styles for actions - clean text-only buttons */
+.btn-sm {
+  padding: 2px 12px !important;
+  font-size: 12px !important;
+  border-radius: 4px !important;
+}
+
+.btn-outline-info {
+  color: #0dcaf0;
+  border-color: #0dcaf0;
+}
+
+.btn-outline-info:hover {
+  background-color: #0dcaf0;
+  color: #fff;
+}
+
+.btn-outline-primary {
+  color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+.btn-outline-primary:hover {
+  background-color: #0d6efd;
+  color: #fff;
+}
+
+.btn-outline-danger {
+  color: #dc3545;
+  border-color: #dc3545;
+}
+
+.btn-outline-danger:hover {
+  background-color: #dc3545;
+  color: #fff;
+}
+
+.btn-outline-secondary {
+  color: #6c757d;
+  border-color: #6c757d;
+}
+
+.btn-outline-secondary:hover {
+  background-color: #6c757d;
+  color: #fff;
+}
+
+/* Disabled button styles */
+.btn-outline-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* AG Grid theme overrides */
+::ng-deep .ag-theme-alpine .ag-header {
+  background: #f8f9fa;
+  border-bottom: 2px solid #dee2e6;
+}
+
+::ng-deep .ag-theme-alpine .ag-header-cell {
+  font-weight: 600;
+  color: #495057;
+}
+
+::ng-deep .ag-theme-alpine .ag-row:hover {
+  background: #f8f9fa;
+}
+
+::ng-deep .ag-theme-alpine .ag-paging-panel {
+  border-top: 1px solid #dee2e6;
+  padding: 8px 16px;
+}
+
+/* Status colors */
+.text-danger {
+  color: #dc3545 !important;
+}
+
+.text-warning {
+  color: #ffc107 !important;
+}
+
+.text-success {
+  color: #28a745 !important;
+}
+
+/* Form validation styles */
+.form-control.ng-invalid.ng-touched {
+  border-color: #dc3545;
+}
+
+.form-control.ng-invalid.ng-touched:focus {
+  box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+}
+
+/* Image preview */
+.image-preview img {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }

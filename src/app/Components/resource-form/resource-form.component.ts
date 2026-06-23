@@ -1,7 +1,6 @@
 // src/app/components/resource-form/resource-form.component.ts
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../Services/api.service';
 import { UpdateResource, CreateResource } from '../../Models/resource.model';
 import { CommonModule } from '@angular/common';
@@ -10,17 +9,20 @@ import { CommonModule } from '@angular/common';
   selector: 'app-resource-form',
   templateUrl: './resource-form.component.html',
   styleUrls: ['./resource-form.component.css'],
-  imports:[CommonModule,ReactiveFormsModule]
+  imports: [CommonModule, ReactiveFormsModule]
 })
 export class ResourceFormComponent implements OnInit {
+  @Input() isEditMode = false;
+  @Input() resourceId: string | null = null;
+  @Output() closeModal = new EventEmitter<void>();
+  @Output() saved = new EventEmitter<void>();
+
   resourceForm: FormGroup;
-  isEditMode = false;
-  resourceId: string | null = null;
   loading = false;
   submitting = false;
   error = '';
   successMessage = '';
-   today: string='';
+  today: string = '';
 
   resourceTypes = [
     'Food', 'Medical', 'Equipment', 'Clothing', 
@@ -41,18 +43,13 @@ export class ResourceFormComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private resourceService: ApiService,
-    private route: ActivatedRoute,
-    private router: Router
+    private resourceService: ApiService
   ) {
     this.resourceForm = this.createForm();
     this.today = this.formatDateForInput(new Date());
   }
 
   ngOnInit(): void {
-    this.resourceId = this.route.snapshot.paramMap.get('id');
-    this.isEditMode = !!this.resourceId && this.route.snapshot.url.toString().includes('edit');
-    
     if (this.isEditMode && this.resourceId) {
       this.loadResource(this.resourceId);
     }
@@ -139,8 +136,8 @@ export class ResourceFormComponent implements OnInit {
           this.successMessage = 'Resource updated successfully!';
           this.submitting = false;
           setTimeout(() => {
-            this.router.navigate(['/resources']);
-          }, 2000);
+            this.saved.emit();
+          }, 1500);
         },
         error: (error) => {
           this.error = 'Error updating resource';
@@ -168,8 +165,8 @@ export class ResourceFormComponent implements OnInit {
           this.successMessage = 'Resource added successfully!';
           this.submitting = false;
           setTimeout(() => {
-            this.router.navigate(['/resources']);
-          }, 2000);
+            this.saved.emit();
+          }, 1500);
         },
         error: (error) => {
           this.error = 'Error adding resource';
@@ -195,7 +192,7 @@ export class ResourceFormComponent implements OnInit {
   }
 
   onCancel(): void {
-    this.router.navigate(['/resources']);
+    this.closeModal.emit();
   }
 
   // Helper to check if resource type is Food or Medical (for expiry date)

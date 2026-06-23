@@ -1,0 +1,238 @@
+<div class="page">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <h2 class="page-title">Citizen Verification</h2>
+      <p class="page-subtitle">Review and verify newly registered citizens</p>
+    </div>
+    <button class="btn-refresh" (click)="loadPendingCitizens()" [disabled]="isLoading">
+      {{ isLoading ? 'Loading...' : '↻ Refresh' }}
+    </button>
+  </div>
+
+  <!-- Alerts -->
+  <div class="alert alert-success" *ngIf="successMessage">✔ {{ successMessage }}</div>
+  <div class="alert alert-error" *ngIf="errorMessage">⚠ {{ errorMessage }}</div>
+
+  <div class="layout">
+
+    <!-- LEFT: Pending Citizens List -->
+    <div class="list-panel">
+      <div class="panel-header">
+        <span class="panel-title">Pending Verification</span>
+        <span class="badge">{{ citizens.length }}</span>
+      </div>
+
+      <div class="loading-state" *ngIf="isLoading">Loading citizens...</div>
+
+      <div class="empty-state" *ngIf="!isLoading && citizens.length === 0">
+        <div class="empty-icon">✔</div>
+        <p>No pending verifications</p>
+      </div>
+
+      <div class="citizen-card"
+           *ngFor="let citizen of citizens"
+           [class.active]="selectedCitizen?.userId === citizen.userId"
+           (click)="selectCitizen(citizen)">
+        <img class="citizen-avatar"
+             [src]="getImageUrl(citizen.profilePicturePath)"
+             [alt]="citizen.fullNameEnglish"
+             onerror="this.src='https://i.pravatar.cc/48'" />
+        <div class="citizen-info">
+          <div class="citizen-name">{{ citizen.fullNameEnglish }}</div>
+          <div class="citizen-meta">{{ citizen.wardNumber }} · {{ citizen.municipality }}</div>
+          <div class="citizen-meta">Registered {{ citizen.createdAt | date:'dd MMM yyyy' }}</div>
+        </div>
+        <span class="status-badge pending">Pending</span>
+      </div>
+    </div>
+
+    <!-- RIGHT: Detail Panel -->
+    <div class="detail-panel" *ngIf="selectedCitizen">
+
+      <!-- Profile Header -->
+      <div class="profile-header">
+        <img class="profile-avatar"
+             [src]="getImageUrl(selectedCitizen.profilePicturePath)"
+             [alt]="selectedCitizen.fullNameEnglish"
+             onerror="this.src='https://i.pravatar.cc/80'" />
+        <div>
+          <h3 class="profile-name">{{ selectedCitizen.fullNameEnglish }}</h3>
+          <p class="profile-nepali">{{ selectedCitizen.fullNameNepali }}</p>
+          <span class="status-badge pending">Pending Verification</span>
+        </div>
+        <div class="action-buttons">
+          <button class="btn-verify" (click)="verifyCitizen()" [disabled]="isActioning">
+            {{ isActioning ? 'Processing...' : '✔ Verify' }}
+          </button>
+          <button class="btn-reject" (click)="openRejectModal()" [disabled]="isActioning">
+            ✕ Reject
+          </button>
+        </div>
+      </div>
+
+      <!-- Details Grid -->
+      <div class="sections">
+
+        <!-- Personal Info -->
+        <div class="section">
+          <div class="section-title">Personal Information</div>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <span class="detail-label">Full Name (English)</span>
+              <span class="detail-value">{{ selectedCitizen.fullNameEnglish }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Full Name (Nepali)</span>
+              <span class="detail-value">{{ selectedCitizen.fullNameNepali }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Gender</span>
+              <span class="detail-value">{{ selectedCitizen.gender }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Date of Birth</span>
+              <span class="detail-value">
+                {{ selectedCitizen.dateOfBirth | date:'dd MMM yyyy' }}
+                (Age: {{ calculateAge(selectedCitizen.dateOfBirth) }})
+              </span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Phone Number</span>
+              <span class="detail-value">{{ selectedCitizen.phoneNumber }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Email</span>
+              <span class="detail-value">{{ selectedCitizen.email }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Identity Documents -->
+        <div class="section">
+          <div class="section-title">Identity Information</div>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <span class="detail-label">Citizenship Number</span>
+              <span class="detail-value">{{ selectedCitizen.citizenshipNumber }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Issued District</span>
+              <span class="detail-value">{{ selectedCitizen.citizenshipIssuedDistrict }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Issued Date</span>
+              <span class="detail-value">{{ selectedCitizen.citizenshipIssuedDate | date:'dd MMM yyyy' }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">National ID Number</span>
+              <span class="detail-value">{{ selectedCitizen.nationalIdNumber || '—' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Address -->
+        <div class="section">
+          <div class="section-title">Address Information</div>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <span class="detail-label">Permanent Address</span>
+              <span class="detail-value">{{ selectedCitizen.permanentAddress }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Temporary Address</span>
+              <span class="detail-value">{{ selectedCitizen.temporaryAddress || '—' }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Ward Number</span>
+              <span class="detail-value">{{ selectedCitizen.wardNumber }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Municipality</span>
+              <span class="detail-value">{{ selectedCitizen.municipality }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">District</span>
+              <span class="detail-value">{{ selectedCitizen.district }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Province</span>
+              <span class="detail-value">{{ selectedCitizen.province }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Documents -->
+        <div class="section">
+          <div class="section-title">Submitted Documents</div>
+          <div class="doc-grid" *ngIf="selectedCitizen.documents.length > 0; else noDocs">
+            <div class="doc-card" *ngFor="let doc of selectedCitizen.documents">
+              <img class="doc-thumb"
+                   [src]="getImageUrl(doc.filePath)"
+                   [alt]="getDocLabel(doc.documentType)"
+                   onerror="this.src='assets/doc-placeholder.png'" />
+              <div class="doc-info">
+                <div class="doc-type">{{ getDocLabel(doc.documentType) }}</div>
+                <div class="doc-number">{{ doc.documentNumber }}</div>
+              </div>
+              <button class="btn-view" (click)="openDocModal(doc)">View</button>
+            </div>
+          </div>
+          <ng-template #noDocs>
+            <p class="no-docs">No documents submitted.</p>
+          </ng-template>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Empty detail state -->
+    <div class="detail-empty" *ngIf="!selectedCitizen && !isLoading">
+      <div class="empty-icon">👤</div>
+      <p>Select a citizen from the list to view their details</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- Rejection Modal -->
+<div class="modal-overlay" *ngIf="showRejectModal" (click)="closeRejectModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Reject Verification</h3>
+      <button class="modal-close" (click)="closeRejectModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p>Please provide a reason for rejecting <strong>{{ selectedCitizen?.fullNameEnglish }}</strong>'s verification. This will be sent to them by email.</p>
+      <textarea
+        class="reason-input"
+        [(ngModel)]="rejectionReason"
+        placeholder="e.g. Citizenship document is unclear. Please resubmit with a clearer scan."
+        rows="4">
+      </textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="closeRejectModal()">Cancel</button>
+      <button class="btn-reject-confirm"
+              (click)="submitRejection()"
+              [disabled]="!rejectionReason.trim() || isActioning">
+        {{ isActioning ? 'Submitting...' : 'Reject & Notify' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Document Preview Modal -->
+<div class="modal-overlay" *ngIf="showDocModal" (click)="closeDocModal()">
+  <div class="modal doc-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ docModalTitle }}</h3>
+      <button class="modal-close" (click)="closeDocModal()">✕</button>
+    </div>
+    <div class="modal-body doc-preview">
+      <img [src]="docModalUrl" [alt]="docModalTitle" class="doc-full-img"
+           onerror="this.src='assets/doc-placeholder.png'" />
+    </div>
+  </div>
+</div>

@@ -17,6 +17,10 @@
         <i class="icon">📊</i>
         <span>Dashboard</span>
       </a>
+      <a [class.active]="isActive('/ward/verify-citizen')" href="/ward/verify-citizen">
+  <i class="icon">✅</i>
+  <span>Verify Citizens</span>
+</a>
       <a [class.active]="isActive('/ward/notices')" href="/ward/notices">
         <i class="icon">📢</i>
         <span>Notices</span>
@@ -49,10 +53,10 @@
         <i class="icon">📦</i>
         <span>Available Resources</span>
       </a>
-      <a [class.active]="isActive('/disaster-events/new')" href="/ward/disaster-events/new">
+      <!-- <a [class.active]="isActive('/disaster-events/new')" href="/ward/disaster-events/new">
         <i class="icon">🚨</i>
         <span>Add Disaster Event</span>
-      </a>
+      </a> -->
       <a [class.active]="isActive('/disaster-events')" href="/ward/disaster-events">
         <i class="icon">🌍</i>
         <span>View Disaster Events</span>
@@ -85,10 +89,10 @@
         <i class="icon">🗳️</i>
         <span>Vote Poll</span>
       </a>
-      <a [class.active]="isActive('/volunteers/new')" href="/citizen/volunteers/new">
+      <!-- <a [class.active]="isActive('/volunteers/new')" href="/citizen/volunteers/new">
         <i class="icon">🙋</i>
         <span>Register as Volunteer</span>
-      </a>
+      </a> -->
       <a [class.active]="isActive('/volunteers')" href="/citizen/volunteers">
         <i class="icon">🤝</i>
         <span>Volunteers</span>
@@ -101,10 +105,10 @@
         <i class="icon">📦</i>
         <span>Available Resources</span>
       </a>
-      <a [class.active]="isActive('/disaster-events/new')" href="/citizen/disaster-events/new">
+      <!-- <a [class.active]="isActive('/disaster-events/new')" href="/citizen/disaster-events/new">
         <i class="icon">🚨</i>
         <span>Report Disaster Event</span>
-      </a>
+      </a> -->
       <a [class.active]="isActive('/disaster-events')" href="/citizen/disaster-events">
         <i class="icon">🌍</i>
         <span>View Disaster Events</span>
@@ -117,10 +121,10 @@
         <i class="icon">📊</i>
         <span>Dashboard</span>
       </a>
-      <a [class.active]="isActive('/Admin/citizen-management')" href="/Admin/citizen-management">
+      <!-- <a [class.active]="isActive('/Admin/citizen-management')" href="/Admin/citizen-management">
         <i class="icon">👥</i>
         <span>Manage Citizens</span>
-      </a>
+      </a> -->
       <a [class.active]="isActive('/Admin/staff-management')" href="/Admin/staff-management">
         <i class="icon">🧑‍💼</i>
         <span>Manage Staff</span>
@@ -149,18 +153,18 @@
         <i class="icon">📊</i>
         <span>Manage Polls</span>
       </a>
-      <a [class.active]="isActive('/Admin/reports')" href="/Admin/reports">
+      <!-- <a [class.active]="isActive('/Admin/reports')" href="/Admin/reports">
         <i class="icon">📈</i>
         <span>Reports & Analytics</span>
-      </a>
+      </a> -->
       <a [class.active]="isActive('/Admin/audit-and-log')" href="/Admin/audit-and-logs">
         <i class="icon">🔒</i>
         <span>Audit & Logs</span>
       </a>
-      <a [class.active]="isActive('/Admin/system-settings')" href="/Admin/system-settings">
+      <!-- <a [class.active]="isActive('/Admin/system-settings')" href="/Admin/system-settings">
         <i class="icon">⚙️</i>
         <span>System Settings</span>
-      </a>
+      </a> -->
     </ng-container>
   </nav>
 

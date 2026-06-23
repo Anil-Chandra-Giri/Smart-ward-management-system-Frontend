@@ -1,78 +1,254 @@
-<button class="book-btn" (click)="openModal()">
-  📅 Book Appointment
+<!-- Book Appointment Button -->
+<button type="button" class="btn btn-primary" (click)="toggleModal(true)">
+  Book Appointment
 </button>
 
-<div class="mt-4">
+<!-- Create Appointment Modal -->
+<div class="modal fade" id="appointmentModal" [ngClass]="{'show': isModalOpen}" 
+     [style.display]="isModalOpen ? 'block' : 'none'" tabindex="-1">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header bg-dark text-white">
+        <h5 class="modal-title">Book Appointment</h5>
+        <button type="button" class="btn-close btn-close-white" (click)="toggleModal(false)" data-bs-dismiss="modal"></button>
+      </div>
+
+      <form [formGroup]="appointmentForm" (ngSubmit)="onSubmit()">
+        <div class="modal-body">
+          <div class="row g-3 border-bottom pb-4 mb-4">
+            <h6 class="text-primary">Appointment Information</h6>
+            
+            <div class="col-md-4">
+              <label class="form-label">Citizen Name</label>
+              <input type="text" class="form-control border-primary" formControlName="citizenName" readonly>
+            </div>
+            
+            <div class="col-md-4">
+              <label class="form-label">Contact Number</label>
+              <input type="tel" class="form-control" formControlName="contactNumber" placeholder="Enter 10-digit number">
+              <small class="text-danger" 
+                     *ngIf="appointmentForm.get('contactNumber')?.touched && appointmentForm.get('contactNumber')?.invalid">
+                <span *ngIf="appointmentForm.get('contactNumber')?.errors?.['required']">Contact number is required</span>
+                <span *ngIf="appointmentForm.get('contactNumber')?.errors?.['pattern']">Enter a valid 10-digit number</span>
+              </small>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Service Type</label>
+              <select class="form-select border-primary" formControlName="serviceType">
+                <option value="" disabled>Select a service...</option>
+                <option value="Citizenship">Citizenship</option>
+                <option value="Recommendation">Recommendation</option>
+                <option value="Certificate">Certificate</option>
+                <option value="Document Verification">Document Verification</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <div class="col-md-2">
+              <label class="form-label">Ward Number</label>
+              <input type="number" class="form-control" formControlName="wardNumber" readonly>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Appointment Time</label>
+              <input type="datetime-local" class="form-control" formControlName="appointmentTime">
+            </div>
+          </div>
+
+          <div class="mt-4">
+            <label class="form-label">Additional Notes</label>
+            <textarea class="form-control" formControlName="notes" rows="2" placeholder="Any additional information..."></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="toggleModal(false)" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-success" [disabled]="appointmentForm.invalid">Book Appointment</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- View Appointment Modal -->
+<div class="modal fade" id="viewModal" [ngClass]="{'show': isViewModalOpen}" 
+     [style.display]="isViewModalOpen ? 'block' : 'none'" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-info text-white">
+        <h5 class="modal-title">Appointment Details</h5>
+        <button type="button" class="btn-close btn-close-white" (click)="toggleViewModal(false)"></button>
+      </div>
+      <div class="modal-body" *ngIf="selectedAppointment">
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <strong>Token Number:</strong> 
+            <span class="badge bg-secondary">{{selectedAppointment.tokenNumber || 'N/A'}}</span>
+          </div>
+          <div class="col-md-6">
+            <strong>Status:</strong> 
+            <span [style.color]="getStatusColor(selectedAppointment.status)">
+              {{selectedAppointment.status}}
+            </span>
+          </div>
+        </div>
+        
+        <hr>
+        
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <strong>Citizen Name:</strong> {{selectedAppointment.citizenName}}
+          </div>
+          <div class="col-md-6">
+            <strong>Contact Number:</strong> {{selectedAppointment.contactNumber}}
+          </div>
+        </div>
+        
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <strong>Service Type:</strong> {{selectedAppointment.serviceType}}
+          </div>
+          <div class="col-md-6">
+            <strong>Ward Number:</strong> {{selectedAppointment.wardNumber}}
+          </div>
+        </div>
+        
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <strong>Appointment Time:</strong> {{selectedAppointment.appointmentTime | date:'medium'}}
+          </div>
+          <div class="col-md-6">
+            <strong>Created At:</strong> {{selectedAppointment.createdAt | date:'medium'}}
+          </div>
+        </div>
+        
+        <div class="row" *ngIf="selectedAppointment.notes">
+          <div class="col-12">
+            <strong>Notes:</strong> {{selectedAppointment.notes}}
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="toggleViewModal(false)">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Appointment Modal -->
+<div class="modal fade" id="editModal" [ngClass]="{'show': isEditModalOpen}" 
+     [style.display]="isEditModalOpen ? 'block' : 'none'" tabindex="-1">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">Edit Appointment</h5>
+        <button type="button" class="btn-close btn-close-white" (click)="toggleEditModal(false)"></button>
+      </div>
+
+      <form [formGroup]="editAppointmentForm" (ngSubmit)="onUpdateSubmit()">
+        <div class="modal-body">
+          <div class="row g-3 border-bottom pb-4 mb-4">
+            <h6 class="text-primary">Appointment Information</h6>
+            
+            <div class="col-md-4">
+              <label class="form-label">Citizen Name</label>
+              <input type="text" class="form-control" formControlName="citizenName">
+            </div>
+            
+            <div class="col-md-4">
+              <label class="form-label">Contact Number</label>
+              <input type="tel" class="form-control" formControlName="contactNumber" placeholder="Enter 10-digit number">
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Service Type</label>
+              <select class="form-select" formControlName="serviceType">
+                <option value="Citizenship">Citizenship</option>
+                <option value="Recommendation">Recommendation</option>
+                <option value="Certificate">Certificate</option>
+                <option value="Document Verification">Document Verification</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <div class="col-md-2">
+              <label class="form-label">Ward Number</label>
+              <input type="number" class="form-control" formControlName="wardNumber">
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Appointment Time</label>
+              <input type="datetime-local" class="form-control" formControlName="appointmentTime">
+            </div>
+
+            <div class="col-md-2">
+              <label class="form-label">Status</label>
+              <select class="form-select" formControlName="status">
+                <option value="Pending">Pending</option>
+                <option value="Completed">Completed</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="mt-4">
+            <label class="form-label">Additional Notes</label>
+            <textarea class="form-control" formControlName="notes" rows="2" placeholder="Any additional information..."></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="toggleEditModal(false)">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="editAppointmentForm.invalid">Update Appointment</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" [ngClass]="{'show': isDeleteModalOpen}" 
+     [style.display]="isDeleteModalOpen ? 'block' : 'none'" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">Confirm Cancellation</h5>
+        <button type="button" class="btn-close btn-close-white" (click)="toggleDeleteModal(false)"></button>
+      </div>
+      <div class="modal-body" *ngIf="appointmentToDelete">
+        <p class="mb-0">Are you sure you want to cancel this appointment?</p>
+        <small class="text-muted">This action cannot be undone.</small>
+        <hr>
+        <div class="row">
+          <div class="col-12">
+            <strong>Citizen:</strong> {{appointmentToDelete.citizenName}}
+          </div>
+          <div class="col-12">
+            <strong>Token:</strong> {{appointmentToDelete.tokenNumber || 'N/A'}}
+          </div>
+          <div class="col-12">
+            <strong>Service:</strong> {{appointmentToDelete.serviceType}}
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="toggleDeleteModal(false)">Cancel</button>
+        <button type="button" class="btn btn-danger" (click)="confirmDelete()">Yes, Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- AG Grid -->
+<div *ngIf="isBrowser" class="mt-4">
   <ag-grid-angular
-    *ngIf="isBrowserReady"
-    class="ag-theme-alpine"
     style="width: 100%; height: 500px;"
     [rowData]="rowData"
     [columnDefs]="columnDefs"
     [pagination]="true"
-    [rowHeight]="110"
-    [paginationPageSize]="pageSize">
+    [paginationPageSize]="pageSize"
+    [paginationPageSizeSelector]="[5, 7, 10, 20]"
+    class="ag-theme-quartz">
   </ag-grid-angular>
-</div>
-
-<div class="page-container">
-  <div class="top-bar"></div>
-
-  <!-- Modal Overlay -->
-  <div class="modal-overlay" *ngIf="showModal">
-    <div class="modal-box">
-
-      <div class="modal-header">
-        <h2>Book Appointment</h2>
-        <span class="close-btn" (click)="closeModal()">×</span>
-      </div>
-
-      <form [formGroup]="appointmentForm" (ngSubmit)="submitForm()">
-
-        <div class="form-group">
-          <label>Citizen Name</label>
-          <input type="text" formControlName="citizenName" />
-          <small *ngIf="appointmentForm.get('citizenName')?.touched && appointmentForm.get('citizenName')?.invalid">
-            Name is required
-          </small>
-        </div>
-
-        <div class="form-group">
-          <label>Contact Number</label>
-          <input type="text" formControlName="contactNumber" />
-          <small *ngIf="appointmentForm.get('contactNumber')?.touched && appointmentForm.get('contactNumber')?.invalid">
-            Enter valid 10-digit number
-          </small>
-        </div>
-
-        <div class="form-group">
-          <label>Service Type</label>
-          <select formControlName="serviceType">
-            <option value="">Select Service</option>
-            <option value="Citizenship">Citizenship</option>
-            <option value="Recommendation">Recommendation</option>
-            <option value="Certificate">Certificate</option>
-          </select>
-          <small *ngIf="appointmentForm.get('serviceType')?.touched && appointmentForm.get('serviceType')?.invalid">
-            Select a service
-          </small>
-        </div>
-
-        <div class="form-group">
-          <label>Ward Number</label>
-          <input type="number" formControlName="wardNumber" />
-        </div>
-
-        <div class="form-group">
-          <label>Appointment Time</label>
-          <input type="datetime-local" formControlName="appointmentTime" />
-        </div>
-
-        <button class="submit-btn" type="submit">
-          Confirm Booking
-        </button>
-
-      </form>
-    </div>
-  </div>
 </div>

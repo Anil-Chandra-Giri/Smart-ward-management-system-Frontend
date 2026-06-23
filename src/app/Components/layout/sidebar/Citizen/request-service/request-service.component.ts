@@ -52,7 +52,9 @@ export class RequestServiceComponent implements OnInit {
   isModalOpen = false;
   isViewModalOpen = false;
   isEditModalOpen = false;
+  isDeleteModalOpen = false;
   selectedRequest: any = null;
+  serviceToDelete: any = null;
 
   serviceOptions = [
     { value: 7, label: 'Birth Certificate' },
@@ -97,17 +99,39 @@ export class RequestServiceComponent implements OnInit {
     },
     {
       headerName: 'Actions',
-      cellRenderer: () => `
-        <button class="btn btn-sm btn-outline-info me-2" data-action="view"><i class="bi bi-eye"></i> View</button>
-        <button class="btn btn-sm btn-outline-primary me-2" data-action="edit"><i class="bi bi-pencil"></i> Edit</button>
-        <button class="btn btn-sm btn-outline-danger" data-action="delete"><i class="bi bi-trash"></i> Delete</button>
-      `,
+      cellRenderer: (params: any) => {
+        const status = params.data.status;
+        const isDisabled = status === 3 || status === 4; // Approved or Rejected
+        
+        return `
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button class="btn btn-sm btn-outline-info" data-action="view" style="padding: 2px 12px; font-size: 12px;">
+              View
+            </button>
+            <button class="btn btn-sm btn-outline-primary" data-action="edit" style="padding: 2px 12px; font-size: 12px;"
+                    ${isDisabled ? 'disabled title="Cannot edit ' + (STATUS_MAP[status] || '') + ' request"' : ''}>
+              Edit
+            </button>
+            <button class="btn btn-sm btn-outline-danger" data-action="delete" style="padding: 2px 12px; font-size: 12px;">
+              Delete
+            </button>
+          </div>
+        `;
+      },
       onCellClicked: (p: any) => {
-        const action = p.event.target.getAttribute('data-action')
-          || p.event.target.parentElement.getAttribute('data-action');
-        if (action === 'view')   this.viewServiceRequest(p.data);
-        if (action === 'edit')   this.editServiceRequest(p.data);
-        if (action === 'delete') this.deleteServiceRequest(p.data.serviceRequestId);
+        const target = p.event.target;
+        const action = target.getAttribute('data-action') 
+          || target.parentElement?.getAttribute('data-action');
+        
+        if (action === 'view') {
+          this.viewServiceRequest(p.data);
+        } else if (action === 'edit') {
+          if (!target.disabled) {
+            this.editServiceRequest(p.data);
+          }
+        } else if (action === 'delete') {
+          this.openDeleteModal(p.data);
+        }
       },
     },
   ];
@@ -126,7 +150,7 @@ export class RequestServiceComponent implements OnInit {
     this.initRequestForm();
     this.initEditForm();
 
-    if (!this.isBrowser) return; // ← skip all API calls on SSR server
+    if (!this.isBrowser) return;
 
     this.listRequestedServices();
   }
@@ -219,7 +243,53 @@ export class RequestServiceComponent implements OnInit {
 
   toggleEditModal(show: boolean): void {
     this.isEditModalOpen = show;
-    if (!show) { this.selectedRequest = null; this.editRequestForm.reset(); }
+    if (!show) { 
+      this.selectedRequest = null; 
+      this.editRequestForm.reset(); 
+    }
+  }
+
+  toggleDeleteModal(show: boolean): void {
+    this.isDeleteModalOpen = show;
+    if (!show) {
+      this.serviceToDelete = null;
+    }
+  }
+
+  openDeleteModal(service: any): void {
+    // Check if service can be deleted
+    if (service.status === 3 || service.status === 4) {
+      alert(`This request is already ${STATUS_MAP[service.status]}. Cannot delete.`);
+      return;
+    }
+    this.serviceToDelete = service;
+    this.toggleDeleteModal(true);
+  }
+
+  confirmDelete(): void {
+    if (!this.serviceToDelete) return;
+    
+    const id = this.serviceToDelete.serviceRequestId;
+    
+    this.apiService.deleteServiceRequest(id).subscribe({
+      next: () => { 
+        alert('Service request deleted successfully!');
+        // Remove from list immediately
+        this.removeServiceFromList(id);
+        this.toggleDeleteModal(false);
+        this.serviceToDelete = null;
+      },
+      error: (err) => { 
+        alert('Failed to delete request: ' + (err.error?.message || 'Server Error')); 
+      },
+    });
+  }
+
+  // Helper method to remove service from list without refresh
+  private removeServiceFromList(serviceId: string): void {
+    this.rowData = this.rowData.filter(item => 
+      (item.serviceRequestId) !== serviceId
+    );
   }
 
   viewServiceRequest(request: any): void {
@@ -228,6 +298,12 @@ export class RequestServiceComponent implements OnInit {
   }
 
   editServiceRequest(request: any): void {
+    // Check if request can be edited
+    if (request.status === 3 || request.status === 4) {
+      alert(`This request is already ${STATUS_MAP[request.status]}. Cannot edit.`);
+      return;
+    }
+    
     this.selectedRequest = request;
     this.populateEditForm(request);
     this.toggleEditModal(true);
@@ -240,64 +316,108 @@ export class RequestServiceComponent implements OnInit {
     if (!userId) { alert('Login First'); return; }
 
     this.apiService.getAllService(userId).subscribe({
-      next: (res) => { this.rowData = res; },
-      error: (err) => { console.error(err); },
+      next: (res) => { 
+        this.rowData = res || []; 
+      },
+      error: (err) => { 
+        console.error(err);
+        if (err.status === 404) {
+          this.rowData = [];
+        }
+      },
     });
   }
 
   onSubmit(): void {
-    if (!this.requestForm.valid) return;
+    if (!this.requestForm.valid) {
+      this.requestForm.markAllAsTouched();
+      return;
+    }
 
     const userId = this.authService.decodeToken()?.UserId;
-    if (!userId) { alert('Session expired. Please login again.'); this.router.navigate(['/login']); return; }
+    if (!userId) { 
+      alert('Session expired. Please login again.'); 
+      this.router.navigate(['/login']); 
+      return; 
+    }
 
     const payload = { ...this.cleanNulls(this.requestForm.value), UserId: userId };
 
     this.apiService.requestService(payload).subscribe({
       next: (res) => {
-        this.listRequestedServices();
+        // Add new service to list immediately
+        const newService = {
+          ...payload,
+          serviceRequestId: res.serviceRequestId || res.id,
+          applicationNumber: res.applicationNumber || res.reference,
+          createdAt: new Date().toISOString(),
+          status: 1 // Pending
+        };
+        this.rowData = [newService, ...this.rowData];
+        
         this.isModalOpen = false;
         this.resetFormToDefaults();
-        alert('Service Request Submitted Successfully! Ref: ' + res.reference);
+        alert('Service Request Submitted Successfully! Ref: ' + (res.reference || res.applicationNumber));
       },
-      error: (err) => { alert('Failed to submit request: ' + (err.error?.message || 'Server Error')); },
+      error: (err) => { 
+        alert('Failed to submit request: ' + (err.error?.message || 'Server Error')); 
+      },
     });
   }
 
   onUpdateSubmit(): void {
-    if (!this.editRequestForm.valid) return;
+    if (!this.editRequestForm.valid) {
+      this.editRequestForm.markAllAsTouched();
+      return;
+    }
 
     const userId = this.authService.decodeToken()?.UserId;
-    if (!userId) { alert('Session expired. Please login again.'); this.router.navigate(['/login']); return; }
+    if (!userId) { 
+      alert('Session expired. Please login again.'); 
+      this.router.navigate(['/login']); 
+      return; 
+    }
 
     const formValue = { ...this.editRequestForm.value };
     const serviceRequestId = formValue.serviceRequestId;
     const payload = { ...this.cleanNulls(formValue), userId };
 
     this.apiService.updateServiceRequest(serviceRequestId, payload).subscribe({
-      next: () => {
-        this.listRequestedServices();
+      next: (updatedService) => {
+        // Update service in list immediately
+        this.updateServiceInList(serviceRequestId, payload);
         this.toggleEditModal(false);
         alert('Service Request Updated Successfully!');
       },
-      error: (err) => { alert('Failed to update request: ' + (err.error?.message || 'Server Error')); },
+      error: (err) => { 
+        alert('Failed to update request: ' + (err.error?.message || 'Server Error')); 
+      },
     });
   }
 
-  deleteServiceRequest(id: string): void {
-    if (!confirm('Are you sure you want to delete this service request? This action cannot be undone.')) return;
-
-    this.apiService.deleteServiceRequest(id).subscribe({
-      next: () => { alert('Service request deleted successfully!'); this.listRequestedServices(); },
-      error: (err) => { alert('Failed to delete request: ' + (err.error?.message || 'Server Error')); },
+  // Helper method to update service in list without refresh
+  private updateServiceInList(serviceId: string, updatedData: any): void {
+    this.rowData = this.rowData.map(item => {
+      if (item.serviceRequestId === serviceId) {
+        return { ...item, ...updatedData };
+      }
+      return item;
     });
   }
 
   // ============ HELPERS ============
 
-  getServiceTypeName(type: number): string { return SERVICE_TYPE[type] || 'Unknown'; }
-  getStatusName(status: number): string    { return STATUS_MAP[status] || 'Unknown'; }
-  getPriorityName(priority: number): string { return PRIORITY_LEVELS[priority] ?? 'Unknown'; }
+  getServiceTypeName(type: number): string { 
+    return SERVICE_TYPE[type] || 'Unknown'; 
+  }
+  
+  getStatusName(status: number): string { 
+    return STATUS_MAP[status] || 'Unknown'; 
+  }
+  
+  getPriorityName(priority: number): string { 
+    return PRIORITY_LEVELS[priority] ?? 'Unknown'; 
+  }
 
   formatDateForInput(dateString: string): string {
     if (!dateString) return '';
@@ -306,14 +426,19 @@ export class RequestServiceComponent implements OnInit {
 
   private cleanNulls(obj: any): any {
     const cleaned = { ...obj };
-    Object.keys(cleaned).forEach(k => { if (cleaned[k] === '') cleaned[k] = null; });
+    Object.keys(cleaned).forEach(k => { 
+      if (cleaned[k] === '') cleaned[k] = null; 
+    });
     return cleaned;
   }
 
   private resetFormToDefaults(): void {
     this.requestForm.reset({
-      ServiceType: '', PriorityLevel: '0', SubmissionMode: 'Online',
-      MigrationType: 'Incoming', TotalFamilyMembersMoving: 1,
+      ServiceType: '', 
+      PriorityLevel: '0', 
+      SubmissionMode: 'Online',
+      MigrationType: 'Incoming', 
+      TotalFamilyMembersMoving: 1,
     });
   }
 

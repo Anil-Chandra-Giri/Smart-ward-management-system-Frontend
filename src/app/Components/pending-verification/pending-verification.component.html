@@ -1,0 +1,93 @@
+<p>pending-verification works!</p>
+<div class="page">
+  <div class="card">
+    <div class="icon">⏳</div>
+    <h2 class="title">Account Pending Verification</h2>
+    <p class="subtitle">
+      Hello <strong>{{ decoded?.UserName }}</strong>, your account is currently under review by ward staff.
+    </p>
+
+    <div class="info-box">
+      <h3>What happens next?</h3>
+      <ul>
+        <li>
+          <span class="step-icon">👤</span>
+          Ward staff will review your submitted details and documents
+        </li>
+        <li>
+          <span class="step-icon">📋</span>
+          Your citizenship and identity documents will be verified
+        </li>
+        <li>
+          <span class="step-icon">📧</span>
+          You will receive an email once your account is verified
+        </li>
+        <li>
+          <span class="step-icon">✅</span>
+          After verification, you can access all citizen services
+        </li>
+      </ul>
+    </div>
+
+    <div class="services-locked">
+      <p class="locked-title">Services available after verification:</p>
+      <div class="service-grid">
+        <div class="service-item locked">
+          <span>⚠️</span>
+          <span>Submit Complaint</span>
+        </div>
+        <div class="service-item locked">
+          <span>🛠️</span>
+          <span>Request Service</span>
+        </div>
+        <div class="service-item locked">
+          <span>📅</span>
+          <span>Book Appointment</span>
+        </div>
+        <div class="service-item locked">
+          <span>🗳️</span>
+          <span>Vote in Polls</span>
+        </div>
+        <div class="service-item locked">
+          <span>🤝</span>
+          <span>Register as Volunteer</span>
+        </div>
+        <div class="service-item locked">
+          <span>🚨</span>
+          <span>Report Disaster</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="available-now">
+      <p class="available-title">Available now (no verification needed):</p>
+      <div class="service-grid">
+        <div class="service-item available" (click)="goToDashboard()">
+          <span>📊</span>
+          <span>Dashboard</span>
+        </div>
+        <div class="service-item available">
+          <span>📢</span>
+          <span>View Notices</span>
+        </div>
+        <div class="service-item available">
+          <span>🗑️</span>
+          <span>Waste Schedule</span>
+        </div>
+        <div class="service-item available">
+          <span>🌍</span>
+          <span>View Disaster Events</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn-dashboard" (click)="goToDashboard()">Go to Dashboard</button>
+      <button class="btn-logout" (click)="logout()">Logout</button>
+    </div>
+
+    <p class="contact-note">
+      If you have been waiting for more than 3 working days, please visit the ward office directly.
+    </p>
+  </div>
+</div>

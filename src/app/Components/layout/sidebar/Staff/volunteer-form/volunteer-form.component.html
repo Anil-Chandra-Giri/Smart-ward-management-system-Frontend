@@ -1,234 +1,213 @@
 <!-- src/app/components/volunteer-form/volunteer-form.component.html -->
-<div class="container mt-4">
-  <div class="row justify-content-center">
-    <div class="col-md-8">
-      <div class="card">
-        <div class="card-header">
-          <h3>{{ isEditMode ? 'Edit Volunteer' : 'Register New Volunteer' }}</h3>
-        </div>
-        <div class="card-body">
-          <div *ngIf="loading" class="text-center py-4">
-            <div class="spinner-border" role="status">
-              <span class="visually-hidden">Loading...</span>
-            </div>
-          </div>
-
-          <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
-          <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
-
-          <form *ngIf="!loading" [formGroup]="volunteerForm" (ngSubmit)="onSubmit()">
-            <!-- Personal Information -->
-            <h5 class="mb-3">Personal Information</h5>
-            <div class="row mb-3">
-              <div class="col-md-6">
-                <label for="firstName" class="form-label">First Name *</label>
-                <input 
-                  type="text" 
-                  class="form-control" 
-                  id="firstName" 
-                  formControlName="firstName"
-                  [class.is-invalid]="hasError('firstName', 'required') || hasError('firstName', 'minlength')">
-                <div class="invalid-feedback" *ngIf="hasError('firstName', 'required')">
-                  First name is required
-                </div>
-                <div class="invalid-feedback" *ngIf="hasError('firstName', 'minlength')">
-                  First name must be at least 2 characters
-                </div>
-              </div>
-              <div class="col-md-6">
-                <label for="lastName" class="form-label">Last Name *</label>
-                <input 
-                  type="text" 
-                  class="form-control" 
-                  id="lastName" 
-                  formControlName="lastName"
-                  [class.is-invalid]="hasError('lastName', 'required') || hasError('lastName', 'minlength')">
-                <div class="invalid-feedback" *ngIf="hasError('lastName', 'required')">
-                  Last name is required
-                </div>
-                <div class="invalid-feedback" *ngIf="hasError('lastName', 'minlength')">
-                  Last name must be at least 2 characters
-                </div>
-              </div>
-            </div>
-
-            <div class="row mb-3">
-              <div class="col-md-6">
-                <label for="email" class="form-label">Email *</label>
-                <input 
-                  type="email" 
-                  class="form-control" 
-                  id="email" 
-                  formControlName="email"
-                  [class.is-invalid]="hasError('email', 'required') || hasError('email', 'email')">
-                <div class="invalid-feedback" *ngIf="hasError('email', 'required')">
-                  Email is required
-                </div>
-                <div class="invalid-feedback" *ngIf="hasError('email', 'email')">
-                  Please enter a valid email address
-                </div>
-              </div>
-              <div class="col-md-6">
-                <label for="phoneNumber" class="form-label">Phone Number *</label>
-                <input 
-                  type="tel" 
-                  class="form-control" 
-                  id="phoneNumber" 
-                  formControlName="phoneNumber"
-                  [class.is-invalid]="hasError('phoneNumber', 'required') || hasError('phoneNumber', 'pattern')">
-                <div class="invalid-feedback" *ngIf="hasError('phoneNumber', 'required')">
-                  Phone number is required
-                </div>
-                <div class="invalid-feedback" *ngIf="hasError('phoneNumber', 'pattern')">
-                  Please enter a valid phone number
-                </div>
-              </div>
-            </div>
-
-            <div class="row mb-3">
-              <div class="col-md-6">
-                <label for="dateOfBirth" class="form-label">Date of Birth *</label>
-                <input 
-                  type="date" 
-                  class="form-control" 
-                  id="dateOfBirth" 
-                  formControlName="dateOfBirth"
-                  [class.is-invalid]="hasError('dateOfBirth', 'required')">
-                <div class="invalid-feedback" *ngIf="hasError('dateOfBirth', 'required')">
-                  Date of birth is required
-                </div>
-              </div>
-              <div class="col-md-6">
-                <label for="address" class="form-label">Address *</label>
-                <input 
-                  type="text" 
-                  class="form-control" 
-                  id="address" 
-                  formControlName="address"
-                  [class.is-invalid]="hasError('address', 'required')">
-                <div class="invalid-feedback" *ngIf="hasError('address', 'required')">
-                  Address is required
-                </div>
-              </div>
-            </div>
-
-            <!-- Profile Picture -->
-<h5 class="mb-3 mt-4">Profile Picture</h5>
-<div class="row mb-3">
-  <div class="col-md-12 text-center">
-
-    <!-- Image Preview -->
-    <div class="mb-3">
-      <img 
-        *ngIf="imagePreview" 
-        [src]="imagePreview" 
-        alt="Profile Preview"
-        style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 2px solid #ddd;" />
-    </div>
-
-    <!-- File Input -->
-    <input 
-      type="file" 
-      class="form-control" 
-      accept="image/*"
-      (change)="onFileSelected($event)" />
-
-    <small class="text-muted d-block mt-2">
-      Upload a profile picture (JPG, PNG). Max size: 2MB
-    </small>
-
+<div *ngIf="loading" class="text-center py-4">
+  <div class="spinner-border" role="status">
+    <span class="visually-hidden">Loading...</span>
   </div>
 </div>
 
-            <!-- Skills and Availability -->
-            <h5 class="mb-3 mt-4">Skills & Availability</h5>
-            <div class="row mb-3">
-              <div class="col-md-6">
-                <label for="skills" class="form-label">Skills</label>
-                <select 
-                  class="form-select" 
-                  id="skills" 
-                  formControlName="skills"
-                  multiple
-                  size="4"
-                  >
-                  <option *ngFor="let skill of skillsList" [value]="skill">{{ skill }}</option>
-                </select>
-                <small class="text-muted">Hold Ctrl/Cmd to select multiple skills</small>
-              </div>
-              <div class="col-md-6">
-                <label for="availability" class="form-label">Availability</label>
-                <select 
-                  class="form-select" 
-                  id="availability" 
-                  formControlName="availability"
-                  multiple
-                  size="4">
-                  <option *ngFor="let option of availabilityOptions" [value]="option">{{ option }}</option>
-                </select>
-                <small class="text-muted">Hold Ctrl/Cmd to select multiple options</small>
-              </div>
-            </div>
+<div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+<div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
 
-            <!-- Emergency Contact -->
-            <h5 class="mb-3 mt-4">Emergency Contact</h5>
-            <div class="row mb-3">
-              <div class="col-md-6">
-                <label for="emergencyContact" class="form-label">Emergency Contact Name *</label>
-                <input 
-                  type="text" 
-                  class="form-control" 
-                  id="emergencyContact" 
-                  formControlName="emergencyContact"
-                  [class.is-invalid]="hasError('emergencyContact', 'required')">
-                <div class="invalid-feedback" *ngIf="hasError('emergencyContact', 'required')">
-                  Emergency contact name is required
-                </div>
-              </div>
-              <div class="col-md-6">
-                <label for="emergencyPhone" class="form-label">Emergency Phone *</label>
-                <input 
-                  type="tel" 
-                  class="form-control" 
-                  id="emergencyPhone" 
-                  formControlName="emergencyPhone"
-                  [class.is-invalid]="hasError('emergencyPhone', 'required') || hasError('emergencyPhone', 'pattern')">
-                <div class="invalid-feedback" *ngIf="hasError('emergencyPhone', 'required')">
-                  Emergency phone is required
-                </div>
-                <div class="invalid-feedback" *ngIf="hasError('emergencyPhone', 'pattern')">
-                  Please enter a valid phone number
-                </div>
-              </div>
-            </div>
-
-            <!-- Status (only in edit mode) -->
-            <div *ngIf="isEditMode" class="row mb-3">
-              <div class="col-12">
-                <div class="form-check">
-                  <input 
-                    type="checkbox" 
-                    class="form-check-input" 
-                    id="isActive" 
-                    formControlName="isActive">
-                  <label class="form-check-label" for="isActive">Active Volunteer</label>
-                </div>
-              </div>
-            </div>
-
-            <!-- Form Actions -->
-            <div class="d-flex justify-content-end mt-4">
-              <button type="button" class="btn btn-secondary me-2" (click)="onCancel()" [disabled]="submitting">
-                Cancel
-              </button>
-              <button type="submit" class="btn btn-primary" [disabled]="submitting">
-                <span *ngIf="submitting" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-                {{ submitting ? 'Saving...' : (isEditMode ? 'Update Volunteer' : 'Register Volunteer') }}
-              </button>
-            </div>
-          </form>
-        </div>
+<form *ngIf="!loading" [formGroup]="volunteerForm" (ngSubmit)="onSubmit()">
+  <!-- Personal Information -->
+  <h5 class="mb-3">Personal Information</h5>
+  <div class="row mb-3">
+    <div class="col-md-6">
+      <label for="firstName" class="form-label">First Name *</label>
+      <input 
+        type="text" 
+        class="form-control" 
+        id="firstName" 
+        formControlName="firstName"
+        [class.is-invalid]="hasError('firstName', 'required') || hasError('firstName', 'minlength')">
+      <div class="invalid-feedback" *ngIf="hasError('firstName', 'required')">
+        First name is required
+      </div>
+      <div class="invalid-feedback" *ngIf="hasError('firstName', 'minlength')">
+        First name must be at least 2 characters
+      </div>
+    </div>
+    <div class="col-md-6">
+      <label for="lastName" class="form-label">Last Name *</label>
+      <input 
+        type="text" 
+        class="form-control" 
+        id="lastName" 
+        formControlName="lastName"
+        [class.is-invalid]="hasError('lastName', 'required') || hasError('lastName', 'minlength')">
+      <div class="invalid-feedback" *ngIf="hasError('lastName', 'required')">
+        Last name is required
+      </div>
+      <div class="invalid-feedback" *ngIf="hasError('lastName', 'minlength')">
+        Last name must be at least 2 characters
       </div>
     </div>
   </div>
-</div>
+
+  <div class="row mb-3">
+    <div class="col-md-6">
+      <label for="email" class="form-label">Email *</label>
+      <input 
+        type="email" 
+        class="form-control" 
+        id="email" 
+        formControlName="email"
+        [class.is-invalid]="hasError('email', 'required') || hasError('email', 'email')">
+      <div class="invalid-feedback" *ngIf="hasError('email', 'required')">
+        Email is required
+      </div>
+      <div class="invalid-feedback" *ngIf="hasError('email', 'email')">
+        Please enter a valid email address
+      </div>
+    </div>
+    <div class="col-md-6">
+      <label for="phoneNumber" class="form-label">Phone Number *</label>
+      <input 
+        type="tel" 
+        class="form-control" 
+        id="phoneNumber" 
+        formControlName="phoneNumber"
+        [class.is-invalid]="hasError('phoneNumber', 'required') || hasError('phoneNumber', 'pattern')">
+      <div class="invalid-feedback" *ngIf="hasError('phoneNumber', 'required')">
+        Phone number is required
+      </div>
+      <div class="invalid-feedback" *ngIf="hasError('phoneNumber', 'pattern')">
+        Please enter a valid phone number
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-3">
+    <div class="col-md-6">
+      <label for="dateOfBirth" class="form-label">Date of Birth *</label>
+      <input 
+        type="date" 
+        class="form-control" 
+        id="dateOfBirth" 
+        formControlName="dateOfBirth"
+        [class.is-invalid]="hasError('dateOfBirth', 'required')">
+      <div class="invalid-feedback" *ngIf="hasError('dateOfBirth', 'required')">
+        Date of birth is required
+      </div>
+    </div>
+    <div class="col-md-6">
+      <label for="address" class="form-label">Address *</label>
+      <input 
+        type="text" 
+        class="form-control" 
+        id="address" 
+        formControlName="address"
+        [class.is-invalid]="hasError('address', 'required')">
+      <div class="invalid-feedback" *ngIf="hasError('address', 'required')">
+        Address is required
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile Picture -->
+  <h5 class="mb-3 mt-4">Profile Picture</h5>
+  <div class="row mb-3">
+    <div class="col-md-12 text-center">
+      <div class="mb-3" *ngIf="imagePreview">
+        <img 
+          [src]="imagePreview" 
+          alt="Profile Preview"
+          style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 2px solid #ddd;" />
+      </div>
+      <input 
+        type="file" 
+        class="form-control" 
+        accept="image/*"
+        (change)="onFileSelected($event)" />
+      <small class="text-muted d-block mt-2">
+        Upload a profile picture (JPG, PNG). Max size: 2MB
+      </small>
+    </div>
+  </div>
+
+  <!-- Skills and Availability -->
+  <h5 class="mb-3 mt-4">Skills & Availability</h5>
+  <div class="row mb-3">
+    <div class="col-md-6">
+      <label for="skills" class="form-label">Skills</label>
+      <select 
+        class="form-select" 
+        id="skills" 
+        formControlName="skills"
+        multiple
+        size="4">
+        <option *ngFor="let skill of skillsList" [value]="skill">{{ skill }}</option>
+      </select>
+      <small class="text-muted">Hold Ctrl/Cmd to select multiple skills</small>
+    </div>
+    <div class="col-md-6">
+      <label for="availability" class="form-label">Availability</label>
+      <select 
+        class="form-select" 
+        id="availability" 
+        formControlName="availability"
+        multiple
+        size="4">
+        <option *ngFor="let option of availabilityOptions" [value]="option">{{ option }}</option>
+      </select>
+      <small class="text-muted">Hold Ctrl/Cmd to select multiple options</small>
+    </div>
+  </div>
+
+  <!-- Emergency Contact -->
+  <h5 class="mb-3 mt-4">Emergency Contact</h5>
+  <div class="row mb-3">
+    <div class="col-md-6">
+      <label for="emergencyContact" class="form-label">Emergency Contact Name *</label>
+      <input 
+        type="text" 
+        class="form-control" 
+        id="emergencyContact" 
+        formControlName="emergencyContact"
+        [class.is-invalid]="hasError('emergencyContact', 'required')">
+      <div class="invalid-feedback" *ngIf="hasError('emergencyContact', 'required')">
+        Emergency contact name is required
+      </div>
+    </div>
+    <div class="col-md-6">
+      <label for="emergencyPhone" class="form-label">Emergency Phone *</label>
+      <input 
+        type="tel" 
+        class="form-control" 
+        id="emergencyPhone" 
+        formControlName="emergencyPhone"
+        [class.is-invalid]="hasError('emergencyPhone', 'required') || hasError('emergencyPhone', 'pattern')">
+      <div class="invalid-feedback" *ngIf="hasError('emergencyPhone', 'required')">
+        Emergency phone is required
+      </div>
+      <div class="invalid-feedback" *ngIf="hasError('emergencyPhone', 'pattern')">
+        Please enter a valid phone number
+      </div>
+    </div>
+  </div>
+
+  <!-- Status (only in edit mode) -->
+  <div *ngIf="isEditMode" class="row mb-3">
+    <div class="col-12">
+      <div class="form-check">
+        <input 
+          type="checkbox" 
+          class="form-check-input" 
+          id="isActive" 
+          formControlName="isActive">
+        <label class="form-check-label" for="isActive">Active Volunteer</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form Actions -->
+  <div class="d-flex justify-content-end mt-4">
+    <button type="button" class="btn btn-secondary me-2" (click)="onCancel()" [disabled]="submitting">
+      Cancel
+    </button>
+    <button type="submit" class="btn btn-primary" [disabled]="submitting">
+      <span *ngIf="submitting" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+      {{ submitting ? 'Saving...' : (isEditMode ? 'Update Volunteer' : 'Register Volunteer') }}
+    </button>
+  </div>
+</form>

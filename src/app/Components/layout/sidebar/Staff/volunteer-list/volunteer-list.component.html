@@ -2,9 +2,9 @@
 <div class="container mt-4">
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h2>Volunteers</h2>
-    <a routerLink="/volunteers/new" class="btn btn-primary">
+    <button (click)="openAddModal()" class="btn btn-primary">
       <i class="bi bi-plus"></i> Add Volunteer
-    </a>
+    </button>
   </div>
 
   <div *ngIf="loading" class="text-center">
@@ -43,12 +43,9 @@
           </td>
           <td>{{ volunteer.activeAssignments }}</td>
           <td>
-            <a [routerLink]="['/volunteers', volunteer.id]" class="btn btn-sm btn-info me-1">
-              <i class="bi bi-eye"></i>
-            </a>
-            <a [routerLink]="['/volunteers', volunteer.id, 'edit']" class="btn btn-sm btn-warning me-1">
+            <button (click)="openEditModal(volunteer.id)" class="btn btn-sm btn-warning me-1">
               <i class="bi bi-pencil"></i>
-            </a>
+            </button>
             <button (click)="deleteVolunteer(volunteer.id)" class="btn btn-sm btn-danger">
               <i class="bi bi-trash"></i>
             </button>
@@ -60,5 +57,28 @@
 
   <div *ngIf="!loading && volunteers.length === 0" class="alert alert-info">
     No volunteers found.
+  </div>
+</div>
+
+<!-- Modal Container -->
+<div *ngIf="showModal" class="modal-container">
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal fade show" tabindex="-1" style="display: block;" role="dialog">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">{{ isEditMode ? 'Edit Volunteer' : 'Register New Volunteer' }}</h5>
+          <button type="button" class="btn-close" (click)="closeModal()"></button>
+        </div>
+        <div class="modal-body">
+          <app-volunteer-form 
+            [isEditMode]="isEditMode"
+            [volunteerId]="selectedVolunteerId"
+            (closeModal)="closeModal()"
+            (saved)="onVolunteerSaved()">
+          </app-volunteer-form>
+        </div>
+      </div>
+    </div>
   </div>
 </div>

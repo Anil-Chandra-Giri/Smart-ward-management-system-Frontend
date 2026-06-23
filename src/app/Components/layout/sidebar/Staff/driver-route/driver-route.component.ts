@@ -1,12 +1,16 @@
 // src/app/components/driver-route/driver-route.component.ts
 
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { ApiService } from '../../Services/api.service';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { ApiService } from '../../../../../Services/api.service';
+import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-driver-route',
-  templateUrl: './driver-route.component.html'
+  templateUrl: './driver-route.component.html',
+  styleUrls: ['./driver-route.component.css'],
+  imports:[FormsModule,CommonModule,RouterModule]
 })
 export class DriverRouteComponent implements OnInit {
   routeId: string = '';
@@ -29,7 +33,6 @@ export class DriverRouteComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    // Fix: Handle null from paramMap
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.routeId = id;
@@ -86,7 +89,6 @@ export class DriverRouteComponent implements OnInit {
         this.loadRouteDetails();
         this.loading = false;
         
-        // Clear message after 3 seconds
         setTimeout(() => this.message = '', 3000);
       },
       error: (error) => {
@@ -105,7 +107,6 @@ export class DriverRouteComponent implements OnInit {
       return;
     }
 
-    // Validate and parse inputs
     const wasteQuantity = parseFloat(wasteQuantityInput);
     if (isNaN(wasteQuantity) || wasteQuantity <= 0) {
       this.message = 'Please enter a valid waste quantity';
@@ -113,7 +114,7 @@ export class DriverRouteComponent implements OnInit {
       return;
     }
 
-    const notes = notesInput || ''; // Handle null/undefined
+    const notes = notesInput || '';
 
     this.loading = true;
     this.message = '';
@@ -128,7 +129,6 @@ export class DriverRouteComponent implements OnInit {
           this.message = 'Route completed successfully!';
           this.messageType = 'success';
           
-          // Navigate to completed page after delay
           setTimeout(() => {
             this.router.navigate(['/driver/completed']);
           }, 2000);
@@ -136,15 +136,12 @@ export class DriverRouteComponent implements OnInit {
           this.message = 'Point completed. Next point ready.';
           this.messageType = 'success';
           
-          // Update current point
           if (response.nextPoint) {
             this.currentPoint = response.nextPoint;
           } else {
-            // If no next point provided, find next incomplete point
             this.loadRouteDetails();
           }
           
-          // Clear message after 2 seconds
           setTimeout(() => this.message = '', 2000);
         }
         this.loading = false;
@@ -205,7 +202,6 @@ export class DriverRouteComponent implements OnInit {
     });
   }
 
-  // Helper methods
   getProgressPercentage(): number {
     if (!this.allPoints || this.allPoints.length === 0) return 0;
     

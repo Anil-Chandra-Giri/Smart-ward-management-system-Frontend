@@ -18,6 +18,7 @@ export class PollListComponent implements OnInit {
   selectedPoll: any;
   selectedOption!: string;
   errorMessage = '';
+  loading = false;
 
   constructor(
     private api: ApiService,
@@ -32,9 +33,32 @@ export class PollListComponent implements OnInit {
   }
 
   loadPolls(): void {
+    this.loading = true;
+    this.errorMessage = '';
+
     this.api.getActivePolls().subscribe({
-      next: (res: any) => { this.polls = res; },
-      error: (err) => { console.error('Error loading polls:', err); },
+      next: (res: any) => {
+        this.polls = res ?? [];
+        this.loading = false;
+        if (this.polls.length === 0) {
+          this.errorMessage = 'No active polls were returned by the server.';
+        }
+      },
+      error: (err) => {
+        console.error('Error loading polls:', err);
+        this.loading = false;
+        this.polls = [];
+
+        if (err.status === 401) {
+          this.errorMessage = 'Unauthorised — please log in again.';
+        } else if (err.status === 403) {
+          this.errorMessage = 'You do not have permission to view polls.';
+        } else if (err.status === 0) {
+          this.errorMessage = 'Could not reach the server. Is the API running?';
+        } else {
+          this.errorMessage = `Error loading polls (HTTP ${err.status}).`;
+        }
+      },
     });
   }
 

@@ -3,19 +3,22 @@ import { Component, OnInit } from '@angular/core';
 import { ApiService } from '../../Services/api.service';
 import { Resource } from '../../Models/resource.model';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { ResourceFormComponent } from '../resource-form/resource-form.component';
 
 @Component({
   selector: 'app-resource-list',
   templateUrl: './resource-list.component.html',
   styleUrls: ['./resource-list.component.css'],
-  imports:[CommonModule,RouterLink]
+  imports: [CommonModule, ResourceFormComponent]
 })
 export class ResourceListComponent implements OnInit {
   resources: Resource[] = [];
   loading = false;
   error = '';
   showLowStockOnly = false;
+  showModal = false;
+  selectedResourceId: string | null = null;
+  isEditMode = false;
 
   constructor(private resourceService: ApiService) { }
 
@@ -56,6 +59,29 @@ export class ResourceListComponent implements OnInit {
   toggleLowStock(): void {
     this.showLowStockOnly = !this.showLowStockOnly;
     this.loadResources();
+  }
+
+  openAddModal(): void {
+    this.selectedResourceId = null;
+    this.isEditMode = false;
+    this.showModal = true;
+  }
+
+  openEditModal(id: string): void {
+    this.selectedResourceId = id;
+    this.isEditMode = true;
+    this.showModal = true;
+  }
+
+  closeModal(): void {
+    this.showModal = false;
+    this.selectedResourceId = null;
+    this.isEditMode = false;
+  }
+
+  onResourceSaved(): void {
+    this.closeModal();
+    this.loadResources(); // Refresh the list
   }
 
   getStatusClass(status: string): string {

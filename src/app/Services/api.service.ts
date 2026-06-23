@@ -1,5 +1,5 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Injectable, Resource } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { Login } from '../Models/login';
 import { Vote } from '../Models/vote.model';
@@ -9,292 +9,340 @@ import { NoticeCategory } from '../Models/Category';
 import { Resource as ResourceModel, CreateResource, UpdateResource } from '../Models/resource.model';
 import { WeeklySchedule, WasteCollectionRoute, CreateRoute, RouteStatusUpdate, Vehicle, Driver, RealtimeUpdate } from '../Models/WasteCollectionRoute';
 import { DisasterEvent, CreateDisasterEvent, UpdateDisasterEvent } from '../Models/DisasterEvent.model';
-// import { CreateResource, UpdateResource } from '../Models/resource.model';
 import { Volunteer, CreateVolunteer, UpdateVolunteer } from '../Models/volunteer.model';
 import { AuthService } from './auth.service';
-
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
 
-  private apiUrl = 'https://localhost:7069/api/WasteCollection';
+  // Base API URLs
+  private baseApiUrl = 'https://localhost:7069/api';
+  private wasteApiUrl = 'https://localhost:7069/api/WasteCollection';
+  private appointmentApiUrl = 'https://localhost:7069/api/Appointment';
+  private authApiUrl = 'https://localhost:7069/api';
 
-  constructor(private http: HttpClient, private authService:AuthService) { }
+  constructor(private http: HttpClient, private authService: AuthService) { }
 
-    createUser(signup: any): Observable<any> {
-    return this.http.post(
-      'https://localhost:7069/api/SignUp/Register',signup);
+  // ─── Auth ────────────────────────────────────────────────────────────────────
+
+  login(login: Login): Observable<{
+    token: string;
+    expiration: string;
+    isFirstLogin: boolean;
+    user: {
+      userId: number;
+      username: string;
+      email: string;
+      role: string;
+      wardNumber: number | null;
+      fullName: string;
+    };
+  }> {
+    return this.http.post<any>(`${this.authApiUrl}/Login`, login);
   }
 
-   verifyEmail(data: { userId: string, otpCode: string }) {
-    return this.http.post(`https://localhost:7069/api/SignUp/VerifyEmail`, data);
+  changePassword(data: { CurrentPassword: string; NewPassword: string; ConfirmPassword: string }): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.authApiUrl}/Login/ChangePassword`, data);
+  }
+
+  getPendingCitizens(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.authApiUrl}/CitizenVerification/pending`);
+  }
+
+  verifyCitizen(userId: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.authApiUrl}/CitizenVerification/verify/${userId}`, {});
+  }
+
+  rejectCitizen(userId: string, reason: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.authApiUrl}/CitizenVerification/reject/${userId}`, { reason });
+  }
+
+  // ─── User / Registration ─────────────────────────────────────────────────────
+
+  createUser(signup: any): Observable<any> {
+    return this.http.post(`${this.authApiUrl}/SignUp/Register`, signup);
+  }
+
+  verifyEmail(data: { userId: string, otpCode: string }) {
+    return this.http.post(`${this.authApiUrl}/SignUp/VerifyEmail`, data);
   }
 
   resendOtp(data: { email: string }) {
-    return this.http.post(`https://localhost:7069/api/SignUp/ResendOTP`, data);
-  }
-  
-    createStaff(newStaff: any): Observable<any> {
-    return this.http.post('https://localhost:7069/api/SignUp/Register',newStaff);
+    return this.http.post(`${this.authApiUrl}/SignUp/ResendOTP`, data);
   }
 
-    login(login: Login): Observable<any> {
-    return this.http.post('https://localhost:7069/api/Login', login);
-  }
-  
-     requestService(request: any): Observable<any> {
-    return this.http.post('https://localhost:7069/api/servicerequest',request);
-  }
-  
-    submitComplaint(complaintData: any): Observable<any> {
-      return this.http.post('https://localhost:7069/api/Complaint/RegisterComplaint', complaintData);
-    }
-
-    getComplaints(UserId:any):Observable<any>{
-      return this.http.get('https://localhost:7069/api/Complaint/Complaints', {params: { userId: UserId }});
-    }
-
-    getAllComplaints():Observable<any>{
-      return this.http.get('https://localhost:7069/api/Complaint/GetAllComplaints');
-    }
-
-    updateComplaintStatus(data:any): Observable<any>{
-  return this.http.put('https://localhost:7069/api/Complaint/update-status',data);
-}
-
-       requestReview(id: any): Observable<any> {
-    return this.http.put('https://localhost:7069/api/service-requests/{id}/review',id);
-  }
-
-       getAllService(UserId: any): Observable<any> {
-    return this.http.get('https://localhost:7069/api/ServiceRequest/GetAllRequestedServicesOfUser',{params: { userId: UserId }});
-  }
-
-  getAllServices(): Observable<any> {
-    return this.http.get('https://localhost:7069/api/ServiceRequest/GetAllRequestedServices');
-  }
-
-  updateServiceRequest(id: string, payload: any): Observable<any> {
-  return this.http.put(`https://localhost:7069/api/ServiceRequest/${id}`, payload);
-}
-
-// Delete a service request
-deleteServiceRequest(id: string): Observable<any> {
-  return this.http.delete(`https://localhost:7069/api/ServiceRequest/${id}`);
-}
-
-  updateServiceStatus(data:any): Observable<any>{
-  return this.http.put('https://localhost:7069/api/ServiceRequest/update-status',data);
-}
-
-  
-       uploadDocument(document: any): Observable<any> {
-    return this.http.post('https://localhost:7069/api/DocumentCommand/upload',document);
-  }
-
-       verifyDocument(id: any): Observable<any> {
-    return this.http.put('https://localhost:7069/api/DocumentCommand/{id}/verify',id);
-  }
-
-  bookAppointment(appointment:any):Observable<any> {
-    return this.http.post('https://localhost:7069/api/Appointment/book',appointment)
-  }
-
-   getAllAppointments(): Observable<any> {
-    return this.http.get('https://localhost:7069/api/Appointment/GetAllAppointments');
-  }
-
-  getMyAppointments(UserId:string): Observable<any> {
-    return this.http.get('https://localhost:7069/api/Appointment/MyAppointments',{params: { userId: UserId }});
-  }
-
-   getNotices():Observable<any>{
-    return this.http.get<any>('https://localhost:7069/api/Notice/');
-  }
-
-  createNotice(data:FormData){
-    return this.http.post('https://localhost:7069/api/Notice/',data);
+  createStaff(newStaff: any): Observable<any> {
+    return this.http.post(`${this.authApiUrl}/SignUp/Register`, newStaff);
   }
 
   getUserProfile(userId: string): Observable<any> {
-    return this.http.get(`https://localhost:7069/api/SignUp/GetUserProfile/${userId}`);
+    return this.http.get(`${this.authApiUrl}/SignUp/GetUserProfile/${userId}`);
   }
 
-  // Get profile picture URL
-  // getProfilePictureUrl(userId: string): string {
-  //   return `https://localhost:7069/api/SignUp/GetProfilePicture/${userId}?t=${new Date().getTime()}`;
-  // }
   getDirectProfilePictureUrl(profilePicturePath: string): string {
-  if (!profilePicturePath) return 'https://i.pravatar.cc/40';
-  
-  // Remove leading slash if present
-  const path = profilePicturePath.startsWith('/') 
-    ? profilePicturePath.substring(1) 
-    : profilePicturePath;
-  
-  // Add timestamp to prevent caching
-  return `https://localhost:7069/${path}?t=${new Date().getTime()}`;
+    if (!profilePicturePath) return 'https://i.pravatar.cc/40';
+    const path = profilePicturePath.startsWith('/')
+      ? profilePicturePath.substring(1)
+      : profilePicturePath;
+    return `https://localhost:7069/${path}?t=${new Date().getTime()}`;
+  }
+
+  // ─── Service Requests ────────────────────────────────────────────────────────
+
+  requestService(request: any): Observable<any> {
+    return this.http.post(`${this.authApiUrl}/servicerequest`, request);
+  }
+
+  getAllService(UserId: any): Observable<any> {
+    return this.http.get(`${this.authApiUrl}/ServiceRequest/GetAllRequestedServicesOfUser`, { params: { userId: UserId } });
+  }
+
+  getAllServices(): Observable<any> {
+    return this.http.get(`${this.authApiUrl}/ServiceRequest/GetAllRequestedServices`);
+  }
+
+  updateServiceRequest(id: string, payload: any): Observable<any> {
+    return this.http.put(`${this.authApiUrl}/ServiceRequest/${id}`, payload);
+  }
+
+  deleteServiceRequest(id: string): Observable<any> {
+    return this.http.delete(`${this.authApiUrl}/ServiceRequest/${id}`);
+  }
+
+  updateServiceStatus(data: any): Observable<any> {
+    return this.http.put(`${this.authApiUrl}/ServiceRequest/update-status`, data);
+  }
+
+  // Delete complaint
+deleteComplaint(complaintId: string): Observable<any> {
+  return this.http.delete(`https://localhost:7069/api/Complaint/${complaintId}`);
 }
 
-  // Get stored profile picture path or return default
-  // getUserProfilePicture(): string {
-  //   const profilePic = localStorage.getItem('userProfilePicture');
-  //   const userId = this.authService.decodeToken()?.UserId;
-    
-  //   if (profilePic && userId) {
-  //     return this.getProfilePictureUrl(userId);
-  //   }
-  //   return 'https://i.pravatar.cc/40'; // Default avatar
-  // }
-
-updateNotice(id: string, formData: FormData): Observable<any> {
-  return this.http.put(`https://localhost:7069/api/Notice/${id}`, formData);
+// Update complaint
+updateComplaint(complaintId: string, data: any): Observable<any> {
+  return this.http.put(`https://localhost:7069/api/Complaint/${complaintId}`, data);
 }
 
-deleteNotice(id: string): Observable<any> {
-  return this.http.delete(`https://localhost:7069/api/Notice/${id}`);
+// Update complaint with image
+updateComplaintWithImage(complaintId: string, formData: FormData): Observable<any> {
+  return this.http.put(`https://localhost:7069/api/Complaint/${complaintId}/with-image`, formData);
 }
 
-  getCategories():Observable<NoticeCategory[]>{
-    return this.http.get<NoticeCategory[]>('https://localhost:7069/api/NoticeCategory/')
+  // ─── Complaints ──────────────────────────────────────────────────────────────
+
+  submitComplaint(complaintData: any): Observable<any> {
+    return this.http.post(`${this.authApiUrl}/Complaint/RegisterComplaint`, complaintData);
   }
 
-  addCategory(category:any){
-    return this.http.post('https://localhost:7069/api/NoticeCategory/',category)
+  getComplaints(UserId: any): Observable<any> {
+    return this.http.get(`${this.authApiUrl}/Complaint/Complaints`, { params: { userId: UserId } });
   }
 
-   getPollCategories():Observable<PollCategory[]>{
-    return this.http.get<PollCategory[]>(`https://localhost:7069/api/Poll/categories`)
+  getAllComplaints(): Observable<any> {
+    return this.http.get(`${this.authApiUrl}/Complaint/GetAllComplaints`);
   }
 
-  createPollCategory(name:string){
-    return this.http.post('https://localhost:7069/api/Poll/categories',{name})
+  updateComplaintStatus(data: any): Observable<any> {
+    return this.http.put(`${this.authApiUrl}/Complaint/update-status`, data);
   }
 
-  getActivePolls():Observable<Poll[]>{
-    return this.http.get<Poll[]>(`https://localhost:7069/api/Poll/active`)
+  // ─── Documents ───────────────────────────────────────────────────────────────
+
+  uploadDocument(document: any): Observable<any> {
+    return this.http.post(`${this.authApiUrl}/DocumentCommand/upload`, document);
   }
 
-  createPoll(data:any){
-    return this.http.post(`https://localhost:7069/api/Poll/create`,data)
+  verifyDocument(id: any): Observable<any> {
+    return this.http.put(`${this.authApiUrl}/DocumentCommand/{id}/verify`, id);
   }
 
-  vote(vote:Vote){
-    return this.http.post(`https://localhost:7069/api/Poll/vote`,vote)
+  // ─── Appointments ────────────────────────────────────────────────────────────
+  // FIXED: Using the correct appointmentApiUrl
+
+  bookAppointment(appointment: any): Observable<any> {
+    return this.http.post(`${this.appointmentApiUrl}/book`, appointment);
   }
 
-  getResults(pollId:string){
-    return this.http.get(`https://localhost:7069/api/Poll/${pollId}/results`)
+  getAllAppointments(): Observable<any> {
+    return this.http.get(`${this.appointmentApiUrl}/GetAllAppointments`);
   }
+
+  getMyAppointments(UserId: string): Observable<any> {
+    return this.http.get(`${this.appointmentApiUrl}/MyAppointments`, { params: { userId: UserId } });
+  }
+
+  // FIXED: Get appointment by ID - Correct URL
+  getAppointmentById(appointmentId: string): Observable<any> {
+    return this.http.get(`${this.appointmentApiUrl}/appointment/${appointmentId}`);
+  }
+
+  // FIXED: Cancel appointment
+  cancelAppointment(appointmentId: string): Observable<any> {
+    return this.http.delete(`${this.appointmentApiUrl}/cancel/${appointmentId}`);
+  }
+
+  // FIXED: Update appointment
+  updateAppointment(appointmentId: string, data: any): Observable<any> {
+    return this.http.put(`${this.appointmentApiUrl}/update/${appointmentId}`, data);
+  }
+
+  // Get appointments by ward
+  getAppointmentsByWard(wardNumber: number): Observable<any> {
+    return this.http.get(`${this.appointmentApiUrl}/appointments/ward/${wardNumber}`);
+  }
+
+  // Get queue statistics
+  getQueueStatistics(wardNumber: number): Observable<any> {
+    return this.http.get(`${this.appointmentApiUrl}/queue/statistics/${wardNumber}`);
+  }
+
+  // Get queue by ward
+  getQueueByWard(wardNumber: number): Observable<any> {
+    return this.http.get(`${this.appointmentApiUrl}/queue/${wardNumber}`);
+  }
+
+  // Update queue status
+  updateQueueStatus(tokenNumber: string, status: string): Observable<any> {
+    return this.http.put(`${this.appointmentApiUrl}/queue/update/${tokenNumber}`, status);
+  }
+
+  // ─── Notices ─────────────────────────────────────────────────────────────────
+
+  getNotices(): Observable<any> {
+    return this.http.get<any>(`${this.authApiUrl}/Notice/`);
+  }
+
+  createNotice(data: FormData) {
+    return this.http.post(`${this.authApiUrl}/Notice/`, data);
+  }
+
+  updateNotice(id: string, formData: FormData): Observable<any> {
+    return this.http.put(`${this.authApiUrl}/Notice/${id}`, formData);
+  }
+
+  deleteNotice(id: string): Observable<any> {
+    return this.http.delete(`${this.authApiUrl}/Notice/${id}`);
+  }
+
+  getCategories(): Observable<NoticeCategory[]> {
+    return this.http.get<NoticeCategory[]>(`${this.authApiUrl}/NoticeCategory/`);
+  }
+
+  addCategory(category: any) {
+    return this.http.post(`${this.authApiUrl}/NoticeCategory/`, category);
+  }
+
+  // ─── Polls ───────────────────────────────────────────────────────────────────
+
+  getPollCategories(): Observable<PollCategory[]> {
+    return this.http.get<PollCategory[]>(`${this.authApiUrl}/Poll/categories`);
+  }
+
+  createPollCategory(name: string) {
+    return this.http.post(`${this.authApiUrl}/Poll/categories`, { name });
+  }
+
+  getActivePolls(): Observable<Poll[]> {
+    return this.http.get<Poll[]>(`${this.authApiUrl}/Poll/active`);
+  }
+
+  createPoll(data: any) {
+    return this.http.post(`${this.authApiUrl}/Poll/create`, data);
+  }
+
+  vote(vote: Vote) {
+    return this.http.post(`${this.authApiUrl}/Poll/vote`, vote);
+  }
+
+  getResults(pollId: string) {
+    return this.http.get(`${this.authApiUrl}/Poll/${pollId}/results`);
+  }
+
+  // ─── Waste Collection ────────────────────────────────────────────────────────
 
   getWeeklySchedule(startDate: Date): Observable<WeeklySchedule> {
     const formattedDate = startDate.toISOString().split('T')[0];
-    return this.http.get<WeeklySchedule>(`${this.apiUrl}/routes/weekly?startDate=${formattedDate}`);
+    return this.http.get<WeeklySchedule>(`${this.wasteApiUrl}/routes/weekly?startDate=${formattedDate}`);
   }
 
   getMonthlySchedule(year: number, month: number): Observable<WasteCollectionRoute[]> {
-    return this.http.get<WasteCollectionRoute[]>(`${this.apiUrl}/routes/monthly?year=${year}&month=${month}`);
+    return this.http.get<WasteCollectionRoute[]>(`${this.wasteApiUrl}/routes/monthly?year=${year}&month=${month}`);
   }
 
   getRoute(id: string): Observable<WasteCollectionRoute> {
-    return this.http.get<WasteCollectionRoute>(`${this.apiUrl}/routes/${id}`);
+    return this.http.get<WasteCollectionRoute>(`${this.wasteApiUrl}/routes/${id}`);
   }
 
   createRoute(route: any): Observable<any> {
-  return this.http.post(`${this.apiUrl}/routes`, route, {
-    responseType: 'text' // Temporarily get as text to see what's being returned
-  }).pipe(
-    map(response => {
-      try {
-        return JSON.parse(response);
-      } catch (e) {
-        console.error('Response is not JSON:', response);
-        throw new Error('Server returned non-JSON response');
-      }
-    })
-  );
-}
+    return this.http.post(`${this.wasteApiUrl}/routes`, route, { responseType: 'text' }).pipe(
+      map(response => {
+        try {
+          return JSON.parse(response);
+        } catch (e) {
+          console.error('Response is not JSON:', response);
+          throw new Error('Server returned non-JSON response');
+        }
+      })
+    );
+  }
 
   updateRouteStatus(routeId: string, statusUpdate: RouteStatusUpdate): Observable<void> {
-    return this.http.put<void>(`${this.apiUrl}/routes/${routeId}/status`, statusUpdate);
+    return this.http.put<void>(`${this.wasteApiUrl}/routes/${routeId}/status`, statusUpdate);
   }
 
   deleteRoute(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/routes/${id}`);
+    return this.http.delete<void>(`${this.wasteApiUrl}/routes/${id}`);
   }
 
-  // Vehicle Management
   getVehicles(): Observable<Vehicle[]> {
-    return this.http.get<Vehicle[]>(`${this.apiUrl}/vehicles`);
+    return this.http.get<Vehicle[]>(`${this.wasteApiUrl}/vehicles`);
   }
 
   getAvailableVehicles(date: Date): Observable<Vehicle[]> {
     const formattedDate = date.toISOString().split('T')[0];
-    return this.http.get<Vehicle[]>(`${this.apiUrl}/vehicles/available?date=${formattedDate}`);
+    return this.http.get<Vehicle[]>(`${this.wasteApiUrl}/vehicles/available?date=${formattedDate}`);
   }
 
   updateVehicleLocation(vehicleId: string, latitude: number, longitude: number): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/vehicles/location`, {
-      vehicleId,
-      latitude,
-      longitude
-    });
+    return this.http.post<void>(`${this.wasteApiUrl}/vehicles/location`, { vehicleId, latitude, longitude });
   }
 
-  // Driver Management
   getAvailableDrivers(date: Date): Observable<Driver[]> {
     const formattedDate = date.toISOString().split('T')[0];
-    return this.http.get<Driver[]>(`${this.apiUrl}/drivers/available?date=${formattedDate}`);
+    return this.http.get<Driver[]>(`${this.wasteApiUrl}/drivers/available?date=${formattedDate}`);
   }
 
-  // Real-time Updates
   getRealtimeUpdates(): Observable<RealtimeUpdate[]> {
-    return this.http.get<RealtimeUpdate[]>(`${this.apiUrl}/realtime-updates`);
+    return this.http.get<RealtimeUpdate[]>(`${this.wasteApiUrl}/realtime-updates`);
   }
 
   getAssignedRoutes(driverId: string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/drivers/${driverId}/routes`);
+    return this.http.get(`${this.wasteApiUrl}/drivers/${driverId}/routes`);
   }
 
-  // Start route
   startRoute(routeId: string): Observable<any> {
-    return this.http.put(`${this.apiUrl}/routes/${routeId}/status`, {
-      routeId: routeId,
-      status: 2 // InProgress
-    });
+    return this.http.put(`${this.wasteApiUrl}/routes/${routeId}/status`, { routeId, status: 2 });
   }
 
-  // Complete collection point
   completeCollectionPoint(pointId: string, wasteQuantity: number, notes: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/collection-points/${pointId}/complete`, {
-      wasteQuantity: wasteQuantity,
-      notes: notes
-    });
+    return this.http.post(`${this.wasteApiUrl}/collection-points/${pointId}/complete`, { wasteQuantity, notes });
   }
 
-  // Report delay
   reportDelay(routeId: string, delayReason: string, delayMinutes: number): Observable<any> {
-    return this.http.put(`${this.apiUrl}/routes/${routeId}/status`, {
-      routeId: routeId,
-      status: 4, // Delayed
-      delayReason: delayReason,
-      delayMinutes: delayMinutes
-    });
+    return this.http.put(`${this.wasteApiUrl}/routes/${routeId}/status`, { routeId, status: 4, delayReason, delayMinutes });
   }
 
-  // Complete route
   completeRoute(routeId: string): Observable<any> {
-    return this.http.put(`${this.apiUrl}/routes/${routeId}/status`, {
-      routeId: routeId,
-      status: 3 // Completed
-    });
+    return this.http.put(`${this.wasteApiUrl}/routes/${routeId}/status`, { routeId, status: 3 });
   }
 
-  private volunteerapiUrl = `https://localhost:7069/api/Volunteers`;
+  // ─── Volunteers ──────────────────────────────────────────────────────────────
 
-    getVolunteers(): Observable<Volunteer[]> {
+  private volunteerapiUrl = `${this.authApiUrl}/Volunteers`;
+
+  getVolunteers(): Observable<Volunteer[]> {
     return this.http.get<Volunteer[]>(this.volunteerapiUrl);
   }
 
@@ -314,8 +362,9 @@ deleteNotice(id: string): Observable<any> {
     return this.http.delete<void>(`${this.volunteerapiUrl}/${id}`);
   }
 
-   
-  private resourcesapiUrl = `https://localhost:7069/api/Resources`;
+  // ─── Resources ───────────────────────────────────────────────────────────────
+
+  private resourcesapiUrl = `${this.authApiUrl}/Resources`;
 
   getResources(): Observable<ResourceModel[]> {
     return this.http.get<ResourceModel[]>(this.resourcesapiUrl);
@@ -349,8 +398,9 @@ deleteNotice(id: string): Observable<any> {
     return this.http.delete<void>(`${this.resourcesapiUrl}/${id}`);
   }
 
-   private disasterapiUrl = `https://localhost:7069/api/DisasterEvents`;
+  // ─── Disaster Events ─────────────────────────────────────────────────────────
 
+  private disasterapiUrl = `${this.authApiUrl}/DisasterEvents`;
 
   getDisasterEvents(): Observable<DisasterEvent[]> {
     return this.http.get<DisasterEvent[]>(this.disasterapiUrl);
@@ -376,78 +426,83 @@ deleteNotice(id: string): Observable<any> {
     return this.http.delete<void>(`${this.disasterapiUrl}/${id}`);
   }
 
+  // ─── OCR ─────────────────────────────────────────────────────────────────────
 
-
-   scandocument(previews:any): Observable<any> {
-    return this.http.post('https://localhost:7069/api/Ocr/scan',previews);
+  scandocument(previews: any): Observable<any> {
+    return this.http.post(`${this.authApiUrl}/Ocr/scan`, previews);
   }
 
   scanBothSides(formData: FormData): Observable<any> {
-  return this.http.post('https://localhost:7069/api/Ocr/scan-both-sides', formData);
-}
+    return this.http.post(`${this.authApiUrl}/Ocr/scan-both-sides`, formData);
+  }
+
+  // ─── Follow-up / Escalation ──────────────────────────────────────────────────
 
   getOfficerAssignments(officerId: string): Observable<any> {
-    return this.http.get(`https://localhost:7069/api/FollowUp/officer-assignments/${officerId}`);
+    return this.http.get(`${this.authApiUrl}/FollowUp/officer-assignments/${officerId}`);
   }
 
   getEscalatedTasks(adminId: string): Observable<any> {
-    return this.http.get(`https://localhost:7069/api/FollowUp/escalated-tasks/${adminId}`);
+    return this.http.get(`${this.authApiUrl}/FollowUp/escalated-tasks/${adminId}`);
   }
 
   sendReminder(reminder: any): Observable<any> {
-    return this.http.post(`https://localhost:7069/api/FollowUp/send-reminder`, reminder);
+    return this.http.post(`${this.authApiUrl}/FollowUp/send-reminder`, reminder);
   }
 
   escalateTask(assignmentId: string, reason: string): Observable<any> {
-    return this.http.post(`https://localhost:7069/api/FollowUp/escalate/${assignmentId}`, JSON.stringify(reason), {
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return this.http.post(`${this.authApiUrl}/FollowUp/escalate/${assignmentId}`,
+      JSON.stringify(reason), { headers: { 'Content-Type': 'application/json' } });
   }
 
   getDashboardStats(userId: string, role: string): Observable<any> {
-    return this.http.get(`https://localhost:7069/api/FollowUp/dashboard-stats/${userId}?role=${role}`);
+    return this.http.get(`${this.authApiUrl}/FollowUp/dashboard-stats/${userId}?role=${role}`);
   }
 
-   markNotificationAsRead(notificationId: string): Observable<any> {
-    return this.http.put(`https://localhost:7069/api/FollowUp/Notification/mark-read/${notificationId}`, {});
+  markNotificationAsRead(notificationId: string): Observable<any> {
+    return this.http.put(`${this.authApiUrl}/FollowUp/Notification/mark-read/${notificationId}`, {});
   }
 
   markAllNotificationsAsRead(userId: string): Observable<any> {
-    return this.http.put(`https://localhost:7069/api/FollowUp/Notification/mark-all-read/${userId}`, {});
+    return this.http.put(`${this.authApiUrl}/FollowUp/Notification/mark-all-read/${userId}`, {});
   }
 
   getUnreadCount(userId: string): Observable<any> {
-    return this.http.get(`https://localhost:7069/api/FollowUp/Notification/unread-count/${userId}`);
+    return this.http.get(`${this.authApiUrl}/FollowUp/Notification/unread-count/${userId}`);
   }
 
-   getNotifications(userId: string, unreadOnly: boolean = false): Observable<any> {
+  getNotifications(userId: string, unreadOnly: boolean = false): Observable<any> {
     const params = new HttpParams().set('unreadOnly', unreadOnly.toString());
-    return this.http.get(`https://localhost:7069/api/FollowUp/Notification/user/${userId}`, { params });
+    return this.http.get(`${this.authApiUrl}/FollowUp/Notification/user/${userId}`, { params });
   }
+
   getAllOverdueTasks(): Observable<any> {
-    return this.http.get(`https://localhost:7069/api/FollowUp/admin/all-overdue-tasks`);
-}
-trackComplaintStatus(complaintId: string): Observable<any> {
-    return this.http.get(`https://localhost:7069/api/FollowUp/citizen/track/${complaintId}`);
-}
-getStaffAssignments(staffId: string): Observable<any> {
-    return this.http.get(`https://localhost:7069/api/FollowUp/staff-assignments/${staffId}`);
-}
+    return this.http.get(`${this.authApiUrl}/FollowUp/admin/all-overdue-tasks`);
+  }
 
-  getAllCitizens()
-{
-  return this.http.get<RealtimeUpdate[]>(`https://localhost:7069/api/Citizens`);
-}
+  trackComplaintStatus(complaintId: string): Observable<any> {
+    return this.http.get(`${this.authApiUrl}/FollowUp/citizen/track/${complaintId}`);
+  }
 
+  getStaffAssignments(staffId: string): Observable<any> {
+    return this.http.get(`${this.authApiUrl}/FollowUp/staff-assignments/${staffId}`);
+  }
 
-getAllPolls()
-{
-  return this.http.get<RealtimeUpdate[]>(`https://localhost:7069/api/Polls`);
-}
+  // ─── Admin ───────────────────────────────────────────────────────────────────
 
-getAllStaff()
-{
-  return this.http.get<RealtimeUpdate[]>(`https://localhost:7069/api/Staff`);
-}
- 
+  getAllCitizens() {
+    return this.http.get<RealtimeUpdate[]>(`${this.authApiUrl}/Citizens`);
+  }
+
+  getAllPolls() {
+    return this.http.get<RealtimeUpdate[]>(`${this.authApiUrl}/Polls`);
+  }
+
+  getAllStaff() {
+    return this.http.get<RealtimeUpdate[]>(`${this.authApiUrl}/Staff`);
+  }
+
+  requestReview(id: any): Observable<any> {
+    return this.http.put(`${this.authApiUrl}/service-requests/{id}/review`, id);
+  }
 }

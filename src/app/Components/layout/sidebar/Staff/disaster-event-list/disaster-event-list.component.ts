@@ -4,18 +4,22 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { DisasterEvent } from '../../../../../Models/DisasterEvent.model';
 import { ApiService } from '../../../../../Services/api.service';
+import { DisasterEventFormComponent } from '../disaster-event-form/disaster-event-form.component';
 
 @Component({
   selector: 'app-disaster-event-list',
   templateUrl: './disaster-event-list.component.html',
   styleUrls: ['./disaster-event-list.component.css'],
-  imports:[CommonModule,RouterLink]
+  imports: [CommonModule, RouterLink, DisasterEventFormComponent]
 })
 export class DisasterEventListComponent implements OnInit {
   events: DisasterEvent[] = [];
   loading = false;
   error = '';
   showActiveOnly = false;
+  showModal = false;
+  selectedEventId: string | null = null;
+  isEditMode = false;
 
   constructor(private disasterEventService: ApiService) { }
 
@@ -56,6 +60,29 @@ export class DisasterEventListComponent implements OnInit {
   toggleActiveOnly(): void {
     this.showActiveOnly = !this.showActiveOnly;
     this.loadEvents();
+  }
+
+  openAddModal(): void {
+    this.selectedEventId = null;
+    this.isEditMode = false;
+    this.showModal = true;
+  }
+
+  openEditModal(id: string): void {
+    this.selectedEventId = id;
+    this.isEditMode = true;
+    this.showModal = true;
+  }
+
+  closeModal(): void {
+    this.showModal = false;
+    this.selectedEventId = null;
+    this.isEditMode = false;
+  }
+
+  onEventSaved(): void {
+    this.closeModal();
+    this.loadEvents(); // Refresh the list
   }
 
   getSeverityClass(severity: string): string {

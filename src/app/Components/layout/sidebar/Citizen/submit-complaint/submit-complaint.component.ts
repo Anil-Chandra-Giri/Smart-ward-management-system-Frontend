@@ -28,11 +28,22 @@ export class SubmitComplaintComponent implements OnInit, AfterViewInit {
   @ViewChild('complaintModal') modalElement!: ElementRef;
   UserId: any;
   complaintForm!: FormGroup;
+  editComplaintForm!: FormGroup;
   pageSize = 7;
   rowData: any[] = [];
   isBrowser = false;
   imagePreview: string | null = null;
+  editImagePreview: string | null = null;
   selectedImage: File | null = null;
+  editSelectedImage: File | null = null;
+
+  // Modal states
+  isModalOpen = false;
+  isViewModalOpen = false;
+  isEditModalOpen = false;
+  isDeleteModalOpen = false;
+  selectedComplaint: any = null;
+  complaintToDelete: any = null;
 
   // Leaflet properties
   private map: any = null;
@@ -83,7 +94,44 @@ export class SubmitComplaintComponent implements OnInit, AfterViewInit {
     },
     { field: 'latitude', headerName: 'Lat', width: 100, hide: true }, 
     { field: 'longitude', headerName: 'Lng', width: 100, hide: true },
-    { field: 'complaintDetails', headerName: 'Details', flex: 2, tooltipField: 'complaintDetails' }
+    { field: 'complaintDetails', headerName: 'Details', flex: 2, tooltipField: 'complaintDetails' },
+    {
+      headerName: 'Actions',
+      cellRenderer: (params: any) => {
+        const status = params.data.status;
+        const isDisabled = status === 'Resolved' || status === 'Closed';
+        
+        return `
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button class="btn btn-sm btn-outline-info" data-action="view" style="padding: 2px 12px; font-size: 12px;">
+              View
+            </button>
+            <button class="btn btn-sm btn-outline-primary" data-action="edit" style="padding: 2px 12px; font-size: 12px;"
+                    ${isDisabled ? 'disabled title="Cannot edit ' + status + ' complaint"' : ''}>
+              Edit
+            </button>
+            <button class="btn btn-sm btn-outline-danger" data-action="delete" style="padding: 2px 12px; font-size: 12px;">
+              Delete
+            </button>
+          </div>
+        `;
+      },
+      onCellClicked: (p: any) => {
+        const target = p.event.target;
+        const action = target.getAttribute('data-action') 
+          || target.parentElement?.getAttribute('data-action');
+        
+        if (action === 'view') {
+          this.viewComplaint(p.data);
+        } else if (action === 'edit') {
+          if (!target.disabled) {
+            this.editComplaint(p.data);
+          }
+        } else if (action === 'delete') {
+          this.openDeleteModal(p.data);
+        }
+      },
+    },
   ];
 
   constructor(
@@ -95,10 +143,8 @@ export class SubmitComplaintComponent implements OnInit, AfterViewInit {
   ) {}
 
   ngOnInit(): void {
-    // Check if we're in browser
     this.isBrowser = isPlatformBrowser(this.platformId);
     
-    // Only decode token and get complaints in browser
     if (this.isBrowser) {
       const decodedToken = this.authService.decodeToken();
       if (decodedToken) {
@@ -107,6 +153,13 @@ export class SubmitComplaintComponent implements OnInit, AfterViewInit {
       }
     }
 
+    this.initComplaintForm();
+    this.initEditForm();
+  }
+
+  // ============ FORMS ============
+
+  initComplaintForm(): void {
     this.complaintForm = this.fb.group({
       category: ['Waste Management', Validators.required],
       complaintDetails: ['', [Validators.required, Validators.minLength(10)]],
@@ -119,12 +172,26 @@ export class SubmitComplaintComponent implements OnInit, AfterViewInit {
     });
   }
 
+  initEditForm(): void {
+    this.editComplaintForm = this.fb.group({
+      complaintId: [''],
+      category: ['', Validators.required],
+      complaintDetails: ['', [Validators.required, Validators.minLength(10)]],
+      priority: ['', Validators.required],
+      wardNumber: ['', Validators.required],
+      municipality: ['', Validators.required],
+      latitude: ['', Validators.required],
+      longitude: ['', Validators.required],
+      status: [''],
+    });
+  }
+
+  // ============ FILE HANDLING ============
+
   onFileSelect(event: any) {
     const file = event.target.files[0];
-
     if (file) {
       this.selectedImage = file;
-      
       const reader = new FileReader();
       reader.onload = (e: any) => {
         this.imagePreview = e.target.result;
@@ -135,9 +202,106 @@ export class SubmitComplaintComponent implements OnInit, AfterViewInit {
     }
   }
 
+  onEditFileSelect(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.editSelectedImage = file;
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.editImagePreview = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    } else {
+      this.editImagePreview = null;
+    }
+  }
+
+  // ============ MODAL HELPERS ============
+
+  toggleModal(show: boolean): void {
+    this.isModalOpen = show;
+    if (!show) {
+      this.resetFormToDefaults();
+      this.imagePreview = null;
+      this.selectedImage = null;
+    }
+  }
+
+  toggleViewModal(show: boolean): void {
+    this.isViewModalOpen = show;
+    if (!show) this.selectedComplaint = null;
+  }
+
+  toggleEditModal(show: boolean): void {
+    this.isEditModalOpen = show;
+    if (!show) { 
+      this.selectedComplaint = null; 
+      this.editComplaintForm.reset();
+      this.editImagePreview = null;
+      this.editSelectedImage = null;
+    }
+  }
+
+  toggleDeleteModal(show: boolean): void {
+    this.isDeleteModalOpen = show;
+    if (!show) {
+      this.complaintToDelete = null;
+    }
+  }
+
+  openDeleteModal(complaint: any): void {
+    if (complaint.status === 'Resolved' || complaint.status === 'Closed') {
+      alert(`This complaint is already ${complaint.status}. Cannot delete.`);
+      return;
+    }
+    this.complaintToDelete = complaint;
+    this.toggleDeleteModal(true);
+  }
+
+  confirmDelete(): void {
+    if (!this.complaintToDelete) return;
+    
+    const id = this.complaintToDelete.complaintId;
+    
+    this.apiService.deleteComplaint(id).subscribe({
+      next: () => { 
+        alert('Complaint deleted successfully!');
+        this.removeComplaintFromList(id);
+        this.toggleDeleteModal(false);
+        this.complaintToDelete = null;
+      },
+      error: (err) => { 
+        alert('Failed to delete complaint: ' + (err.error?.message || 'Server Error')); 
+      },
+    });
+  }
+
+  private removeComplaintFromList(complaintId: string): void {
+    this.rowData = this.rowData.filter(item => 
+      (item.complaintId) !== complaintId
+    );
+  }
+
+  viewComplaint(complaint: any): void {
+    this.selectedComplaint = complaint;
+    this.toggleViewModal(true);
+  }
+
+  editComplaint(complaint: any): void {
+    if (complaint.status === 'Resolved' || complaint.status === 'Closed') {
+      alert(`This complaint is already ${complaint.status}. Cannot edit.`);
+      return;
+    }
+    
+    this.selectedComplaint = complaint;
+    this.populateEditForm(complaint);
+    this.toggleEditModal(true);
+  }
+
+  // ============ MAP FUNCTIONS ============
+
   ngAfterViewInit(): void {
     if (this.isBrowser) {
-      // Wait for modal to be shown before initializing map
       if (this.modalElement) {
         this.modalElement.nativeElement.addEventListener('shown.bs.modal', () => {
           this.loadLeafletAndInitialize();
@@ -268,6 +432,8 @@ export class SubmitComplaintComponent implements OnInit, AfterViewInit {
     });
   }
 
+  // ============ DATA OPERATIONS ============
+
   submitComplaint() {
     if (!this.isBrowser) return;
     
@@ -292,10 +458,20 @@ export class SubmitComplaintComponent implements OnInit, AfterViewInit {
       this.apiService.submitComplaint(formData)
         .subscribe({
           next: (res) => {
-            this.getComplaints();
-            this.complaintForm.reset();
-            this.selectedImage = null;
+            // Add new complaint to list immediately
+            const newComplaint = {
+              ...formValues,
+              complaintId: res.complaintId || res.id,
+              createdAt: new Date().toISOString(),
+              status: 'Pending',
+              imageUrl: res.imageUrl || ''
+            };
+            this.rowData = [newComplaint, ...this.rowData];
+            
+            this.toggleModal(false);
+            this.resetFormToDefaults();
             this.imagePreview = null;
+            this.selectedImage = null;
             if (this.marker && this.center) {
               this.marker.setLatLng([this.center.lat, this.center.lng]);
             }
@@ -311,30 +487,129 @@ export class SubmitComplaintComponent implements OnInit, AfterViewInit {
     }
   }
 
+  // FIXED: Properly typed update method
+  onUpdateSubmit(): void {
+    if (!this.editComplaintForm.valid) {
+      this.editComplaintForm.markAllAsTouched();
+      return;
+    }
+
+    const formValue = this.editComplaintForm.value;
+    const complaintId = formValue.complaintId;
+    
+    // Create payload with explicit property mapping
+    const payload: {
+      category: string;
+      complaintDetails: string;
+      priority: string;
+      wardNumber: number;
+      municipality: string;
+      latitude: string;
+      longitude: string;
+      status: string;
+    } = {
+      category: formValue.category,
+      complaintDetails: formValue.complaintDetails,
+      priority: formValue.priority,
+      wardNumber: parseInt(formValue.wardNumber) || 0,
+      municipality: formValue.municipality,
+      latitude: formValue.latitude,
+      longitude: formValue.longitude,
+      status: formValue.status || 'Pending'
+    };
+
+    // If there's a new image, handle it
+    if (this.editSelectedImage) {
+      const formData = new FormData();
+      // Add all payload fields to formData
+      Object.keys(payload).forEach(key => {
+        const value = (payload as any)[key];
+        if (value !== null && value !== '') {
+          formData.append(key, value.toString());
+        }
+      });
+      formData.append('complaintImage', this.editSelectedImage, this.editSelectedImage.name);
+      
+      this.apiService.updateComplaintWithImage(complaintId, formData).subscribe({
+        next: () => {
+          this.updateComplaintInList(complaintId, payload);
+          this.toggleEditModal(false);
+          this.editImagePreview = null;
+          this.editSelectedImage = null;
+          alert('Complaint updated successfully!');
+        },
+        error: (err) => { 
+          alert('Failed to update complaint: ' + (err.error?.message || 'Server Error')); 
+        },
+      });
+    } else {
+      this.apiService.updateComplaint(complaintId, payload).subscribe({
+        next: () => {
+          this.updateComplaintInList(complaintId, payload);
+          this.toggleEditModal(false);
+          alert('Complaint updated successfully!');
+        },
+        error: (err) => { 
+          alert('Failed to update complaint: ' + (err.error?.message || 'Server Error')); 
+        },
+      });
+    }
+  }
+
+  private updateComplaintInList(complaintId: string, updatedData: any): void {
+    this.rowData = this.rowData.map(item => {
+      if (item.complaintId === complaintId) {
+        return { ...item, ...updatedData };
+      }
+      return item;
+    });
+  }
+
   getComplaints() {
-    // Only fetch complaints in browser and if UserId exists
     if (!this.isBrowser || !this.UserId) return;
     
     this.apiService.getComplaints(this.UserId).subscribe({
       next: (res) => {
-        this.rowData = res;
+        this.rowData = res || [];
         console.log(res);
       },
       error: (err) => {
         console.error('Error fetching complaints:', err);
-        // Don't show alert for SSR errors
-        if (this.isBrowser) {
-          console.log('Failed to load complaints');
+        if (err.status === 404) {
+          this.rowData = [];
         }
       }
     });
   }
 
+  // ============ HELPERS ============
+
+  private resetFormToDefaults(): void {
+    this.complaintForm.reset({
+      category: 'Waste Management',
+      priority: 'Normal',
+      latitude: '',
+      longitude: ''
+    });
+  }
+
+  populateEditForm(complaint: any): void {
+    this.editComplaintForm.patchValue({
+      complaintId: complaint.complaintId,
+      category: complaint.category,
+      complaintDetails: complaint.complaintDetails,
+      priority: complaint.priority,
+      wardNumber: complaint.wardNumber,
+      municipality: complaint.municipality,
+      latitude: complaint.latitude,
+      longitude: complaint.longitude,
+      status: complaint.status || 'Pending'
+    });
+  }
+
   imageRenderer(params: any) {
     if (!params.value) return '';
-
     const imageUrl = `https://localhost:7069${params.value}`;
-
     return `
       <img 
         src="${imageUrl}" 

@@ -19,25 +19,23 @@ export class AuthInterceptor implements HttpInterceptor {
     private router: Router,
   ) {}
 
-  intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
-    // Retrieve token — stored as JSON string via LocalStorageService.setItem()
-    // so getItem<string>() will correctly parse it back to a plain string.
-    const token = this.localStorageService.getItem<string>('token');
+intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
 
-    if (token) {
-      request = request.clone({
-        setHeaders: { Authorization: `Bearer ${token}` },
-      });
-    }
+  const token = this.localStorageService.getItem<string>('token');
 
-    return next.handle(request).pipe(
-      catchError((error: HttpErrorResponse) => {
-        if (error.status === 401) {
-          // Token expired or invalid — clear storage and redirect to login
-          this.localStorageService.clear();
-        }
-        return throwError(() => error);
-      }),
-    );
+  if (token) {
+    request = request.clone({
+      setHeaders: { Authorization: `Bearer ${token}` },
+    });
   }
+
+  return next.handle(request).pipe(
+    catchError((error: HttpErrorResponse) => {
+      if (error.status === 401) {
+        this.localStorageService.clear();
+      }
+      return throwError(() => error);
+    }),
+  );
+}
 }

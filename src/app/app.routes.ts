@@ -28,6 +28,7 @@ import { RealtimeUpdatesComponent } from './Components/realtime-updates/realtime
 import { ResourceListComponent } from './Components/resource-list/resource-list.component';
 import { VolunteerListComponent } from './Components/layout/sidebar/Staff/volunteer-list/volunteer-list.component';
 import { ResourceFormComponent } from './Components/resource-form/resource-form.component';
+import { VolunteerFormComponent } from './Components/layout/sidebar/Staff/volunteer-form/volunteer-form.component';
 import { ServiceManagementComponent } from './Components/layout/sidebar/admin/service-management/service-management.component';
 import { ComplaintManagementComponent } from './Components/layout/sidebar/admin/complaint-management/complaint-management.component';
 import { NoticeManagementComponent } from './Components/layout/sidebar/admin/notice-management/notice-management.component';
@@ -43,53 +44,63 @@ import { DisasterEventFormComponent } from './Components/layout/sidebar/Staff/di
 import { DisasterEventListComponent } from './Components/layout/sidebar/Staff/disaster-event-list/disaster-event-list.component';
 import { EscalationDashboardComponent } from './Components/layout/sidebar/Staff/escalation-dashboard/escalation-dashboard.component';
 import { OfficerDashboardComponent } from './Components/officer-dashboard/officer-dashboard.component';
-import { VolunteerFormComponent } from './Components/layout/sidebar/Staff/volunteer-form/volunteer-form.component';
 import { EscalationManagementComponent } from './Components/layout/sidebar/admin/escalation-management/escalation-management.component';
 
+import { ChangePasswordComponent } from './Components/layout/sidebar/Staff/change-password/change-password.component';
+import { firstLoginGuard } from './Guards/first-login.guard';
+import { VerifyCitizenComponent } from './Components/layout/sidebar/Staff/verify-citizen/verify-citizen.component';
+import { PendingVerificationComponent } from './Components/pending-verification/pending-verification.component';
+import { verifiedGuard } from './Guards/verifiedGuard';
+
 export const routes: Routes = [
+  // Public
   { path: '', component: HomeComponent },
-  { path: 'login', component: LoginComponent},
-    {
+  { path: 'login', component: LoginComponent },
+  { path: 'registerUser', component: UserRegisterComponent, pathMatch: 'full' },
+
+  // ← NEW: staff land here after first login; accessible only while token exists
+  { path: 'change-password', component: ChangePasswordComponent },
+
+  // Admin — firstLoginGuard added so staff can't bypass change-password by typing URL
+  {
     path: 'Admin',
     component: LayoutComponent,
+    canActivate: [firstLoginGuard],
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: DashboardComponent },
-      { path: 'service-management', component: ServiceManagementComponent },
-      { path: 'complaint-management', component: ComplaintManagementComponent },
-      { path: 'notice-management', component: NoticeManagementComponent},
-      {path:  'audit-and-logs',component:AuditAndLogsComponent},
-      { path: 'appointment-management', component: AppointmentManagementComponent},
+      { path: 'service-management', component: ServiceRequestComponent },
+      { path: 'complaint-management', component: ComplaintsComponent },
+      { path: 'notice-management', component: StaffNoticesComponent},
+      { path: 'audit-and-logs', component: AuditAndLogsComponent },
+      { path: 'appointment-management', component: AppointmentsComponent },
       { path: 'system-settings', component: SystemSettingsComponent },
-      {path:  'staff-management',component:StaffManagementComponent},
+      { path: 'staff-management', component: StaffManagementComponent },
       { path: 'citizen-management', component: CitizenManagementComponent },
-      { path: 'poll-management', component: PollManagementComponent },
-      { path: 'escalation-management', component: EscalationManagementComponent,data: { roles: ['Officer', 'SeniorOfficer', 'Admin', 'SuperAdmin'] } },
+      { path: 'poll-management', component: PollListComponent },
+      { path: 'escalation-management', component: EscalationManagementComponent, data: { roles: ['Officer', 'SeniorOfficer', 'Admin', 'SuperAdmin'] } },
       { path: 'reports', component: ReportsComponent },
     ],
   },
+
+  // Ward / Staff — both guards applied
   {
     path: 'ward',
     component: LayoutComponent,
-    canActivate: [AuthGuardService],
+    canActivate: [AuthGuardService, firstLoginGuard],
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: DashboardComponent },
+      { path: 'verify-citizen', component: VerifyCitizenComponent },
       { path: 'service-request', component: ServiceRequestComponent },
       { path: 'complaints', component: ComplaintsComponent },
-      { path: 'notices', component: StaffNoticesComponent},
-      {path:'createPoll',component:CreatePollComponent},
+      { path: 'notices', component: StaffNoticesComponent },
+      { path: 'createPoll', component: CreatePollComponent },
       { path: 'appointments', component: AppointmentsComponent },
       { path: 'settings', component: StaffSettingsComponent },
-      {path:'polls',component:PollListComponent},
-
-      { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuardService] },
-      { path: 'service-request', component: ServiceRequestComponent, canActivate: [AuthGuardService] },
-      { path: 'complaints', component: ComplaintsComponent, canActivate: [AuthGuardService] },
-      { path: 'notices', component: StaffNoticesComponent, canActivate: [AuthGuardService]},
-      { path: 'appointments', component: AppointmentsComponent, canActivate: [AuthGuardService] },
-      { path: 'my-details', component: StaffDetailsComponent, canActivate: [AuthGuardService] },
-      { path: 'settings', component: StaffSettingsComponent, canActivate: [AuthGuardService] },
+      { path: 'polls', component: PollListComponent },
+      { path: 'polls/results/:id', component: PollResultsComponent },
+      { path: 'my-details', component: StaffDetailsComponent },
       { path: 'route-planning', component: RoutePlanningComponent },
       { path: 'weekly-schedule', component: WeeklyScheduleComponent },
       { path: 'realtime-updates', component: RealtimeUpdatesComponent },
@@ -105,53 +116,49 @@ export const routes: Routes = [
       { path: 'disaster-events/new', component: DisasterEventFormComponent },
       { path: 'disaster-events/:id', component: DisasterEventFormComponent },
       { path: 'disaster-events/:id/edit', component: DisasterEventFormComponent },
-      { path: 'escalation-dashboard', component: EscalationDashboardComponent,data: { roles: ['Officer', 'SeniorOfficer', 'Admin', 'SuperAdmin'] }},
+      { path: 'escalation-dashboard', component: EscalationDashboardComponent, data: { roles: ['Officer', 'SeniorOfficer', 'Admin', 'SuperAdmin'] } },
     ],
   },
-    {
+
+  // Citizen — firstLoginGuard added
+  {
     path: 'citizen',
     component: LayoutComponent,
+    canActivate: [firstLoginGuard], // ← added
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: DashboardComponent },
-      { path: 'request-service', component: RequestServiceComponent },
-      { path: 'my-details', component: MyDetailsComponent },
-      { path: 'submit-complaint', component: SubmitComplaintComponent },
-      { path: 'notices', component:CitizenNoticesComponent },
-      { path: 'book-appointment', component: BookAppointmentComponent },
-      { path: 'settings', component: CitizenSettingsComponent },
-      { path:'polls',component:PollListComponent},
-      { path:'vote/:id',component:VotePollComponent},
-      { path:'polls/results/:id',component:PollResultsComponent},
-      { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuardService] },
-      { path: 'request-service', component: RequestServiceComponent, canActivate: [AuthGuardService] },
-      { path: 'my-details', component: MyDetailsComponent, canActivate: [AuthGuardService] },
-      { path: 'submit-complaint', component: SubmitComplaintComponent, canActivate: [AuthGuardService] },
-      { path: 'notices', component:CitizenNoticesComponent, canActivate: [AuthGuardService] },
-      { path: 'book-appointment', component: BookAppointmentComponent, canActivate: [AuthGuardService] },
-      { path: 'settings', component: CitizenSettingsComponent, canActivate: [AuthGuardService] },
-      { path: 'volunteers', component: VolunteerListComponent },
-      { path: 'volunteers/new', component: VolunteerFormComponent },
+      {path: 'pending-verification', component: PendingVerificationComponent },
+      { path: 'notices', component: CitizenNoticesComponent },
+      { path: 'polls/results/:id', component: PollResultsComponent },
       { path: 'weekly-schedule', component: WeeklyScheduleComponent },
       { path: 'resources', component: ResourceListComponent },
       { path: 'disaster-events', component: DisasterEventListComponent },
-      { path: 'disaster-events/new', component: DisasterEventFormComponent }
+      { path: 'request-service', component: RequestServiceComponent, canActivate: [verifiedGuard] },
+    { path: 'my-details', component: MyDetailsComponent, canActivate: [verifiedGuard] },
+    { path: 'submit-complaint', component: SubmitComplaintComponent, canActivate: [verifiedGuard] },
+    { path: 'book-appointment', component: BookAppointmentComponent, canActivate: [verifiedGuard] },
+    { path: 'settings', component: CitizenSettingsComponent, canActivate: [verifiedGuard] },
+    { path: 'polls', component: PollListComponent, canActivate: [verifiedGuard] },
+    { path: 'vote/:id', component: VotePollComponent, canActivate: [verifiedGuard] },
+    { path: 'volunteers/new', component: VolunteerFormComponent, canActivate: [verifiedGuard] },
+    { path: 'volunteers', component: VolunteerListComponent, canActivate: [verifiedGuard] },
+    { path: 'disaster-events/new', component: DisasterEventFormComponent, canActivate: [verifiedGuard] },
     ],
   },
-  { path: 'registerUser', component: UserRegisterComponent, pathMatch: 'full' },
+
   { path: 'navigate/:id', component: NavigateComponent },
-  
+
   {
     path: 'officer-dashboard',
     component: OfficerDashboardComponent,
-    // canActivate: [AuthGuard],
+    canActivate: [firstLoginGuard], // ← added
     data: { roles: ['Officer', 'SeniorOfficer'] }
   },
   {
     path: 'admin-dashboard',
     component: AdminDashboardComponent,
-    // canActivate: [AuthGuard],
+    canActivate: [firstLoginGuard], // ← added
     data: { roles: ['Admin', 'SuperAdmin'] }
   },
- 
 ];

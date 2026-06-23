@@ -1,0 +1,81 @@
+/* Custom CSS - minimal styling as Bootstrap handles most */
+
+.modal-header {
+  border-radius: 8px 8px 0 0;
+}
+
+.border-primary {
+  border-color: #0d6efd !important;
+}
+
+/* Button styles for actions - clean text-only buttons */
+.btn-sm {
+  padding: 2px 12px !important;
+  font-size: 12px !important;
+  border-radius: 4px !important;
+}
+
+.btn-outline-info {
+  color: #0dcaf0;
+  border-color: #0dcaf0;
+}
+
+.btn-outline-info:hover {
+  background-color: #0dcaf0;
+  color: #fff;
+}
+
+.btn-outline-primary {
+  color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+.btn-outline-primary:hover {
+  background-color: #0d6efd;
+  color: #fff;
+}
+
+.btn-outline-danger {
+  color: #dc3545;
+  border-color: #dc3545;
+}
+
+.btn-outline-danger:hover {
+  background-color: #dc3545;
+  color: #fff;
+}
+
+/* Disabled button styles */
+.btn-outline-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* AG Grid theme overrides */
+::ng-deep .ag-theme-quartz .ag-header {
+  background: #f8f9fa;
+  border-bottom: 2px solid #dee2e6;
+}
+
+::ng-deep .ag-theme-quartz .ag-header-cell {
+  font-weight: 600;
+  color: #495057;
+}
+
+::ng-deep .ag-theme-quartz .ag-row:hover {
+  background: #f8f9fa;
+}
+
+::ng-deep .ag-theme-quartz .ag-paging-panel {
+  border-top: 1px solid #dee2e6;
+  padding: 8px 16px;
+}
+
+/* Form validation styles */
+.form-control.ng-invalid.ng-touched {
+  border-color: #dc3545;
+}
+
+.form-control.ng-invalid.ng-touched:focus {
+  box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+}

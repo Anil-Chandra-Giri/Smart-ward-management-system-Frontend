@@ -1,3 +1,4 @@
+// audit-and-logs.component.ts
 import { Component, OnInit, ViewChild, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -5,7 +6,7 @@ import { AgGridAngular } from 'ag-grid-angular';
 import { ColDef, GridApi, GridReadyEvent } from 'ag-grid-community';
 import { LogEntry, LogFilter, LogService } from '../../../../../Services/log.service';
 
-// ============ LOOKUP MAPS ============
+// ── Lookup maps ───────────────────────────────────────────────────────────────
 
 const LEVEL_MAP: Record<string | number, { label: string; bg: string; color: string }> = {
   0: { label: 'Debug',       bg: '#e2e3e5', color: '#383d41' },
@@ -13,7 +14,6 @@ const LEVEL_MAP: Record<string | number, { label: string; bg: string; color: str
   2: { label: 'Warning',     bg: '#fff3cd', color: '#856404' },
   3: { label: 'Error',       bg: '#f8d7da', color: '#721c24' },
   4: { label: 'Critical',    bg: '#f8d7da', color: '#491217' },
-  // String fallbacks (if JsonStringEnumConverter is added to backend later)
   Debug:       { label: 'Debug',       bg: '#e2e3e5', color: '#383d41' },
   Information: { label: 'Information', bg: '#d4edda', color: '#155724' },
   Warning:     { label: 'Warning',     bg: '#fff3cd', color: '#856404' },
@@ -21,23 +21,31 @@ const LEVEL_MAP: Record<string | number, { label: string; bg: string; color: str
   Critical:    { label: 'Critical',    bg: '#f8d7da', color: '#491217' },
 };
 
-const CATEGORY_MAP: Record<number, string> = {
+const CATEGORY_MAP: Record<string | number, string> = {
   0: 'System',               1: 'CitizenServices',      2: 'Grievance',
   3: 'TaxCollection',        4: 'PropertyRecords',       5: 'StaffAttendance',
   6: 'SchemeImplementation', 7: 'MeetingMinutes',        8: 'Infrastructure',
   9: 'ElectionManagement',  10: 'Audit',               11: 'DocumentVerification',
   12: 'WasteManagement',    13: 'Notifications',        14: 'Appointments',
   15: 'Polls',              16: 'ServiceRequests',      17: 'UserManagement',
+  System: 'System', CitizenServices: 'CitizenServices', Grievance: 'Grievance',
+  TaxCollection: 'TaxCollection', PropertyRecords: 'PropertyRecords',
+  StaffAttendance: 'StaffAttendance', SchemeImplementation: 'SchemeImplementation',
+  MeetingMinutes: 'MeetingMinutes', Infrastructure: 'Infrastructure',
+  ElectionManagement: 'ElectionManagement', Audit: 'Audit',
+  DocumentVerification: 'DocumentVerification', WasteManagement: 'WasteManagement',
+  Notifications: 'Notifications', Appointments: 'Appointments',
+  Polls: 'Polls', ServiceRequests: 'ServiceRequests', UserManagement: 'UserManagement',
 };
 
-// ============ COMPONENT ============
+// ── Component ─────────────────────────────────────────────────────────────────
 
 @Component({
   selector: 'app-audit-and-logs',
   standalone: true,
   imports: [CommonModule, FormsModule, AgGridAngular],
   templateUrl: './audit-and-logs.component.html',
-  styleUrls: ['./audit-and-logs.component.css']
+  styleUrls: ['./audit-and-logs.component.css'],
 })
 export class AuditAndLogsComponent implements OnInit {
 
@@ -46,10 +54,10 @@ export class AuditAndLogsComponent implements OnInit {
   private gridApi!: GridApi;
   private isBrowser: boolean;
 
-  // ---- Grid ----
+  // ── Grid state ────────────────────────────────────────────────────────────
+
   rowData: LogEntry[] = [];
-  pagination = false; // Server-side pagination; AG Grid shows one page's worth as-is
-  isBrowserReady = false; // Controls *ngIf on <ag-grid-angular> to prevent SSR crash
+  isBrowserReady = false;
 
   columnDefs: ColDef[] = [
     {
@@ -134,12 +142,42 @@ export class AuditAndLogsComponent implements OnInit {
     {
       field: 'actions',
       headerName: 'Actions',
-      width: 100,
+      // Widened from 100 to fit both buttons when a row is restorable.
+      width: 190,
       pinned: 'right',
       sortable: false,
       filter: false,
-      cellRenderer: (p: any) => `<button class="view-btn" data-id="${p.data.id}">👁️ View</button>`,
-      onCellClicked: (p: any) => this.viewLogDetail(p.data.id),
+      cellRenderer: (p: any) => {
+        const viewBtn = `<button data-action="view" data-id="${p.data.id}"
+          style="margin-right:6px;padding:4px 8px;border:1px solid #d0d5dd;
+          border-radius:6px;background:#fff;cursor:pointer;font-size:12px;">
+          👁️ View</button>`;
+
+        // Only restorable entries (those carrying a before-state snapshot) get
+        // a Restore button — see IsRestorable on the backend response.
+        const restoreBtn = p.data.isRestorable
+          ? `<button data-action="restore" data-id="${p.data.id}"
+              style="padding:4px 8px;border:1px solid #b42318;border-radius:6px;
+              background:#fef3f2;color:#b42318;cursor:pointer;font-size:12px;">
+              ↩️ Restore</button>`
+          : '';
+
+        return `<div>${viewBtn}${restoreBtn}</div>`;
+      },
+      onCellClicked: (p: any) => {
+        const target = p.event?.target as HTMLElement | null;
+        const actionEl = target?.closest('[data-action]') as HTMLElement | null;
+        if (!actionEl) return;
+
+        const action = actionEl.getAttribute('data-action');
+        const id = Number(actionEl.getAttribute('data-id'));
+
+        if (action === 'view') {
+          this.viewLogDetail(id);
+        } else if (action === 'restore') {
+          this.restoreLog(id);
+        }
+      },
     },
   ];
 
@@ -149,16 +187,19 @@ export class AuditAndLogsComponent implements OnInit {
     resizable: true,
   };
 
-  // ---- Filters & Pagination ----
+  // ── Filter / pagination state ─────────────────────────────────────────────
+
   filter: LogFilter = { page: 1, pageSize: 20 };
   totalRows = 0;
   levels: string[] = [];
   categories: string[] = [];
   quickFilterText = '';
 
-  // ---- UI State ----
+  // ── UI state ──────────────────────────────────────────────────────────────
+
   loading = false;
-  Math = Math; // expose to template
+  errorMessage = '';
+  Math = Math;
 
   constructor(
     private logService: LogService,
@@ -168,17 +209,19 @@ export class AuditAndLogsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    if (!this.isBrowser) return; // Skip all API calls and grid init during SSR
-
-    this.isBrowserReady = true;  // Allows *ngIf="isBrowserReady" on the grid in template
+    if (!this.isBrowser) return;
+    this.isBrowserReady = true;
     this.loadFilters();
+    this.loadLogs();
   }
 
-  // ============ GRID ============
+  // ── Grid callbacks ────────────────────────────────────────────────────────
 
   onGridReady(params: GridReadyEvent): void {
     this.gridApi = params.api;
-    this.loadLogs();
+    if (this.rowData.length === 0 && !this.loading) {
+      this.loadLogs();
+    }
   }
 
   onSelectionChanged(): void {
@@ -187,21 +230,35 @@ export class AuditAndLogsComponent implements OnInit {
     }
   }
 
-  // ============ DATA LOADING ============
+  // ── Data loading ──────────────────────────────────────────────────────────
 
   loadLogs(): void {
     this.loading = true;
+    this.errorMessage = '';
 
     this.logService.getLogs(this.filter).subscribe({
       next: (response) => {
         if (response.success) {
           this.rowData = response.data;
           this.totalRows = response.pagination.totalCount;
+        } else {
+          this.errorMessage = 'The server returned an unsuccessful response.';
+          this.rowData = [];
+          this.totalRows = 0;
         }
         this.loading = false;
       },
       error: (err) => {
         console.error('Error loading logs:', err);
+        if (err.status === 401) {
+          this.errorMessage = 'Unauthorised — please log in again.';
+        } else if (err.status === 403) {
+          this.errorMessage = 'You do not have permission to view logs.';
+        } else {
+          this.errorMessage = `Error loading logs (HTTP ${err.status}).`;
+        }
+        this.rowData = [];
+        this.totalRows = 0;
         this.loading = false;
       },
     });
@@ -209,32 +266,40 @@ export class AuditAndLogsComponent implements OnInit {
 
   loadFilters(): void {
     this.logService.getLogLevels().subscribe({
-      next: (res) => { if (res.success) this.levels = res.data.map((l: any) => l.value); },
+      next: (res) => {
+        if (res.success) {
+          this.levels = res.data.map((l: any) => l.value);
+        }
+      },
       error: (err) => console.error('Error loading levels:', err),
     });
 
     this.logService.getLogCategories().subscribe({
-      next: (res) => { if (res.success) this.categories = res.data.map((c: any) => c.value); },
+      next: (res) => {
+        if (res.success) {
+          this.categories = res.data.map((c: any) => c.value);
+        }
+      },
       error: (err) => console.error('Error loading categories:', err),
     });
   }
 
-  // ============ FILTER HANDLERS ============
+  // ── Filter handlers ───────────────────────────────────────────────────────
 
   onQuickFilterChanged(): void {
-    this.filter.searchTerm = this.quickFilterText;
+    this.filter.searchTerm = this.quickFilterText || undefined;
     this.filter.page = 1;
     this.loadLogs();
   }
 
   onLevelChange(level: string): void {
-    this.filter.level = level;
+    this.filter.level = level || undefined;
     this.filter.page = 1;
     this.loadLogs();
   }
 
   onCategoryChange(category: string): void {
-    this.filter.category = category;
+    this.filter.category = category || undefined;
     this.filter.page = 1;
     this.loadLogs();
   }
@@ -255,15 +320,16 @@ export class AuditAndLogsComponent implements OnInit {
     this.loadLogs();
   }
 
-  // ============ ACTIONS ============
+  // ── Actions ───────────────────────────────────────────────────────────────
 
   exportLogs(format: 'csv' | 'excel' = 'csv'): void {
     this.logService.exportLogs(this.filter, format).subscribe({
       next: (blob) => {
+        const ext = format === 'excel' ? 'csv' : format;
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `logs_${new Date().toISOString()}.${format}`;
+        a.download = `logs_${new Date().toISOString()}.${ext}`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -312,7 +378,8 @@ export class AuditAndLogsComponent implements OnInit {
             `User:           ${d.userName || 'System'}\n` +
             `Ward:           ${d.wardNumber || 'N/A'}\n` +
             `IP:             ${d.ipAddress || 'N/A'}\n` +
-            `Correlation ID: ${d.correlationId || 'N/A'}`
+            `Correlation ID: ${d.correlationId || 'N/A'}` +
+            (d.isRestorable ? `\n\nThis entry can be restored from the Actions column.` : '')
           );
         }
       },
@@ -323,7 +390,40 @@ export class AuditAndLogsComponent implements OnInit {
     });
   }
 
-  // ============ COMPUTED ============
+  // Restores the entity this log entry points to, back to its BeforeState
+  // snapshot. Handles both "undo an edit/status-change" (entity still exists)
+  // and "undo a delete" (entity gets recreated with a fresh temp password)
+  // since the backend distinguishes those and returns `recreated` either way.
+  restoreLog(id: number): void {
+    if (!confirm('Restore this record to its previous state? This action will itself be logged and can\'t be silently undone.')) {
+      return;
+    }
+
+    this.logService.restoreFromLog(id).subscribe({
+      next: (res) => {
+        if (res.success) {
+          let msg = res.message;
+          if (res.recreated && res.newTemporaryPassword) {
+            msg +=
+              `\n\nUsername: ${res.newUsername}\n` +
+              `Temporary password: ${res.newTemporaryPassword}\n\n` +
+              `Share these with the person directly — they won't be shown again.`;
+          }
+          alert(msg);
+          this.loadLogs();
+        } else {
+          alert(res.message || 'Restore failed.');
+        }
+      },
+      error: (err) => {
+        console.error('Error restoring log:', err);
+        const msg = err?.error?.message || 'Failed to restore. Please try again.';
+        alert(msg);
+      },
+    });
+  }
+
+  // ── Computed ──────────────────────────────────────────────────────────────
 
   get totalPages(): number {
     return Math.ceil(this.totalRows / (this.filter.pageSize ?? 20));

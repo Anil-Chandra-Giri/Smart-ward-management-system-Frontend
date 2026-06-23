@@ -1,7 +1,16 @@
-<div>
+<div class="poll-results-container">
 
-<h2>Poll Results</h2>
+  <button (click)="goBack()" style="margin-bottom:16px;">← Back</button>
 
-<canvas id="chart"></canvas>
+  <h2>Poll Results</h2>
+  <h4 *ngIf="pollTitle">{{ pollTitle }}</h4>
+  <p *ngIf="!loading && !errorMessage">Total votes: {{ totalVotes }}</p>
+
+  <div *ngIf="loading">Loading results...</div>
+  <div *ngIf="errorMessage" style="color:#b42318;">⚠️ {{ errorMessage }}</div>
+
+  <div style="max-width:600px;">
+    <canvas id="chart"></canvas>
+  </div>
 
 </div>

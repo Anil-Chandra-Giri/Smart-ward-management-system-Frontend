@@ -1,14 +1,63 @@
 <div class="login-wrapper">
   <div class="login-card">
-    <h2 class="title">Smart Ward Management System</h2>
-    <p class="subtitle">Digital Governance for Local Bodies</p>
+    <div class="brand">
+      <div class="brand-icon">⚙</div>
+      <h2 class="title">Smart Ward Management System</h2>
+      <p class="subtitle">Digital Governance for Local Bodies</p>
+    </div>
 
-    <!-- CITIZEN FORM -->
-    <form class="form" [formGroup]="loginForm"  (ngSubmit)="onLogin()">
-      <input type="text" formControlName="Username" placeholder="Enter Username" />
-      <input type="password" formControlName="Password" placeholder="Password" />
-      <button class="btn">Login</button>
-      <p>Don't have an account? <a href="/registerUser">Sign Up</a></p>
+    <!-- Error Banner -->
+    <div class="error-banner" *ngIf="errorMessage">
+      <span class="error-icon">⚠</span>
+      {{ errorMessage }}
+    </div>
+
+    <form class="form" [formGroup]="loginForm" (ngSubmit)="onLogin()">
+
+      <!-- Username -->
+      <div class="field">
+        <label for="username">Username</label>
+        <input
+          id="username"
+          type="text"
+          formControlName="Username"
+          placeholder="Enter your username"
+          [class.input-error]="loginForm.get('Username')!.invalid && loginForm.get('Username')!.touched"
+          autocomplete="username"
+        />
+        <span class="field-error" *ngIf="loginForm.get('Username')!.invalid && loginForm.get('Username')!.touched">
+          Username is required.
+        </span>
+      </div>
+
+      <!-- Password -->
+      <div class="field">
+        <label for="password">Password</label>
+        <div class="input-row">
+          <input
+            id="password"
+            [type]="showPassword ? 'text' : 'password'"
+            formControlName="Password"
+            placeholder="Enter your password"
+            [class.input-error]="loginForm.get('Password')!.invalid && loginForm.get('Password')!.touched"
+            autocomplete="current-password"
+          />
+          <button type="button" class="toggle-password" (click)="togglePassword()">
+            {{ showPassword ? '🙈' : '👁' }}
+          </button>
+        </div>
+        <span class="field-error" *ngIf="loginForm.get('Password')!.invalid && loginForm.get('Password')!.touched">
+          Password is required.
+        </span>
+      </div>
+
+      <!-- Submit -->
+      <button class="btn" type="submit" [disabled]="isLoading">
+        <span *ngIf="!isLoading">Login</span>
+        <span *ngIf="isLoading" class="spinner"></span>
+      </button>
+
+      <p class="register-link">Don't have an account? <a href="/registerUser">Sign Up</a></p>
     </form>
   </div>
 </div>

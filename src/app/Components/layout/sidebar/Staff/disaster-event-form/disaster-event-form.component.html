@@ -1,212 +1,199 @@
 <!-- src/app/components/disaster-event-form/disaster-event-form.component.html -->
-<div class="container mt-4">
-  <div class="row justify-content-center">
-    <div class="col-md-8">
-      <div class="card">
-        <div class="card-header">
-          <h3>{{ isEditMode ? 'Edit Disaster Event' : 'Create New Disaster Event' }}</h3>
-        </div>
-        <div class="card-body">
-          <div *ngIf="loading" class="text-center py-4">
-            <div class="spinner-border" role="status">
-              <span class="visually-hidden">Loading...</span>
-            </div>
-          </div>
+<div *ngIf="loading" class="text-center py-4">
+  <div class="spinner-border" role="status">
+    <span class="visually-hidden">Loading...</span>
+  </div>
+</div>
 
-          <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
-          <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
+<div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+<div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
 
-          <form *ngIf="!loading" [formGroup]="eventForm" (ngSubmit)="onSubmit()">
-            <!-- Event Information -->
-            <h5 class="mb-3">Event Information</h5>
-            <div class="mb-3">
-              <label for="eventName" class="form-label">Event Name *</label>
-              <input 
-                type="text" 
-                class="form-control" 
-                id="eventName" 
-                formControlName="eventName"
-                [class.is-invalid]="hasError('eventName', 'required') || hasError('eventName', 'minlength')">
-              <div class="invalid-feedback" *ngIf="hasError('eventName', 'required')">
-                Event name is required
-              </div>
-              <div class="invalid-feedback" *ngIf="hasError('eventName', 'minlength')">
-                Event name must be at least 3 characters
-              </div>
-            </div>
+<form *ngIf="!loading" [formGroup]="eventForm" (ngSubmit)="onSubmit()">
+  <!-- Event Information -->
+  <h5 class="mb-3">Event Information</h5>
+  <div class="mb-3">
+    <label for="eventName" class="form-label">Event Name *</label>
+    <input 
+      type="text" 
+      class="form-control" 
+      id="eventName" 
+      formControlName="eventName"
+      [class.is-invalid]="hasError('eventName', 'required') || hasError('eventName', 'minlength')">
+    <div class="invalid-feedback" *ngIf="hasError('eventName', 'required')">
+      Event name is required
+    </div>
+    <div class="invalid-feedback" *ngIf="hasError('eventName', 'minlength')">
+      Event name must be at least 3 characters
+    </div>
+  </div>
 
-            <div class="row mb-3">
-              <div class="col-md-6">
-                <label for="eventType" class="form-label">Event Type *</label>
-                <select 
-                  class="form-select" 
-                  id="eventType" 
-                  formControlName="eventType"
-                  [class.is-invalid]="hasError('eventType', 'required')">
-                  <option value="">Select Type</option>
-                  <option *ngFor="let type of eventTypes" [value]="type">{{ type }}</option>
-                </select>
-                <div class="invalid-feedback" *ngIf="hasError('eventType', 'required')">
-                  Event type is required
-                </div>
-              </div>
-              <div class="col-md-6">
-                <label for="location" class="form-label">Location *</label>
-                <input 
-                  type="text" 
-                  class="form-control" 
-                  id="location" 
-                  formControlName="location"
-                  [class.is-invalid]="hasError('location', 'required')">
-                <div class="invalid-feedback" *ngIf="hasError('location', 'required')">
-                  Location is required
-                </div>
-              </div>
-            </div>
-
-            <div class="mb-3">
-              <label for="description" class="form-label">Description</label>
-              <textarea 
-                class="form-control" 
-                id="description" 
-                rows="4"
-                formControlName="description"
-                [class.is-invalid]="hasError('description', 'maxlength')"
-                placeholder="Provide detailed description of the event..."></textarea>
-              <div class="invalid-feedback" *ngIf="hasError('description', 'maxlength')">
-                Description cannot exceed 1000 characters
-              </div>
-            </div>
-
-            <!-- Date Information -->
-            <h5 class="mb-3 mt-4">Date Information</h5>
-            <div class="row mb-3">
-              <div class="col-md-6">
-                <label for="startDate" class="form-label">Start Date *</label>
-                <input 
-                  type="date" 
-                  class="form-control" 
-                  id="startDate" 
-                  formControlName="startDate"
-                  [min]="today"
-                  [class.is-invalid]="hasError('startDate', 'required')">
-                <div class="invalid-feedback" *ngIf="hasError('startDate', 'required')">
-                  Start date is required
-                </div>
-              </div>
-              <div class="col-md-6">
-                <label for="endDate" class="form-label">End Date</label>
-                <input 
-                  type="date" 
-                  class="form-control" 
-                  id="endDate" 
-                  formControlName="endDate"
-                  [min]="eventForm.get('startDate')?.value || today">
-                <small class="text-muted">Leave blank if ongoing</small>
-              </div>
-            </div>
-
-            <!-- Severity and Status -->
-            <h5 class="mb-3 mt-4">Classification</h5>
-            <div class="row mb-3">
-              <div class="col-md-6">
-                <label for="severity" class="form-label">Severity Level *</label>
-                <select 
-                  class="form-select" 
-                  id="severity" 
-                  formControlName="severity"
-                  [class.is-invalid]="hasError('severity', 'required')">
-                  <option *ngFor="let level of severityLevels" [value]="level">{{ level }}</option>
-                </select>
-                <div class="invalid-feedback" *ngIf="hasError('severity', 'required')">
-                  Severity level is required
-                </div>
-              </div>
-              <div class="col-md-6" *ngIf="isEditMode">
-                <label for="status" class="form-label">Status *</label>
-                <select 
-                  class="form-select" 
-                  id="status" 
-                  formControlName="status"
-                  [class.is-invalid]="hasError('status', 'required')">
-                  <option *ngFor="let status of statusOptions" [value]="status">{{ status }}</option>
-                </select>
-                <div class="invalid-feedback" *ngIf="hasError('status', 'required')">
-                  Status is required
-                </div>
-              </div>
-            </div>
-
-            <!-- Impact Information -->
-            <h5 class="mb-3 mt-4">Impact Information</h5>
-            <div class="row mb-3">
-              <div class="col-md-6">
-                <label for="affectedPeople" class="form-label">Affected People *</label>
-                <input 
-                  type="number" 
-                  class="form-control" 
-                  id="affectedPeople" 
-                  formControlName="affectedPeople"
-                  min="0"
-                  [class.is-invalid]="hasError('affectedPeople', 'required') || hasError('affectedPeople', 'min')">
-                <div class="invalid-feedback" *ngIf="hasError('affectedPeople', 'required')">
-                  Number of affected people is required
-                </div>
-                <div class="invalid-feedback" *ngIf="hasError('affectedPeople', 'min')">
-                  Value cannot be negative
-                </div>
-              </div>
-              <div class="col-md-6">
-                <label for="requiredResources" class="form-label">Required Resources</label>
-                <input 
-                  type="text" 
-                  class="form-control" 
-                  id="requiredResources" 
-                  formControlName="requiredResources"
-                  placeholder="e.g., Food, Water, Medical supplies">
-              </div>
-            </div>
-
-            <!-- Contact Information -->
-            <h5 class="mb-3 mt-4">Contact Information</h5>
-            <div class="row mb-3">
-              <div class="col-md-6">
-                <label for="coordinator" class="form-label">Coordinator</label>
-                <input 
-                  type="text" 
-                  class="form-control" 
-                  id="coordinator" 
-                  formControlName="coordinator"
-                  placeholder="Name of event coordinator">
-              </div>
-              <div class="col-md-6">
-                <label for="contactNumber" class="form-label">Contact Number</label>
-                <input 
-                  type="tel" 
-                  class="form-control" 
-                  id="contactNumber" 
-                  formControlName="contactNumber"
-                  placeholder="Emergency contact number"
-                  [class.is-invalid]="hasError('contactNumber', 'pattern')">
-                <div class="invalid-feedback" *ngIf="hasError('contactNumber', 'pattern')">
-                  Please enter a valid phone number
-                </div>
-              </div>
-            </div>
-
-            <!-- Form Actions -->
-            <div class="d-flex justify-content-end mt-4">
-              <button type="button" class="btn btn-secondary me-2" (click)="onCancel()" [disabled]="submitting">
-                Cancel
-              </button>
-              <button type="submit" class="btn btn-primary" [disabled]="submitting">
-                <span *ngIf="submitting" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-                {{ submitting ? 'Saving...' : (isEditMode ? 'Update Event' : 'Create Event') }}
-              </button>
-            </div>
-          </form>
-        </div>
+  <div class="row mb-3">
+    <div class="col-md-6">
+      <label for="eventType" class="form-label">Event Type *</label>
+      <select 
+        class="form-select" 
+        id="eventType" 
+        formControlName="eventType"
+        [class.is-invalid]="hasError('eventType', 'required')">
+        <option value="">Select Type</option>
+        <option *ngFor="let type of eventTypes" [value]="type">{{ type }}</option>
+      </select>
+      <div class="invalid-feedback" *ngIf="hasError('eventType', 'required')">
+        Event type is required
+      </div>
+    </div>
+    <div class="col-md-6">
+      <label for="location" class="form-label">Location *</label>
+      <input 
+        type="text" 
+        class="form-control" 
+        id="location" 
+        formControlName="location"
+        [class.is-invalid]="hasError('location', 'required')">
+      <div class="invalid-feedback" *ngIf="hasError('location', 'required')">
+        Location is required
       </div>
     </div>
   </div>
-</div>
+
+  <div class="mb-3">
+    <label for="description" class="form-label">Description</label>
+    <textarea 
+      class="form-control" 
+      id="description" 
+      rows="4"
+      formControlName="description"
+      [class.is-invalid]="hasError('description', 'maxlength')"
+      placeholder="Provide detailed description of the event..."></textarea>
+    <div class="invalid-feedback" *ngIf="hasError('description', 'maxlength')">
+      Description cannot exceed 1000 characters
+    </div>
+  </div>
+
+  <!-- Date Information -->
+  <h5 class="mb-3 mt-4">Date Information</h5>
+  <div class="row mb-3">
+    <div class="col-md-6">
+      <label for="startDate" class="form-label">Start Date *</label>
+      <input 
+        type="date" 
+        class="form-control" 
+        id="startDate" 
+        formControlName="startDate"
+        [min]="today"
+        [class.is-invalid]="hasError('startDate', 'required')">
+      <div class="invalid-feedback" *ngIf="hasError('startDate', 'required')">
+        Start date is required
+      </div>
+    </div>
+    <div class="col-md-6">
+      <label for="endDate" class="form-label">End Date</label>
+      <input 
+        type="date" 
+        class="form-control" 
+        id="endDate" 
+        formControlName="endDate"
+        [min]="eventForm.get('startDate')?.value || today">
+      <small class="text-muted">Leave blank if ongoing</small>
+    </div>
+  </div>
+
+  <!-- Severity and Status -->
+  <h5 class="mb-3 mt-4">Classification</h5>
+  <div class="row mb-3">
+    <div class="col-md-6">
+      <label for="severity" class="form-label">Severity Level *</label>
+      <select 
+        class="form-select" 
+        id="severity" 
+        formControlName="severity"
+        [class.is-invalid]="hasError('severity', 'required')">
+        <option *ngFor="let level of severityLevels" [value]="level">{{ level }}</option>
+      </select>
+      <div class="invalid-feedback" *ngIf="hasError('severity', 'required')">
+        Severity level is required
+      </div>
+    </div>
+    <div class="col-md-6" *ngIf="isEditMode">
+      <label for="status" class="form-label">Status *</label>
+      <select 
+        class="form-select" 
+        id="status" 
+        formControlName="status"
+        [class.is-invalid]="hasError('status', 'required')">
+        <option *ngFor="let status of statusOptions" [value]="status">{{ status }}</option>
+      </select>
+      <div class="invalid-feedback" *ngIf="hasError('status', 'required')">
+        Status is required
+      </div>
+    </div>
+  </div>
+
+  <!-- Impact Information -->
+  <h5 class="mb-3 mt-4">Impact Information</h5>
+  <div class="row mb-3">
+    <div class="col-md-6">
+      <label for="affectedPeople" class="form-label">Affected People *</label>
+      <input 
+        type="number" 
+        class="form-control" 
+        id="affectedPeople" 
+        formControlName="affectedPeople"
+        min="0"
+        [class.is-invalid]="hasError('affectedPeople', 'required') || hasError('affectedPeople', 'min')">
+      <div class="invalid-feedback" *ngIf="hasError('affectedPeople', 'required')">
+        Number of affected people is required
+      </div>
+      <div class="invalid-feedback" *ngIf="hasError('affectedPeople', 'min')">
+        Value cannot be negative
+      </div>
+    </div>
+    <div class="col-md-6">
+      <label for="requiredResources" class="form-label">Required Resources</label>
+      <input 
+        type="text" 
+        class="form-control" 
+        id="requiredResources" 
+        formControlName="requiredResources"
+        placeholder="e.g., Food, Water, Medical supplies">
+    </div>
+  </div>
+
+  <!-- Contact Information -->
+  <h5 class="mb-3 mt-4">Contact Information</h5>
+  <div class="row mb-3">
+    <div class="col-md-6">
+      <label for="coordinator" class="form-label">Coordinator</label>
+      <input 
+        type="text" 
+        class="form-control" 
+        id="coordinator" 
+        formControlName="coordinator"
+        placeholder="Name of event coordinator">
+    </div>
+    <div class="col-md-6">
+      <label for="contactNumber" class="form-label">Contact Number</label>
+      <input 
+        type="tel" 
+        class="form-control" 
+        id="contactNumber" 
+        formControlName="contactNumber"
+        placeholder="Emergency contact number"
+        [class.is-invalid]="hasError('contactNumber', 'pattern')">
+      <div class="invalid-feedback" *ngIf="hasError('contactNumber', 'pattern')">
+        Please enter a valid phone number
+      </div>
+    </div>
+  </div>
+
+  <!-- Form Actions -->
+  <div class="d-flex justify-content-end mt-4">
+    <button type="button" class="btn btn-secondary me-2" (click)="onCancel()" [disabled]="submitting">
+      Cancel
+    </button>
+    <button type="submit" class="btn btn-primary" [disabled]="submitting">
+      <span *ngIf="submitting" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+      {{ submitting ? 'Saving...' : (isEditMode ? 'Update Event' : 'Create Event') }}
+    </button>
+  </div>
+</form>

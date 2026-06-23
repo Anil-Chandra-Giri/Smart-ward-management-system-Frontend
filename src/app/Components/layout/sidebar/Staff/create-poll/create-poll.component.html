@@ -1,79 +1,104 @@
-<div class="poll-form">
+<div class="container mt-4">
+  <h3 class="page-title">Ward Polls</h3>
 
-<h2>Create Poll</h2>
+  <button class="btn btn-primary mb-3" (click)="openNewPollModal()">
+    🗳️ Create Poll
+  </button>
 
-<input type="text"
-placeholder="Poll Title"
-[(ngModel)]="title">
+  <!-- Create Poll Modal -->
+  <div class="modal fade" id="pollModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Create Poll</h5>
+          <button type="button" class="btn-close" (click)="closeModal()" data-bs-dismiss="modal"></button>
+        </div>
 
-<textarea
-placeholder="Description"
-[(ngModel)]="description">
-</textarea>
+        <div class="modal-body">
+          <div class="row g-3">
 
-<!-- CATEGORY DROPDOWN -->
+            <div class="col-md-12">
+              <label class="form-label">Poll Title <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" placeholder="Poll Title" [(ngModel)]="title">
+            </div>
 
-<label>Poll Category</label>
+            <div class="col-md-12">
+              <label class="form-label">Description <span class="text-danger">*</span></label>
+              <textarea class="form-control" rows="3" placeholder="Description" [(ngModel)]="description"></textarea>
+            </div>
 
-<select [(ngModel)]="categoryId">
+            <div class="col-md-8">
+              <label class="form-label">Poll Category <span class="text-danger">*</span></label>
+              <select class="form-select" [(ngModel)]="categoryId">
+                <option value="0">Select Category</option>
+                <option *ngFor="let cat of categories" [value]="cat.id">
+                  {{ cat.name }}
+                </option>
+              </select>
+            </div>
 
-<option *ngFor="let cat of categories"
-[value]="cat.id">
+            <div class="col-md-4 d-flex align-items-end">
+              <button class="btn btn-success w-100" type="button" (click)="showCategoryInput = true">
+                + Add Category
+              </button>
+            </div>
 
-{{cat.name}}
+            <div *ngIf="showCategoryInput" class="col-md-12">
+              <div class="input-group">
+                <input type="text" class="form-control" placeholder="New Category" [(ngModel)]="newCategoryName">
+                <button class="btn btn-primary" type="button" (click)="createCategory()">Save</button>
+                <button class="btn btn-secondary" type="button" (click)="showCategoryInput = false">Cancel</button>
+              </div>
+            </div>
 
-</option>
+            <div class="col-md-12">
+              <label class="form-label">Options <span class="text-danger">*</span></label>
 
-</select>
+              <div class="input-group mb-2" *ngFor="let option of options; let i = index; trackBy: trackByIndex">
+                <input
+                  type="text"
+                  class="form-control"
+                  [(ngModel)]="options[i]"
+                  placeholder="Option {{ i + 1 }}">
+                <button
+                  class="btn btn-outline-danger"
+                  type="button"
+                  *ngIf="options.length > 2"
+                  (click)="removeOption(i)">
+                  ✕
+                </button>
+              </div>
 
-<button class="add-category"
-(click)="showCategoryInput=true">
+              <button class="btn btn-outline-secondary btn-sm" type="button" (click)="addOption()">
+                + Add Option
+              </button>
+            </div>
 
-+ Add Category
+          </div>
+        </div>
 
-</button>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" type="button" (click)="closeModal()">
+            Cancel
+          </button>
+          <button class="btn btn-primary" type="button" (click)="createPoll()">
+            Create Poll
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-<!-- ADD CATEGORY -->
+  <!-- Error / loading states -->
+  <div *ngIf="loading" class="loading-state">Loading polls...</div>
+  <div *ngIf="errorMessage" class="error-banner">⚠️ {{ errorMessage }}</div>
 
-<div *ngIf="showCategoryInput"
-class="category-box">
-
-<input
-type="text"
-placeholder="New Category"
-[(ngModel)]="newCategoryName">
-
-<button
-(click)="createCategory()">
-
-Save
-
-</button>
-
-</div>
-
-<!-- OPTIONS -->
-
-<h3>Options</h3>
-
-<div *ngFor="let option of options; let i=index">
-
-<input
-type="text"
-[(ngModel)]="options[i]"
-placeholder="Option">
-
-</div>
-
-<button (click)="addOption()">
-Add Option
-</button>
-
-<button class="create-btn"
-(click)="createPoll()">
-
-Create Poll
-
-</button>
-
+  <!-- AG Grid -->
+  <ag-grid-angular
+    class="ag-theme-alpine"
+    [rowData]="rowData"
+    [columnDefs]="columnDefs"
+    [defaultColDef]="defaultColDef"
+    style="width: 100%; height: 600px;">
+  </ag-grid-angular>
 </div>

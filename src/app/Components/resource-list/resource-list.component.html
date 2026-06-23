@@ -7,9 +7,9 @@
         <i class="bi bi-exclamation-triangle"></i>
         {{ showLowStockOnly ? 'Show All' : 'Show Low Stock Only' }}
       </button>
-      <a routerLink="/resources/new" class="btn btn-primary">
+      <button (click)="openAddModal()" class="btn btn-primary">
         <i class="bi bi-plus"></i> Add Resource
-      </a>
+      </button>
     </div>
   </div>
 
@@ -55,12 +55,9 @@
           </div>
         </div>
         <div class="card-footer">
-          <a [routerLink]="['/resources', resource.id]" class="btn btn-sm btn-info me-1">
-            <i class="bi bi-eye"></i> View
-          </a>
-          <a [routerLink]="['/resources', resource.id, 'edit']" class="btn btn-sm btn-warning me-1">
+          <button (click)="openEditModal(resource.id)" class="btn btn-sm btn-warning me-1">
             <i class="bi bi-pencil"></i> Edit
-          </a>
+          </button>
           <button (click)="deleteResource(resource.id)" class="btn btn-sm btn-danger">
             <i class="bi bi-trash"></i> Delete
           </button>
@@ -71,5 +68,28 @@
 
   <div *ngIf="!loading && resources.length === 0" class="alert alert-info">
     No resources found.
+  </div>
+</div>
+
+<!-- Modal Container -->
+<div *ngIf="showModal" class="modal-container">
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal fade show" tabindex="-1" style="display: block;" role="dialog">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">{{ isEditMode ? 'Edit Resource' : 'Add New Resource' }}</h5>
+          <button type="button" class="btn-close" (click)="closeModal()"></button>
+        </div>
+        <div class="modal-body">
+          <app-resource-form 
+            [isEditMode]="isEditMode"
+            [resourceId]="selectedResourceId"
+            (closeModal)="closeModal()"
+            (saved)="onResourceSaved()">
+          </app-resource-form>
+        </div>
+      </div>
+    </div>
   </div>
 </div>

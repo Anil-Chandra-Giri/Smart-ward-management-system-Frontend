@@ -398,7 +398,40 @@
   </div>
 </div>
 
-<!-- AgGrid -->
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" [ngClass]="{'show': isDeleteModalOpen}" 
+     [style.display]="isDeleteModalOpen ? 'block' : 'none'" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">Confirm Deletion</h5>
+        <button type="button" class="btn-close btn-close-white" (click)="toggleDeleteModal(false)"></button>
+      </div>
+      <div class="modal-body" *ngIf="serviceToDelete">
+        <p class="mb-0">Are you sure you want to delete this service request?</p>
+        <small class="text-muted">This action cannot be undone.</small>
+        <hr>
+        <div class="row">
+          <div class="col-12">
+            <strong>Application:</strong> {{serviceToDelete.applicationNumber}}
+          </div>
+          <div class="col-12">
+            <strong>Service:</strong> {{getServiceTypeName(serviceToDelete.serviceType)}}
+          </div>
+          <div class="col-12">
+            <strong>Purpose:</strong> {{serviceToDelete.purpose}}
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="toggleDeleteModal(false)">Cancel</button>
+        <button type="button" class="btn btn-danger" (click)="confirmDelete()">Yes, Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- AG Grid -->
 <div *ngIf="isBrowser" class="mt-4">
   <ag-grid-angular
     style="width: 100%; height: 500px;"
