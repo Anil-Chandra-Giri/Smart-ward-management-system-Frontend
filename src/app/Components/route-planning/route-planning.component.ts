@@ -175,12 +175,13 @@ import { FormBuilder, FormGroup, FormArray, Validators, FormsModule, ReactiveFor
 import { ApiService } from '../../Services/api.service';
 import { Driver, Vehicle, WasteType } from '../../Models/WasteCollectionRoute';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-route-planning',
   templateUrl: './route-planning.component.html',
   styleUrls: ['./route-planning.component.css'],
-  imports:[CommonModule, ReactiveFormsModule,FormsModule]
+  imports:[CommonModule, ReactiveFormsModule,FormsModule, RouterModule]
 })
 export class RoutePlanningComponent implements OnInit {
   routeForm: FormGroup;

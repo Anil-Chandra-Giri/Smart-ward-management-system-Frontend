@@ -7,11 +7,17 @@
       <button class="btn btn-outline-primary me-2" (click)="previousWeek()">
         <i class="bi bi-chevron-left"></i> Previous Week
       </button>
-      <button class="btn btn-outline-primary" (click)="nextWeek()">
+      <button class="btn btn-outline-primary me-2" (click)="nextWeek()">
         Next Week <i class="bi bi-chevron-right"></i>
       </button>
+      <a [routerLink]="['/ward/route-planning']" class="btn btn-success">
+        <i class="bi bi-plus-lg"></i> Add Route
+      </a>
     </div>
   </div>
+
+  <div *ngIf="loading" class="text-center mb-3">Loading schedule...</div>
+  <div *ngIf="errorMessage" class="alert alert-danger">⚠️ {{ errorMessage }}</div>
 
   <div class="row">
     <div class="col-12">
@@ -36,7 +42,7 @@
           </thead>
           <tbody>
             <tr>
-              <td *ngFor="let day of weekDays" class="align-top" style="min-width: 200px;">
+              <td *ngFor="let day of weekDays" class="align-top" style="min-width: 220px;">
                 <div *ngIf="getRoutesForDay(day).length > 0; else noRoutes">
                   <div *ngFor="let route of getRoutesForDay(day)" class="card mb-2">
                     <div class="card-body p-2">
@@ -54,6 +60,47 @@
                       <p class="card-text small text-muted mb-0" *ngIf="route.delayReason">
                         Delay: {{route.delayReason}}
                       </p>
+
+                      <!-- Status actions, contextual per current status -->
+                      <div class="mt-2 d-flex flex-wrap gap-1">
+                        <button
+                          *ngIf="route.status === 'Planned'"
+                          class="btn btn-sm btn-outline-primary"
+                          [disabled]="isActioning(route)"
+                          (click)="startRoute(route)">
+                          {{ isActioning(route) ? 'Starting...' : 'Start' }}
+                        </button>
+
+                        <ng-container *ngIf="route.status === 'InProgress'">
+                          <button
+                            class="btn btn-sm btn-outline-success"
+                            [disabled]="isActioning(route)"
+                            (click)="completeRoute(route)">
+                            Complete
+                          </button>
+                          <button
+                            class="btn btn-sm btn-outline-warning"
+                            [disabled]="isActioning(route)"
+                            (click)="reportDelay(route)">
+                            Report Delay
+                          </button>
+                        </ng-container>
+
+                        <ng-container *ngIf="route.status === 'Delayed'">
+                          <button
+                            class="btn btn-sm btn-outline-primary"
+                            [disabled]="isActioning(route)"
+                            (click)="startRoute(route)">
+                            Resume
+                          </button>
+                          <button
+                            class="btn btn-sm btn-outline-success"
+                            [disabled]="isActioning(route)"
+                            (click)="completeRoute(route)">
+                            Complete
+                          </button>
+                        </ng-container>
+                      </div>
                     </div>
                   </div>
                 </div>
