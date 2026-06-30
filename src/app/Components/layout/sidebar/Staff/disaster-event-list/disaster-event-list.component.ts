@@ -5,12 +5,14 @@ import { RouterLink } from '@angular/router';
 import { DisasterEvent } from '../../../../../Models/DisasterEvent.model';
 import { ApiService } from '../../../../../Services/api.service';
 import { DisasterEventFormComponent } from '../disaster-event-form/disaster-event-form.component';
+import { AuthService } from '../../../../../Services/auth.service';
+import { VolunteerModalComponent } from '../../Citizen/volunteer/volunteer-modal.component';
 
 @Component({
   selector: 'app-disaster-event-list',
   templateUrl: './disaster-event-list.component.html',
   styleUrls: ['./disaster-event-list.component.css'],
-  imports: [CommonModule, RouterLink, DisasterEventFormComponent]
+  imports: [CommonModule, DisasterEventFormComponent, VolunteerModalComponent]
 })
 export class DisasterEventListComponent implements OnInit {
   events: DisasterEvent[] = [];
@@ -20,11 +22,16 @@ export class DisasterEventListComponent implements OnInit {
   showModal = false;
   selectedEventId: string | null = null;
   isEditMode = false;
+  role:string = '';
+  showVolunteerModal = false;
+  selectedVolunteerEventId: string | null = null;
+  selectedVolunteerEventName: string = '';
 
-  constructor(private disasterEventService: ApiService) { }
+  constructor(private disasterEventService: ApiService, private authService:AuthService) { }
 
   ngOnInit(): void {
     this.loadEvents();
+    this.role = this.authService.decodeToken().Role;
   }
 
   loadEvents(): void {
@@ -122,4 +129,23 @@ export class DisasterEventListComponent implements OnInit {
     if (!date) return 'N/A';
     return new Date(date).toLocaleDateString();
   }
+
+  openVolunteerModal(eventId: string, eventName: string): void {
+  this.selectedVolunteerEventId = eventId;
+  this.selectedVolunteerEventName = eventName;
+  this.showVolunteerModal = true;
+}
+
+closeVolunteerModal(): void {
+  this.showVolunteerModal = false;
+  this.selectedVolunteerEventId = null;
+  this.selectedVolunteerEventName = '';
+}
+
+onVolunteerRegistered(): void {
+  this.closeVolunteerModal();
+  this.loadEvents(); // refresh assigned volunteer count
+}
+
+
 }

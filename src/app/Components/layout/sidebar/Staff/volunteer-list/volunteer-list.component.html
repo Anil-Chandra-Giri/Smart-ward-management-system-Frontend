@@ -26,7 +26,7 @@
           <th>Availability</th>
           <th>Status</th>
           <th>Active Assignments</th>
-          <th>Actions</th>
+          <th *ngIf="role == 'Staff'">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -42,12 +42,12 @@
             </span>
           </td>
           <td>{{ volunteer.activeAssignments }}</td>
-          <td>
-            <button (click)="openEditModal(volunteer.id)" class="btn btn-sm btn-warning me-1">
-              <i class="bi bi-pencil"></i>
+          <td *ngIf="role == 'Staff'">
+            <button (click)="openEditModal(volunteer.id)" class="btn btn-sm btn-warning me-1" value="">
+              <i class="bi bi-pencil"></i><span style="color:white">Edit Volunteer</span>
             </button>
             <button (click)="deleteVolunteer(volunteer.id)" class="btn btn-sm btn-danger">
-              <i class="bi bi-trash"></i>
+              <i class="bi bi-trash"></i><span style="color:white">Delete Volunteer</span>
             </button>
           </td>
         </tr>
