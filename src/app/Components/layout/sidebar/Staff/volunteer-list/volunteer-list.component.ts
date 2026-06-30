@@ -4,6 +4,7 @@ import { ApiService } from '../../../../../Services/api.service';
 import { Volunteer } from '../../../../../Models/volunteer.model';
 import { CommonModule } from '@angular/common';
 import { VolunteerFormComponent } from '../volunteer-form/volunteer-form.component';
+import { AuthService } from '../../../../../Services/auth.service';
 
 @Component({
   selector: 'app-volunteer-list',
@@ -18,11 +19,14 @@ export class VolunteerListComponent implements OnInit {
   showModal = false;
   selectedVolunteerId: string | null = null;
   isEditMode = false;
+  role:string = ''
 
-  constructor(private volunteerService: ApiService) { }
+  constructor(private volunteerService: ApiService, private authService: AuthService) { }
 
   ngOnInit(): void {
     this.loadVolunteers();
+    this.role = this.authService.decodeToken().Role;
+    console.log(this.role)
   }
 
   loadVolunteers(): void {

@@ -85,8 +85,8 @@
           <button (click)="openEditModal(event.id)" class="btn btn-sm btn-warning me-1">
             <i class="bi bi-pencil"></i> Edit
           </button>
-          <a [routerLink]="['/volunteer-assignments', event.id]" class="btn btn-sm btn-success me-1">
-            <i class="bi bi-people"></i> Assign Volunteers
+          <a *ngIf="role == 'citizen'" (click)="openVolunteerModal(event.id, event.eventName)" class="btn btn-sm btn-success me-1">
+            <i class="bi bi-people"></i> Assign Me As Volunteer
           </a>
           <button (click)="deleteEvent(event.id)" class="btn btn-sm btn-danger">
             <i class="bi bi-trash"></i> Delete
@@ -123,3 +123,11 @@
     </div>
   </div>
 </div>
+
+<app-volunteer-modal
+  *ngIf="showVolunteerModal && selectedVolunteerEventId"
+  [disasterEventId]="selectedVolunteerEventId!"
+  [eventName]="selectedVolunteerEventName"
+  (closed)="closeVolunteerModal()"
+  (registered)="onVolunteerRegistered()">
+</app-volunteer-modal>

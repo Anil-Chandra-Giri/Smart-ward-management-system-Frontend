@@ -1,0 +1,214 @@
+<style>
+    .vol-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.vol-modal {
+  background: #fff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 640px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.vol-header {
+  padding: 1.25rem 1.5rem 1rem;
+  border-bottom: 1px solid #e9ecef;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.vol-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.vol-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #d1e7dd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0f5132;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.vol-body {
+  padding: 1.25rem 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.vol-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #e9ecef;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.section-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #6c757d;
+  margin: 0 0 12px;
+}
+
+.section-label i {
+  margin-right: 5px;
+}
+
+.section-divider {
+  margin: 1rem 0;
+  border-color: #e9ecef;
+}
+</style>
+<!-- Overlay -->
+<div class="vol-overlay" (click)="close()">
+  <div class="vol-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="vol-modal-title">
+
+    <!-- Header -->
+    <div class="vol-header">
+      <div class="vol-title-row">
+        <div class="vol-avatar">
+          <i class="bi bi-heart-pulse-fill"></i>
+        </div>
+        <div>
+          <h5 id="vol-modal-title" class="mb-0">Volunteer registration</h5>
+          <small class="text-muted">{{ eventName }}</small>
+        </div>
+      </div>
+      <button class="btn-close" (click)="close()" aria-label="Close"></button>
+    </div>
+
+    <!-- Body -->
+    <div class="vol-body" [formGroup]="form">
+
+      <!-- Personal Details -->
+      <p class="section-label">
+        <i class="bi bi-person"></i> Personal details
+      </p>
+      <div class="row g-3">
+        <div class="col-sm-6">
+          <label class="form-label">First name <span class="text-danger">*</span></label>
+          <input class="form-control" formControlName="firstName" placeholder="Jane"
+            [class.is-invalid]="f['firstName'].invalid && f['firstName'].touched" />
+          <div class="invalid-feedback">First name is required.</div>
+        </div>
+        <div class="col-sm-6">
+          <label class="form-label">Last name <span class="text-danger">*</span></label>
+          <input class="form-control" formControlName="lastName" placeholder="Doe"
+            [class.is-invalid]="f['lastName'].invalid && f['lastName'].touched" />
+          <div class="invalid-feedback">Last name is required.</div>
+        </div>
+        <div class="col-sm-6">
+          <label class="form-label">Email <span class="text-danger">*</span></label>
+          <input class="form-control" type="email" formControlName="email" placeholder="jane@example.com"
+            [class.is-invalid]="f['email'].invalid && f['email'].touched" />
+          <div class="invalid-feedback">Enter a valid email.</div>
+        </div>
+        <div class="col-sm-6">
+          <label class="form-label">Phone number <span class="text-danger">*</span></label>
+          <input class="form-control" type="tel" formControlName="phoneNumber" placeholder="+1 555-000-0000"
+            [class.is-invalid]="f['phoneNumber'].invalid && f['phoneNumber'].touched" />
+          <div class="invalid-feedback">Phone number is required.</div>
+        </div>
+        <div class="col-sm-6">
+          <label class="form-label">Date of birth</label>
+          <input class="form-control" type="date" formControlName="dateOfBirth" />
+        </div>
+        <div class="col-sm-6">
+          <label class="form-label">Address</label>
+          <input class="form-control" formControlName="address" placeholder="123 Main St, City" />
+        </div>
+      </div>
+
+      <hr class="section-divider" />
+
+      <!-- Skills -->
+      <p class="section-label">
+        <i class="bi bi-tools"></i> Skills & availability
+      </p>
+      <div class="row g-3">
+        <div class="col-sm-6">
+          <label class="form-label">Skills</label>
+          <input class="form-control" formControlName="skills" placeholder="First aid, driving, logistics…" />
+        </div>
+        <div class="col-sm-6">
+          <label class="form-label">Availability</label>
+          <select class="form-select" formControlName="availability">
+            <option value="">Select availability</option>
+            <option>Weekdays</option>
+            <option>Weekends</option>
+            <option>Weekdays &amp; weekends</option>
+            <option>Flexible</option>
+          </select>
+        </div>
+      </div>
+
+      <hr class="section-divider" />
+
+      <!-- Emergency Contact -->
+      <p class="section-label">
+        <i class="bi bi-telephone-fill"></i> Emergency contact
+      </p>
+      <div class="row g-3">
+        <div class="col-sm-6">
+          <label class="form-label">Contact name</label>
+          <input class="form-control" formControlName="emergencyContact" placeholder="John Doe" />
+        </div>
+        <div class="col-sm-6">
+          <label class="form-label">Contact phone</label>
+          <input class="form-control" type="tel" formControlName="emergencyPhone" placeholder="+1 555-000-0000" />
+        </div>
+      </div>
+
+      <hr class="section-divider" />
+
+      <!-- Notes -->
+      <p class="section-label">
+        <i class="bi bi-clipboard"></i> Assignment notes
+      </p>
+      <textarea class="form-control" formControlName="notes" rows="3"
+        placeholder="Any preferences or additional information for this assignment…"></textarea>
+
+      <!-- Error -->
+      <div *ngIf="error" class="alert alert-danger mt-3 mb-0 py-2">
+        <i class="bi bi-exclamation-triangle me-2"></i>{{ error }}
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="vol-footer">
+      <button class="btn btn-outline-secondary" (click)="close()" [disabled]="loading">
+        Cancel
+      </button>
+      <button class="btn btn-success" (click)="submit()" [disabled]="loading">
+        <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+        <i *ngIf="!loading" class="bi bi-check-lg me-1"></i>
+        {{ loading ? 'Submitting…' : 'Submit registration' }}
+      </button>
+    </div>
+
+  </div>
+</div>

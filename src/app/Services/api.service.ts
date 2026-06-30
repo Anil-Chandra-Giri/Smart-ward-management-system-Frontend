@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { map, Observable } from 'rxjs';
+import { firstValueFrom, map, Observable } from 'rxjs';
 import { Login } from '../Models/login';
 import { Vote } from '../Models/vote.model';
 import { Poll } from '../Models/Poll.Model';
@@ -22,6 +22,7 @@ export class ApiService {
   private wasteApiUrl = 'https://localhost:7069/api/WasteCollection';
   private appointmentApiUrl = 'https://localhost:7069/api/Appointment';
   private authApiUrl = 'https://localhost:7069/api';
+  private volunteerApiUrl = 'https://localhost:7069/api/Volunteer'
 
   constructor(private http: HttpClient, private authService: AuthService) { }
 
@@ -59,11 +60,29 @@ export class ApiService {
     return this.http.post<{ message: string }>(`${this.authApiUrl}/CitizenVerification/reject/${userId}`, { reason });
   }
 
+  // Citizen self-registration (creates volunteer + assignment in one call)
+selfRegisterVolunteer(payload: any): Observable<any> {
+  return this.http.post(`${this.volunteerApiUrl}/self-register`, payload);
+}
+
+// Admin use — assign an existing volunteer to an event
+createVolunteerAssignment(payload: any): Observable<any> {
+  return this.http.post(`${this.volunteerApiUrl}/VolunteerAssignments`, payload);
+}
+
   // ─── User / Registration ─────────────────────────────────────────────────────
 
   createUser(signup: any): Observable<any> {
     return this.http.post(`${this.authApiUrl}/SignUp/Register`, signup);
   }
+
+createVolunteer(payload: any): Observable<any> {
+  return this.http.post(`${this.disasterapiUrl}/volunteers`, payload);
+}
+
+// createVolunteerAssignment(payload: any): Observable<any> {
+//   return this.http.post(`${this.disasterapiUrl}/volunteer-assignments`, payload);
+// }
 
   verifyEmail(data: { userId: string, otpCode: string }) {
     return this.http.post(`${this.authApiUrl}/SignUp/VerifyEmail`, data);
@@ -350,9 +369,9 @@ updateComplaintWithImage(complaintId: string, formData: FormData): Observable<an
     return this.http.get<Volunteer>(`${this.volunteerapiUrl}/${id}`);
   }
 
-  createVolunteer(volunteer: FormData): Observable<Volunteer> {
-    return this.http.post<Volunteer>(this.volunteerapiUrl, volunteer);
-  }
+  // createVolunteer(volunteer: FormData): Observable<Volunteer> {
+  //   return this.http.post<Volunteer>(this.volunteerapiUrl, volunteer);
+  // }
 
   updateVolunteer(id: string, volunteer: UpdateVolunteer): Observable<void> {
     return this.http.put<void>(`${this.volunteerapiUrl}/${id}`, volunteer);
@@ -405,6 +424,36 @@ updateComplaintWithImage(complaintId: string, formData: FormData): Observable<an
   getDisasterEvents(): Observable<DisasterEvent[]> {
     return this.http.get<DisasterEvent[]>(this.disasterapiUrl);
   }
+
+  async registerAndAssign(payload: any): Promise<void> {
+  // Step 1: Create the volunteer profile
+  const volunteer = await firstValueFrom(
+    this.http.post<Volunteer>(`${this.volunteerApiUrl}/api/volunteers`, {
+      firstName:        payload.firstName,
+      lastName:         payload.lastName,
+      email:            payload.email,
+      phoneNumber:      payload.phoneNumber,
+      dateOfBirth:      payload.dateOfBirth,
+      address:          payload.address,
+      skills:           payload.skills,
+      availability:     payload.availability,
+      emergencyContact: payload.emergencyContact,
+      emergencyPhone:   payload.emergencyPhone,
+      profilePicture: "comming"
+    })
+  );
+
+  // Step 2: Create the assignment linking volunteer → disaster event
+  await firstValueFrom(
+    this.http.post('/api/volunteer-assignments', {
+      volunteerId:      volunteer.id,
+      disasterEventId:  payload.disasterEventId,
+      role:             'General Volunteer',
+      status:           'Assigned',
+      notes:            payload.notes,
+    })
+  );
+}
 
   getActiveEvents(): Observable<DisasterEvent[]> {
     return this.http.get<DisasterEvent[]>(`${this.disasterapiUrl}/active`);
