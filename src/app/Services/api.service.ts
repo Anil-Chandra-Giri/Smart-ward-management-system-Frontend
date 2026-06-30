@@ -203,9 +203,14 @@ updateComplaintWithImage(complaintId: string, formData: FormData): Observable<an
     return this.http.get(`${this.appointmentApiUrl}/queue/${wardNumber}`);
   }
 
+  
   // Update queue status
   updateQueueStatus(tokenNumber: string, status: string): Observable<any> {
-    return this.http.put(`${this.appointmentApiUrl}/queue/update/${tokenNumber}`, status);
+    return this.http.put(
+      `${this.baseApiUrl}/queue/update/${tokenNumber}`,
+      JSON.stringify(status),
+      { headers: { 'Content-Type': 'application/json' } }
+    );
   }
 
   // ─── Notices ─────────────────────────────────────────────────────────────────
