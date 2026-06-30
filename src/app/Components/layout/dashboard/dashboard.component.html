@@ -22,6 +22,47 @@
     </div>
   </header>
 
+  <section class="overdue-alert" *ngIf="isStaff">
+  <div class="alert-banner">
+    <div class="alert-header">
+      <span class="alert-icon">⚠</span>
+      <h3>{{ overdueCount }} Complaint{{ overdueCount > 1 ? 's' : '' }} Pending {{ overdueThresholdDays }}+ Days</h3>
+      <button class="alert-dismiss" (click)="dismissOverdueAlert()">&times;</button>
+    </div>
+
+    <div class="alert-priority-summary" *ngIf="overdueByPriority.length">
+      <span *ngFor="let p of overdueByPriority" class="priority-chip" [ngClass]="'priority-' + (p.priority || 'unknown').toLowerCase()">
+        {{ p.priority || 'Unspecified' }}: {{ p.count }}
+      </span>
+    </div>
+
+    <div class="overdue-list">
+      <table>
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Priority</th>
+            <th>Ward</th>
+            <th>Status</th>
+            <th>Days Pending</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let c of overdueComplaints; trackBy: trackByComplaintId" [ngClass]="{'critical': c.daysPending >= 14}">
+            <td>{{ c.category }}</td>
+            <td>
+              <span class="priority-tag" [ngClass]="'priority-' + (c.priority || '').toLowerCase()">{{ c.priority }}</span>
+            </td>
+            <td>{{ c.wardNumber }}</td>
+            <td>{{ c.status }}</td>
+            <td>{{ c.daysPending }} days</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
   <!-- Statistics -->
   <section class="stats">
 
