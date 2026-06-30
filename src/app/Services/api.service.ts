@@ -554,4 +554,8 @@ updateComplaintWithImage(complaintId: string, formData: FormData): Observable<an
   requestReview(id: any): Observable<any> {
     return this.http.put(`${this.authApiUrl}/service-requests/{id}/review`, id);
   }
+
+  getOverdueComplaints(days: number = 7) {
+  return this.http.get<any>(`${this.authApiUrl}/Complaint/GetOverdueComplaints?days=${days}`);
+}
 }

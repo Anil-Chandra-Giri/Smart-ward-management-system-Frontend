@@ -46,6 +46,12 @@ export class DashboardComponent implements AfterViewInit {
   profilePictureUrl: string = '';
   userProfile: any = null;
 
+  overdueComplaints: any[] = [];
+  overdueCount: number = 0;
+  overdueByPriority: any[] = [];
+  showOverdueAlert: boolean = false;
+  overdueThresholdDays: number = 7;
+
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
     private authService: AuthService,
@@ -82,8 +88,12 @@ export class DashboardComponent implements AfterViewInit {
         // Load role-specific data
         if (this.isAdmin) {
           this.loadAdminDashboardData();
+          this.loadOverdueComplaints();
+
         } else if (this.isStaff) {
           this.getServices();
+            this.loadOverdueComplaints();
+
         } else if (this.isCitizen) {
           this.getMyServiceRequests();
         }
@@ -371,4 +381,24 @@ export class DashboardComponent implements AfterViewInit {
   onImageError(event: any): void {
     event.target.src = 'https://i.pravatar.cc/40';
   }
+
+  loadOverdueComplaints(): void {
+  this.apiCallService.getOverdueComplaints(this.overdueThresholdDays).subscribe({
+    next: (res: any) => {
+      this.overdueComplaints = res.complaints || [];
+      this.overdueCount = res.totalOverdue || 0;
+      this.overdueByPriority = res.byPriority || [];
+      this.showOverdueAlert = this.overdueCount > 0;
+    },
+    error: (err) => console.error('Error loading overdue complaints:', err)
+  });
+}
+
+dismissOverdueAlert(): void {
+  this.showOverdueAlert = false;
+}
+
+trackByComplaintId(index: number, complaint: any): string {
+  return complaint.complaintId;
+}
 }
