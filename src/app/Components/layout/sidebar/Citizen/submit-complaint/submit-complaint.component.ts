@@ -103,14 +103,14 @@ export class SubmitComplaintComponent implements OnInit, AfterViewInit {
         
         return `
           <div style="display: flex; gap: 8px; align-items: center;">
-            <button class="btn btn-sm btn-outline-info" data-action="view" style="padding: 2px 12px; font-size: 12px;">
+            <button class="btn btn-sm btn-outline-info" data-action="view" data-id="${params.data.complaintId}" style="padding: 2px 12px; font-size: 12px;">
               View
             </button>
-            <button class="btn btn-sm btn-outline-primary" data-action="edit" style="padding: 2px 12px; font-size: 12px;"
+            <button class="btn btn-sm btn-outline-primary" data-action="edit" data-id="${params.data.complaintId}" style="padding: 2px 12px; font-size: 12px;"
                     ${isDisabled ? 'disabled title="Cannot edit ' + status + ' complaint"' : ''}>
               Edit
             </button>
-            <button class="btn btn-sm btn-outline-danger" data-action="delete" style="padding: 2px 12px; font-size: 12px;">
+            <button class="btn btn-sm btn-outline-danger" data-action="delete" data-id="${params.data.complaintId}" style="padding: 2px 12px; font-size: 12px;">
               Delete
             </button>
           </div>
@@ -120,15 +120,21 @@ export class SubmitComplaintComponent implements OnInit, AfterViewInit {
         const target = p.event.target;
         const action = target.getAttribute('data-action') 
           || target.parentElement?.getAttribute('data-action');
+        const complaintId = target.getAttribute('data-id') 
+          || target.parentElement?.getAttribute('data-id');
+        
+        // Find the complaint in rowData
+        const complaint = this.rowData.find(item => item.complaintId === complaintId);
+        if (!complaint) return;
         
         if (action === 'view') {
-          this.viewComplaint(p.data);
+          this.viewComplaint(complaint);
         } else if (action === 'edit') {
           if (!target.disabled) {
-            this.editComplaint(p.data);
+            this.editComplaint(complaint);
           }
         } else if (action === 'delete') {
-          this.openDeleteModal(p.data);
+          this.openDeleteModal(complaint);
         }
       },
     },
@@ -250,6 +256,12 @@ export class SubmitComplaintComponent implements OnInit, AfterViewInit {
   }
 
   openDeleteModal(complaint: any): void {
+    // Security check: Only allow deletion of own complaints
+    if (complaint.userId !== this.UserId) {
+      alert('You are not authorized to delete this complaint.');
+      return;
+    }
+    
     if (complaint.status === 'Resolved' || complaint.status === 'Closed') {
       alert(`This complaint is already ${complaint.status}. Cannot delete.`);
       return;
@@ -260,6 +272,13 @@ export class SubmitComplaintComponent implements OnInit, AfterViewInit {
 
   confirmDelete(): void {
     if (!this.complaintToDelete) return;
+    
+    // Security check: Only allow deletion of own complaints
+    if (this.complaintToDelete.userId !== this.UserId) {
+      alert('You are not authorized to delete this complaint.');
+      this.toggleDeleteModal(false);
+      return;
+    }
     
     const id = this.complaintToDelete.complaintId;
     
@@ -288,6 +307,12 @@ export class SubmitComplaintComponent implements OnInit, AfterViewInit {
   }
 
   editComplaint(complaint: any): void {
+    // Security check: Only allow editing of own complaints
+    if (complaint.userId !== this.UserId) {
+      alert('You are not authorized to edit this complaint.');
+      return;
+    }
+    
     if (complaint.status === 'Resolved' || complaint.status === 'Closed') {
       alert(`This complaint is already ${complaint.status}. Cannot edit.`);
       return;
@@ -462,6 +487,7 @@ export class SubmitComplaintComponent implements OnInit, AfterViewInit {
             const newComplaint = {
               ...formValues,
               complaintId: res.complaintId || res.id,
+              userId: this.UserId, // Add userId for security
               createdAt: new Date().toISOString(),
               status: 'Pending',
               imageUrl: res.imageUrl || ''
@@ -487,7 +513,6 @@ export class SubmitComplaintComponent implements OnInit, AfterViewInit {
     }
   }
 
-  // FIXED: Properly typed update method
   onUpdateSubmit(): void {
     if (!this.editComplaintForm.valid) {
       this.editComplaintForm.markAllAsTouched();
@@ -521,7 +546,6 @@ export class SubmitComplaintComponent implements OnInit, AfterViewInit {
     // If there's a new image, handle it
     if (this.editSelectedImage) {
       const formData = new FormData();
-      // Add all payload fields to formData
       Object.keys(payload).forEach(key => {
         const value = (payload as any)[key];
         if (value !== null && value !== '') {

@@ -1,0 +1,333 @@
+/* ─── Header ─── */
+.appointments-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 0 16px 0;
+  border-bottom: 1px solid #e8eaed;
+  margin-bottom: 20px;
+}
+
+.header-left h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #202124;
+  margin: 0;
+}
+
+.header-left .subtitle {
+  color: #5f6368;
+  font-size: 14px;
+  margin: 4px 0 0 0;
+}
+
+.header-right .btn-primary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #1a73e8;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.header-right .btn-primary:hover {
+  background: #1557b0;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(26, 115, 232, 0.3);
+}
+
+.btn-icon {
+  font-size: 16px;
+}
+
+/* ─── Stats Cards ─── */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: white;
+  padding: 14px 18px;
+  border-radius: 12px;
+  border: 1px solid #e8eaed;
+  border-left: 4px solid #1a73e8;
+  transition: all 0.2s;
+}
+
+.stat-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.stat-icon {
+  font-size: 24px;
+}
+
+.stat-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-value {
+  font-size: 20px;
+  font-weight: 600;
+  color: #202124;
+  line-height: 1.2;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #5f6368;
+}
+
+.status-pending-card {
+  border-left-color: #ffc107;
+}
+
+.status-completed-card {
+  border-left-color: #28a745;
+}
+
+/* ─── Route Cards ─── */
+.route-card {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e8eaed;
+  overflow: hidden;
+  transition: all 0.3s;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.route-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.route-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e8eaed;
+}
+
+.route-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #202124;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status-badge {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 12px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.text-warning {
+  color: #856404;
+  background: #fff3cd;
+}
+
+.text-info {
+  color: #0c5460;
+  background: #d1ecf1;
+}
+
+.text-success {
+  color: #155724;
+  background: #d4edda;
+}
+
+.text-danger {
+  color: #721c24;
+  background: #f8d7da;
+}
+
+.route-card-body {
+  padding: 14px 18px;
+  flex: 1;
+}
+
+.route-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.info-label {
+  color: #5f6368;
+  font-weight: 500;
+}
+
+.info-value {
+  color: #202124;
+  font-weight: 500;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 60%;
+}
+
+.route-card-footer {
+  display: flex;
+  gap: 8px;
+  padding: 12px 18px;
+  border-top: 1px solid #e8eaed;
+  background: #fafafa;
+}
+
+.route-card-footer .btn {
+  flex: 1;
+  font-size: 12px;
+  padding: 4px 8px;
+}
+
+.btn-outline-info {
+  color: #0dcaf0;
+  border-color: #0dcaf0;
+}
+
+.btn-outline-info:hover {
+  background-color: #0dcaf0;
+  color: #fff;
+}
+
+.btn-outline-primary {
+  color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+.btn-outline-primary:hover {
+  background-color: #0d6efd;
+  color: #fff;
+}
+
+.btn-outline-danger {
+  color: #dc3545;
+  border-color: #dc3545;
+}
+
+.btn-outline-danger:hover {
+  background-color: #dc3545;
+  color: #fff;
+}
+
+/* ─── Collection Points ─── */
+.collection-point-card {
+  border: 1px solid #e8eaed;
+  border-radius: 8px;
+}
+
+.collection-point-card .card-body {
+  background: #fafafa;
+}
+
+/* ─── Modal Overrides ─── */
+.modal-header {
+  border-radius: 8px 8px 0 0;
+}
+
+.modal-footer {
+  background: #f8f9fa;
+  border-radius: 0 0 8px 8px;
+}
+
+/* ─── Access Denied ─── */
+.alert-danger .bi-shield-lock {
+  color: #dc3545;
+}
+
+/* ─── Empty State ─── */
+.empty-state {
+  padding: 60px 20px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 2px dashed #dee2e6;
+}
+
+.empty-state .bi-map {
+  color: #dee2e6;
+}
+
+.empty-state h4 {
+  color: #6c757d;
+}
+
+.empty-state p {
+  color: #6c757d;
+  margin-bottom: 20px;
+}
+
+/* ─── Loading Spinner ─── */
+.spinner-border {
+  width: 48px;
+  height: 48px;
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 768px) {
+  .appointments-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .header-right .btn-primary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .stats-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .route-card-footer {
+    flex-wrap: wrap;
+  }
+
+  .route-card-footer .btn {
+    flex: 1 0 calc(33.33% - 6px);
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 576px) {
+  .stats-row {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .stat-card {
+    padding: 10px 12px;
+  }
+  
+  .stat-value {
+    font-size: 16px;
+  }
+}

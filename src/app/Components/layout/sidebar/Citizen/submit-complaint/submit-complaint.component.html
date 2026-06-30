@@ -3,26 +3,22 @@
   Register New Complaint
 </button>
 
-<!-- Create Complaint Modal - WITH SUBMIT BUTTON -->
+<!-- Create Complaint Modal -->
 <div class="modal fade" id="complaintModal" [ngClass]="{'show': isModalOpen}" 
      [style.display]="isModalOpen ? 'block' : 'none'" tabindex="-1"
      style="overflow-y: auto;">
   <div class="modal-dialog modal-lg modal-dialog-scrollable" style="margin: 1.75rem auto;">
     <div class="modal-content border-0 shadow" style="max-height: calc(100vh - 3.5rem); display: flex; flex-direction: column;">
       
-      <!-- Modal Header -->
       <div class="modal-header bg-dark text-white" style="flex-shrink: 0; border-radius: 8px 8px 0 0;">
         <h5 class="modal-title">Smart Ward - Complaint Registration</h5>
         <button type="button" class="btn-close btn-close-white" (click)="toggleModal(false)"></button>
       </div>
 
-      <!-- Form with Submit Button -->
       <form [formGroup]="complaintForm" (ngSubmit)="submitComplaint()" style="display: flex; flex-direction: column; height: 100%; flex: 1;">
         
-        <!-- Scrollable Body -->
         <div class="modal-body p-4" style="overflow-y: auto; flex: 1 1 auto;">
           
-          <!-- Issue Specification -->
           <div class="row g-3 mb-4">
             <h6 class="text-uppercase text-muted fw-bold small border-bottom pb-2">Issue Specification</h6>
             
@@ -61,7 +57,6 @@
             </div>
           </div>
 
-          <!-- Location Mapping -->
           <div class="row g-3">
             <h6 class="text-uppercase text-muted fw-bold small border-bottom pb-2">Location Mapping</h6>
             
@@ -102,11 +97,10 @@
           
         </div>
 
-        <!-- Modal Footer WITH SUBMIT BUTTON -->
         <div class="modal-footer bg-light" style="flex-shrink: 0; border-radius: 0 0 8px 8px; padding: 1rem;">
           <button type="button" class="btn btn-outline-secondary" (click)="toggleModal(false)">Cancel</button>
           <button type="submit" class="btn btn-primary px-4" [disabled]="complaintForm.invalid">
-            <i class="bi bi-check-circle"></i> Register Complaint
+            Register Complaint
           </button>
         </div>
         
@@ -115,7 +109,7 @@
   </div>
 </div>
 
-<!-- View Complaint Modal -->
+<!-- View Complaint Modal - COMPLETE -->
 <div class="modal fade" id="viewModal" [ngClass]="{'show': isViewModalOpen}" 
      [style.display]="isViewModalOpen ? 'block' : 'none'" tabindex="-1"
      style="overflow-y: auto;">
@@ -126,7 +120,79 @@
         <button type="button" class="btn-close btn-close-white" (click)="toggleViewModal(false)"></button>
       </div>
       <div class="modal-body" style="overflow-y: auto; flex: 1 1 auto;" *ngIf="selectedComplaint">
-        <!-- View content here -->
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <strong>Complaint ID:</strong> {{selectedComplaint.complaintId}}
+          </div>
+          <div class="col-md-6">
+            <strong>Status:</strong> 
+            <span [style.color]="selectedComplaint.status === 'Pending' ? '#ff9800' : 
+                                   selectedComplaint.status === 'In Progress' ? '#2196f3' : 
+                                   selectedComplaint.status === 'Resolved' ? '#4caf50' : '#f44336'">
+              {{selectedComplaint.status}}
+            </span>
+          </div>
+        </div>
+        
+        <hr>
+        
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <strong>Category:</strong> {{selectedComplaint.category}}
+          </div>
+          <div class="col-md-6">
+            <strong>Priority:</strong> 
+            <span [style.color]="selectedComplaint.priority === 'Normal' ? '#4caf50' : 
+                                   selectedComplaint.priority === 'Urgent' ? '#ff9800' : '#f44336'">
+              {{selectedComplaint.priority}}
+            </span>
+          </div>
+        </div>
+        
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <strong>Ward Number:</strong> {{selectedComplaint.wardNumber}}
+          </div>
+          <div class="col-md-6">
+            <strong>Municipality:</strong> {{selectedComplaint.municipality}}
+          </div>
+        </div>
+        
+        <div class="row mb-3">
+          <div class="col-12">
+            <strong>Description:</strong>
+            <p class="mt-1">{{selectedComplaint.complaintDetails}}</p>
+          </div>
+        </div>
+        
+        <div class="row mb-3" *ngIf="selectedComplaint.imageUrl">
+          <div class="col-12">
+            <strong>Image:</strong>
+            <div class="mt-2">
+              <img [src]="'https://localhost:7069' + selectedComplaint.imageUrl" 
+                   alt="Complaint Image" 
+                   style="max-width: 300px; border-radius: 8px; border: 1px solid #ddd;">
+            </div>
+          </div>
+        </div>
+        
+        <div class="row" *ngIf="selectedComplaint.latitude && selectedComplaint.longitude">
+          <div class="col-md-6">
+            <strong>Latitude:</strong> {{selectedComplaint.latitude}}
+          </div>
+          <div class="col-md-6">
+            <strong>Longitude:</strong> {{selectedComplaint.longitude}}
+          </div>
+        </div>
+        
+        <div class="row mt-2">
+          <div class="col-md-6">
+            <strong>Submitted On:</strong> {{selectedComplaint.createdAt | date:'medium'}}
+          </div>
+          <div class="col-md-6">
+            <strong>Last Updated:</strong> {{selectedComplaint.updatedAt | date:'medium'}}
+          </div>
+        </div>
       </div>
       <div class="modal-footer" style="flex-shrink: 0;">
         <button type="button" class="btn btn-secondary" (click)="toggleViewModal(false)">Close</button>
@@ -135,7 +201,7 @@
   </div>
 </div>
 
-<!-- Edit Complaint Modal -->
+<!-- Edit Complaint Modal - COMPLETE -->
 <div class="modal fade" id="editModal" [ngClass]="{'show': isEditModalOpen}" 
      [style.display]="isEditModalOpen ? 'block' : 'none'" tabindex="-1"
      style="overflow-y: auto;">
@@ -148,13 +214,89 @@
 
       <form [formGroup]="editComplaintForm" (ngSubmit)="onUpdateSubmit()" style="display: flex; flex-direction: column; height: 100%; flex: 1;">
         <div class="modal-body p-4" style="overflow-y: auto; flex: 1 1 auto;">
-          <!-- Edit form content here -->
+          
+          <div class="row g-3 mb-4">
+            <h6 class="text-uppercase text-muted fw-bold small border-bottom pb-2">Issue Specification</h6>
+            
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Complaint Category</label>
+              <select class="form-select" formControlName="category">
+                <option value="Waste Management">Waste Management</option>
+                <option value="Street Lighting">Street Lighting</option>
+                <option value="Water Supply">Water Supply</option>
+                <option value="Road Maintenance">Road Maintenance</option>
+                <option value="Drainage">Drainage/Sewage</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Priority Level</label>
+              <select class="form-select" formControlName="priority">
+                <option value="Normal">Normal</option>
+                <option value="Urgent">Urgent (Immediate Action)</option>
+                <option value="Critical">Critical (Emergency)</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Status</label>
+              <select class="form-select" formControlName="status">
+                <option value="Pending">Pending</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Resolved">Resolved</option>
+                <option value="Closed">Closed</option>
+              </select>
+            </div>
+
+            <div class="col-md-12">
+              <label class="form-label fw-semibold">Upload New Image (Optional)</label>
+              <input type="file" class="form-control" accept="image/*" (change)="onEditFileSelect($event)">
+              <div *ngIf="editImagePreview" class="mt-2">
+                <img [src]="editImagePreview" alt="Selected Image" style="max-width: 200px; border-radius: 8px;">
+              </div>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label fw-semibold">Detailed Description</label>
+              <textarea class="form-control" formControlName="complaintDetails" rows="3" placeholder="Describe the issue in detail..."></textarea>
+            </div>
+          </div>
+
+          <div class="row g-3">
+            <h6 class="text-uppercase text-muted fw-bold small border-bottom pb-2">Location Information</h6>
+            
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Ward Number</label>
+              <input type="number" class="form-control" formControlName="wardNumber" placeholder="e.g. 12">
+            </div>
+            
+            <div class="col-md-8">
+              <label class="form-label fw-semibold">Municipality/Local Body</label>
+              <input type="text" class="form-control" formControlName="municipality" placeholder="Enter municipality name">
+            </div>
+
+            <div class="col-md-6">
+              <div class="input-group input-group-sm">
+                <span class="input-group-text bg-light">Lat</span>
+                <input type="text" class="form-control" formControlName="latitude" readonly>
+              </div>
+            </div>
+            
+            <div class="col-md-6">
+              <div class="input-group input-group-sm">
+                <span class="input-group-text bg-light">Lng</span>
+                <input type="text" class="form-control" formControlName="longitude" readonly>
+              </div>
+            </div>
+          </div>
+          
         </div>
 
         <div class="modal-footer bg-light" style="flex-shrink: 0; border-radius: 0 0 8px 8px;">
           <button type="button" class="btn btn-outline-secondary" (click)="toggleEditModal(false)">Cancel</button>
           <button type="submit" class="btn btn-primary px-4" [disabled]="editComplaintForm.invalid">
-            <i class="bi bi-pencil"></i> Update Complaint
+            Update Complaint
           </button>
         </div>
       </form>

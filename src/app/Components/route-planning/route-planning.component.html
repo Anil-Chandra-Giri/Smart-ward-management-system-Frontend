@@ -1,49 +1,171 @@
-<!-- src/app/components/route-planning/route-planning.component.html -->
+<!-- Route Planning Component -->
+<div class="container-fluid px-4 py-3">
+  
+  <!-- Access Denied Message for Citizens -->
+  <div *ngIf="!isStaff && !isAdmin" class="alert alert-danger text-center p-5">
+    <div class="mb-3">
+      <i class="bi bi-shield-lock" style="font-size: 48px;"></i>
+    </div>
+    <h4>Access Denied</h4>
+    <p>You do not have permission to access this page. Only staff members can manage waste collection routes.</p>
+    <button class="btn btn-primary" [routerLink]="['/citizen-dashboard']">Return to Dashboard</button>
+  </div>
 
-<div class="container mt-4">
-  <div class="row">
-    <div class="col-md-12">
-      <div class="card">
-        <div class="card-header bg-primary text-white">
-          <h3 class="mb-0">
-            <i class="bi bi-map me-2"></i>
-            Plan New Waste Collection Route
-          </h3>
+  <!-- Staff/Admin Content -->
+  <ng-container *ngIf="isStaff || isAdmin">
+    
+    <!-- Header -->
+    <div class="appointments-header">
+      <div class="header-left">
+        <h1>🗺️ Waste Collection Route Planning</h1>
+        <p class="subtitle">Create and manage waste collection routes</p>
+      </div>
+      <div class="header-right">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#routeModal">
+          <span class="btn-icon">➕</span>
+          Create New Route
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon">📊</div>
+        <div class="stat-info">
+          <span class="stat-value">{{ routes.length }}</span>
+          <span class="stat-label">Total Routes</span>
         </div>
-        
-        <div class="card-body">
-          <!-- Alert Messages -->
-          <div *ngIf="success" class="alert alert-success">
-            <i class="bi bi-check-circle-fill me-2"></i>
-            {{success}}
+      </div>
+      <div class="stat-card status-pending-card">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-info">
+          <span class="stat-value">{{ getStatusCount('Scheduled') }}</span>
+          <span class="stat-label">Scheduled</span>
+        </div>
+      </div>
+      <div class="stat-card" style="border-left-color: #2196f3;">
+        <div class="stat-icon">🔄</div>
+        <div class="stat-info">
+          <span class="stat-value">{{ getStatusCount('In Progress') }}</span>
+          <span class="stat-label">In Progress</span>
+        </div>
+      </div>
+      <div class="stat-card status-completed-card">
+        <div class="stat-icon">✅</div>
+        <div class="stat-info">
+          <span class="stat-value">{{ getStatusCount('Completed') }}</span>
+          <span class="stat-label">Completed</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p class="mt-2 text-muted">Loading routes...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!loading && routes.length === 0" class="text-center py-5">
+      <div class="empty-state">
+        <i class="bi bi-map" style="font-size: 64px; color: #ccc;"></i>
+        <h4 class="mt-3 text-muted">No Routes Found</h4>
+        <p class="text-muted">There are no waste collection routes scheduled yet.</p>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#routeModal">
+          ➕ Create Your First Route
+        </button>
+      </div>
+    </div>
+
+    <!-- Routes List - Card View -->
+    <div *ngIf="!loading && routes.length > 0" class="row g-4">
+      <div *ngFor="let route of routes" class="col-md-6 col-lg-4">
+        <div class="route-card">
+          <div class="route-card-header">
+            <h5 class="route-title">{{ route.routeName }}</h5>
+            <span class="status-badge" [ngClass]="getStatusClass(route.status)">
+              {{ route.status || 'Scheduled' }}
+            </span>
           </div>
-          
-          <div *ngIf="error" class="alert alert-danger">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i>
-            {{error}}
+          <div class="route-card-body">
+            <div class="route-info">
+              <div class="info-item">
+                <span class="info-label">Waste Type:</span>
+                <span class="info-value">{{ getWasteTypeName(route.wasteType) }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Vehicle:</span>
+                <span class="info-value">{{ route.assignedVehicle || route.assignedVehicleId }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Driver:</span>
+                <span class="info-value">{{ route.assignedDriver || route.assignedDriverId }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Date:</span>
+                <span class="info-value">{{ route.scheduledDate | date:'medium' }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="route-card-footer">
+            <button class="btn btn-sm btn-outline-info" (click)="viewRoute(route)">View</button>
+            <button class="btn btn-sm btn-outline-primary" (click)="editRoute(route)">Edit</button>
+            <button class="btn btn-sm btn-outline-danger" (click)="openDeleteModal(route)">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Create Route Modal -->
+    <div class="modal fade" id="routeModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header bg-dark text-white">
+            <h5 class="modal-title">Plan New Waste Collection Route</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
           </div>
 
           <form [formGroup]="routeForm" (ngSubmit)="onSubmit()">
-            <div class="row">
-              <div class="col-md-6">
-                <!-- Route Name -->
-                <div class="mb-3">
+            <div class="modal-body">
+              <!-- Alert Messages -->
+              <div *ngIf="success" class="alert alert-success alert-dismissible fade show">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                {{ success }}
+                <button type="button" class="btn-close" (click)="success=null"></button>
+              </div>
+              
+              <div *ngIf="error" class="alert alert-danger alert-dismissible fade show">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                {{ error }}
+                <button type="button" class="btn-close" (click)="error=null"></button>
+              </div>
+
+              <div class="row g-3 border-bottom pb-4 mb-4">
+                <h6 class="text-primary">Route Information</h6>
+                
+                <div class="col-md-6">
                   <label class="form-label">Route Name *</label>
                   <input type="text" class="form-control" formControlName="routeName"
+                         placeholder="Enter route name"
                          [class.is-invalid]="isFieldInvalid('routeName')">
                   <div class="invalid-feedback" *ngIf="routeForm.get('routeName')?.errors?.['required']">
                     Route name is required
                   </div>
+                  <div class="invalid-feedback" *ngIf="routeForm.get('routeName')?.errors?.['minlength']">
+                    Route name must be at least 3 characters
+                  </div>
                 </div>
 
-                <!-- Waste Type - Updated to use numeric values -->
-                <div class="mb-3">
+                <div class="col-md-6">
                   <label class="form-label">Waste Type *</label>
-                  <select class="form-control" formControlName="wasteType"
+                  <select class="form-select" formControlName="wasteType"
                           [class.is-invalid]="isFieldInvalid('wasteType')">
                     <option value="">Select Waste Type</option>
                     <option *ngFor="let type of wasteTypeOptions" [value]="type.value">
-                      {{type.name}}
+                      {{ type.name }}
                     </option>
                   </select>
                   <div class="invalid-feedback" *ngIf="routeForm.get('wasteType')?.errors?.['required']">
@@ -51,88 +173,93 @@
                   </div>
                 </div>
 
-                <!-- Scheduled Date -->
-                <div class="mb-3">
+                <div class="col-md-6">
                   <label class="form-label">Scheduled Date *</label>
                   <input type="datetime-local" class="form-control" formControlName="scheduledDate"
                          [attr.min]="minDate" (change)="onDateChange($event)"
                          [class.is-invalid]="isFieldInvalid('scheduledDate')">
+                  <div class="invalid-feedback" *ngIf="routeForm.get('scheduledDate')?.errors?.['required']">
+                    Scheduled date is required
+                  </div>
                 </div>
-              </div>
 
-              <div class="col-md-6">
-                <!-- Vehicle -->
-                <div class="mb-3">
+                <div class="col-md-6">
                   <label class="form-label">Assign Vehicle *</label>
-                  <select class="form-control" formControlName="assignedVehicleId"
+                  <select class="form-select" formControlName="assignedVehicleId"
                           [class.is-invalid]="isFieldInvalid('assignedVehicleId')">
                     <option value="">Select Vehicle</option>
                     <option *ngFor="let vehicle of vehicles" [value]="vehicle.id">
-                      {{vehicle.vehicleName}} ({{vehicle.vehicleNumber}})
+                      {{ vehicle.vehicleName }} ({{ vehicle.vehicleNumber }})
                     </option>
                   </select>
+                  <div class="invalid-feedback" *ngIf="routeForm.get('assignedVehicleId')?.errors?.['required']">
+                    Vehicle is required
+                  </div>
                 </div>
 
-                <!-- Driver -->
-                <div class="mb-3">
+                <div class="col-md-6">
                   <label class="form-label">Assign Driver *</label>
-                  <select class="form-control" formControlName="assignedDriverId"
+                  <select class="form-select" formControlName="assignedDriverId"
                           [class.is-invalid]="isFieldInvalid('assignedDriverId')">
                     <option value="">Select Driver</option>
                     <option *ngFor="let driver of drivers" [value]="driver.id">
-                      {{driver.name}} ({{driver.phoneNumber}})
+                      {{ driver.name }} ({{ driver.phoneNumber }})
                     </option>
                   </select>
+                  <div class="invalid-feedback" *ngIf="routeForm.get('assignedDriverId')?.errors?.['required']">
+                    Driver is required
+                  </div>
                 </div>
 
-                <!-- Description -->
-                <div class="mb-3">
+                <div class="col-12">
                   <label class="form-label">Description</label>
-                  <textarea class="form-control" formControlName="description" rows="3"></textarea>
+                  <textarea class="form-control" formControlName="description" rows="2"
+                            placeholder="Enter route description..."></textarea>
                 </div>
               </div>
-            </div>
 
-            <!-- Collection Points -->
-            <div class="mt-4">
-              <h5>
-                Collection Points
-                <button type="button" class="btn btn-primary btn-sm ms-2" (click)="addCollectionPoint()">
-                  <i class="bi bi-plus"></i> Add Point
-                </button>
-              </h5>
+              <!-- Collection Points -->
+              <div class="mt-2">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <h6 class="text-primary mb-0">Collection Points</h6>
+                  <button type="button" class="btn btn-primary btn-sm" (click)="addCollectionPoint()">
+                    ➕ Add Point
+                  </button>
+                </div>
 
-              <div formArrayName="collectionPoints">
-                <div *ngFor="let point of collectionPoints.controls; let i = index" 
-                     [formGroupName]="i" class="card mt-2">
-                  <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                      <h6>Point #{{i + 1}}</h6>
-                      <button type="button" class="btn btn-danger btn-sm" 
-                              (click)="removeCollectionPoint(i)">
-                        <i class="bi bi-trash"></i> Remove
-                      </button>
-                    </div>
-
-                    <div class="row mt-2">
-                      <div class="col-md-6">
-                        <label class="form-label">Address *</label>
-                        <input type="text" class="form-control" formControlName="address">
+                <div formArrayName="collectionPoints">
+                  <div *ngFor="let point of collectionPoints.controls; let i = index" 
+                       [formGroupName]="i" class="card mb-2 collection-point-card">
+                    <div class="card-body p-3">
+                      <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">📍 Point #{{ i + 1 }}</h6>
+                        <button type="button" class="btn btn-danger btn-sm" 
+                                (click)="removeCollectionPoint(i)">
+                          🗑️ Remove
+                        </button>
                       </div>
-                      <div class="col-md-3">
-                        <label class="form-label">Latitude</label>
-                        <input type="number" class="form-control" formControlName="latitude" step="any">
-                      </div>
-                      <div class="col-md-3">
-                        <label class="form-label">Longitude</label>
-                        <input type="number" class="form-control" formControlName="longitude" step="any">
-                      </div>
-                    </div>
 
-                    <div class="row mt-2">
-                      <div class="col-md-12">
-                        <label class="form-label">Notes</label>
-                        <input type="text" class="form-control" formControlName="notes">
+                      <div class="row g-2 mt-2">
+                        <div class="col-md-6">
+                          <label class="form-label small">Address *</label>
+                          <input type="text" class="form-control form-control-sm" formControlName="address"
+                                 placeholder="Enter address">
+                        </div>
+                        <div class="col-md-3">
+                          <label class="form-label small">Latitude</label>
+                          <input type="number" class="form-control form-control-sm" 
+                                 formControlName="latitude" step="any" placeholder="0.0000">
+                        </div>
+                        <div class="col-md-3">
+                          <label class="form-label small">Longitude</label>
+                          <input type="number" class="form-control form-control-sm" 
+                                 formControlName="longitude" step="any" placeholder="0.0000">
+                        </div>
+                        <div class="col-12">
+                          <label class="form-label small">Notes</label>
+                          <input type="text" class="form-control form-control-sm" 
+                                 formControlName="notes" placeholder="Optional notes">
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -140,17 +267,137 @@
               </div>
             </div>
 
-            <!-- Submit Button -->
-            <div class="mt-4 text-center">
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="button" class="btn btn-outline-secondary" (click)="resetForm()">Reset</button>
               <button type="submit" class="btn btn-success" [disabled]="routeForm.invalid || loading">
                 <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
-                {{loading ? 'Creating...' : 'Create Route'}}
+                {{ loading ? 'Creating...' : 'Create Route' }}
               </button>
-              <button type="button" class="btn btn-secondary ms-2" (click)="resetForm()">Reset</button>
             </div>
           </form>
         </div>
       </div>
     </div>
-  </div>
+
+    <!-- View Route Modal -->
+    <div class="modal fade" [ngClass]="{'show': isViewModalOpen}" 
+         [style.display]="isViewModalOpen ? 'block' : 'none'" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header bg-info text-white">
+            <h5 class="modal-title">Route Details</h5>
+            <button type="button" class="btn-close btn-close-white" (click)="toggleViewModal(false)"></button>
+          </div>
+          <div class="modal-body" *ngIf="selectedRoute">
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <strong>Route Name:</strong> {{ selectedRoute.routeName }}
+              </div>
+              <div class="col-md-6">
+                <strong>Status:</strong>
+                <span [ngClass]="getStatusClass(selectedRoute.status)">{{ selectedRoute.status || 'Scheduled' }}</span>
+              </div>
+            </div>
+            <hr>
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <strong>Waste Type:</strong> {{ getWasteTypeName(selectedRoute.wasteType) }}
+              </div>
+              <div class="col-md-6">
+                <strong>Vehicle:</strong> {{ selectedRoute.assignedVehicle || selectedRoute.assignedVehicleId }}
+              </div>
+            </div>
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <strong>Driver:</strong> {{ selectedRoute.assignedDriver || selectedRoute.assignedDriverId }}
+              </div>
+              <div class="col-md-6">
+                <strong>Scheduled Date:</strong> {{ selectedRoute.scheduledDate | date:'medium' }}
+              </div>
+            </div>
+            <div class="row" *ngIf="selectedRoute.description">
+              <div class="col-12">
+                <strong>Description:</strong>
+                <p class="mt-1">{{ selectedRoute.description }}</p>
+              </div>
+            </div>
+            <div class="row" *ngIf="selectedRoute.collectionPoints && selectedRoute.collectionPoints.length > 0">
+              <div class="col-12">
+                <strong>Collection Points:</strong>
+                <ul class="mt-1">
+                  <li *ngFor="let point of selectedRoute.collectionPoints">
+                    {{ point.address }}
+                    <span *ngIf="point.latitude && point.longitude">
+                      ({{ point.latitude }}, {{ point.longitude }})
+                    </span>
+                    <span *ngIf="point.notes" class="text-muted"> - {{ point.notes }}</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="toggleViewModal(false)">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Route Modal -->
+    <div class="modal fade" [ngClass]="{'show': isEditModalOpen}" 
+         [style.display]="isEditModalOpen ? 'block' : 'none'" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title">Edit Route</h5>
+            <button type="button" class="btn-close btn-close-white" (click)="toggleEditModal(false)"></button>
+          </div>
+          <div class="modal-body" *ngIf="selectedRoute">
+            <p>Edit functionality coming soon...</p>
+            <!-- Add edit form here -->
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="toggleEditModal(false)">Cancel</button>
+            <button type="button" class="btn btn-primary">Update Route</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" [ngClass]="{'show': isDeleteModalOpen}" 
+         [style.display]="isDeleteModalOpen ? 'block' : 'none'" tabindex="-1">
+      <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+          <div class="modal-header bg-danger text-white">
+            <h5 class="modal-title">Confirm Deletion</h5>
+            <button type="button" class="btn-close btn-close-white" (click)="toggleDeleteModal(false)"></button>
+          </div>
+          <div class="modal-body" *ngIf="routeToDelete">
+            <p class="mb-0">Are you sure you want to delete this route?</p>
+            <small class="text-muted">This action cannot be undone.</small>
+            <hr>
+            <div class="row">
+              <div class="col-12">
+                <strong>Route:</strong> {{ routeToDelete.routeName }}
+              </div>
+              <div class="col-12">
+                <strong>Status:</strong> {{ routeToDelete.status || 'Scheduled' }}
+              </div>
+              <div class="col-12">
+                <strong>Waste Type:</strong> {{ getWasteTypeName(routeToDelete.wasteType) }}
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="toggleDeleteModal(false)">Cancel</button>
+            <button type="button" class="btn btn-danger" (click)="confirmDelete()">Yes, Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </ng-container>
+
 </div>
